@@ -2,13 +2,18 @@
 
 
 ## Frontend
-- HTML5: para la estructura de la aplicación web.
-- CSS3: para el diseño y la presentación de la aplicación.
-- JavaScript: para la interactividad y la lógica del lado del cliente.
+- HTML5: Defincion: Lenguaje de marcado que se usa para estructurar el contenido de una página web (títulos, párrafos, imágenes, enlaces).
+Uso: Para la estructura de la aplicación web.
+- CSS3: Definicion: Lenguaje que se usa para dar estilo a las páginas web (colores, tamaños, diseño, animaciones).
+Uso:para el diseño y la presentación de la aplicación.
+- JavaScript: Definicion: Lenguaje de programación que permite hacer páginas web dinámicas e interactivas (botones, animaciones, validaciones, etc.).
+Uso: Para la interactividad y la lógica del lado del cliente.
 
 ## Backend
-- Python: para la lógica del lado del servidor y el manejo de datos.
-- Flask: por su control de personalización, simplicidad y flexibilidad. Además de que solamente va a haber un usuario, por lo que no se necesita un framework más complejo como Django o FastAPI.
+- Python: Definicion: Lenguaje de programación fácil de leer y usar, muy popular para desarrollo web, automatización, ciencia de datos e inteligencia artificial.
+Uso: Para la lógica del lado del servidor y el manejo de datos.
+- Flask: Definicion: Framework (herramienta) de Python para crear aplicaciones web de forma simple y rápida. Es liviano y flexible.
+Uso: Por su control de personalización, simplicidad y flexibilidad. Además de que solamente va a haber un usuario, por lo que no se necesita un framework más complejo como Django o FastAPI.
 
 ## Diferencia entre FastAPI y Flask
 
@@ -22,12 +27,17 @@
 |Rendimiento en aplicaciones| Excelente para aplicaciones de alto rendimiento y en tiempo real. | Adecuado para aplicaciones pequeñas y medianas, pero puede no ser ideal para aplicaciones de alto rendimiento. |
 
 ## Base de datos
-- MYSQL: para almacenar y gestionar los datos de la aplicación de manera eficiente y segura. 
-- MYSQL Workbench: para diseñar, modelar y administrar la base de datos de manera visual y eficiente.
+- MYSQL: Definicion: Sistema de gestión de bases de datos que permite guardar, organizar y consultar información (usuarios, productos, etc.).
+Uso: para almacenar y gestionar los datos de la aplicación de manera eficiente y segura. 
+- MYSQL Workbench: Defincion: Es una herramienta gráfica que se usa para trabajar con bases de datos MySQL. Permite diseñar bases de datos, crear tablas, escribir consultas SQL, administrar usuarios y ver la información de forma visual, sin tener que usar solo la consola.
+Uso: Para diseñar, modelar y administrar la base de datos de manera visual y eficiente.
 
 ## Control de versiones
-- Git: para el control de versiones y la colaboración en el desarrollo del proyecto.
-- GitHub: para alojar el repositorio del proyecto y facilitar la colaboración entre los miembros del equipo.
+- Git: Defincion: Sistema de control de versiones que permite guardar cambios en el código, volver a versiones anteriores y trabajar en equipo sin perder información.
+Uso: Para el control de versiones y la colaboración en el desarrollo del proyecto.
+- GitHub: Defincion: Plataforma online basada en Git donde podés subir tus proyectos, compartirlos, colaborar con otros y gestionar versiones de forma remota.
+Uso: Para alojar el repositorio del proyecto y facilitar la colaboración entre los miembros del equipo.
 
 ## Herramientas de desarrollo
-- Visual Studio Code: para la edición de código y el desarrollo de la aplicación.
+- Visual Studio Code: Definicion: Editor de código fuente desarrollado por Microsoft. Es liviano, gratuito y muy popular para programar en distintos lenguajes como Python, JavaScript y HTML. Permite usar extensiones, depurar código y trabajar con herramientas como Git.
+Uso: Para la edición de código y el desarrollo de la aplicación.
