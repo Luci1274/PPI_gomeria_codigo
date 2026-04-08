@@ -42,3 +42,8 @@
 | Tecnologias | Uso | Definicion |
 |-------------|-----|------------|
 | Visual Studio Code | Edición de código y desarrollo de la aplicación | Editor de código fuente desarrollado por Microsoft. Es liviano, gratuito y muy popular para programar en distintos lenguajes como Python, JavaScript y HTML. Permite usar extensiones, depurar código y trabajar con herramientas como Git. |
+
+## Librerias 
+| Tecnologias | Uso | Definicion |
+|-------------|-----|------------|
+| Request | Utilizacion para las peticiones http post y get a las Apis. | Es una librería de Python que se utiliza para realizar solicitudes HTTP a servidores, permitiendo enviar y recibir datos desde APIs o páginas web de forma sencilla.|
