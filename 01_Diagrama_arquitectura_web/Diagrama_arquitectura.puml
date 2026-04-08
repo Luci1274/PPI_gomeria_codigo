@@ -4,15 +4,25 @@ actor Cliente
 
 node "Servidor Web" {
     component "Frontend (HTML,CSS, JS)" AS Frontend
-    component "API Flask (Backend)" as API 
-
+    component "API Flask (Backend)" as API  
 }
 
 node "Servidor Base de Datos" {
     database "MySQL" as BD
 }
 
+node "Servidor ARCA Ex AFIP" {
+    component "API ARCA" as ARCA 
+}
+
+node "Servidor interno" {
+    component "Sistema de archivo" as Archivo 
+}
+
 Cliente --> Frontend
 Frontend --> API 
+API --> ARCA
 API --> BD
+API --> Archivo 
+Cliente --> Archivo
 @enduml
