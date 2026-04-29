@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/iniciar_sesion.css">
     <title>Iniciar sesión</title>
 </head>
+
 <body>
     <main>
         <div>
@@ -12,33 +15,49 @@
 
             </div>
             <div id="cajaInicioSesion">
-                <div id="cajaTitulo"><h1>¡Bienvenido!</h1></div>
+                <div id="cajaTitulo">
+                    <h1>¡Bienvenido!</h1>
+                </div>
                 <div id="cajaOpciones">
                     <div id="cajaIniciarSesion">
-                        <a href="iniciar_sesion.html"><p id="iniciar_sesion">Iniciar sesión</p></a>
+                        <a href="iniciar_sesion.html">
+                            <p id="iniciar_sesion">Iniciar sesión</p>
+                        </a>
                     </div>
                     <div id="cajaLogeo">
-                        <a href=""><p id="logeo">Logeo</p></a>
+                        <a href="">
+                            <p id="crear_usuario">Crear usuario</p>
+                        </a>
                     </div>
                 </div>
-                <form action="index.html">
-                    <div id="cajaInputNombre">
-                        <div id="cajaImagenNombre">
-                            <ion-icon name="person-outline"></ion-icon>
+            <form action="index.html">
+                        <div id="cajaInputNombre">
+                            <div id="cajaImagenNombre">
+                                <ion-icon name="person-outline"></ion-icon>
+                            </div>
+                            <input type="text" name="txtInputNombre" id="txtInputNombre" placeholder="Nombre de usuario"
+                                required>
                         </div>
-                        <input type="text" name="txtInputNombre" id="txtInputNombre" placeholder="Nombre de usuario" required>
-                    </div>
-                    <div id="cajaInputContraseña">
-                        <div id="cajaImagenContraseña">
-                            <ion-icon name="lock-closed-outline"></ion-icon>
+                        <div id="cajaInputContraseña">
+                            <div id="cajaImagenContraseña">
+                                <ion-icon name="lock-closed-outline"></ion-icon>
+                            </div>
+                            <input type="password" name="passworldInput" id="passworldInput" placeholder=" ............. " required>
                         </div>
-                        <input type="password" name="passworldInput" id="passworldInput">
-                    </div>
-                </form>
-            </div>
+                        <div>
+                            <input type="checkbox" name="checkboxRecordar" id="checkboxRecordar">
+                            <label for="checkboxRecordar">Recordar información</label>
+                        </div>
+                        <div>
+                            <input type="submit" value="Iniciar sesión">
+                        </div>
+                </div>
+            </form>
+
         </div>
     </main>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </body>
+
 </html>
