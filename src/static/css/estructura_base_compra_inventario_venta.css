@@ -1,0 +1,149 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+header {
+    background-color: #004aad;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+header #titulo_pagina {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+
+/*Navegacion*/
+
+nav {
+    background-color: #004aad;
+    overflow: hidden;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 160px;
+    height: 100vh;
+}
+
+nav h2 {
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    float: none;
+    display: block;
+    border-bottom: 1px solid #555;
+}
+
+nav ul li a {
+    display: block;
+    color: white;
+    padding: 15px;
+    text-decoration: none;
+}
+
+nav ul li a:hover {
+    background-color: #003080;
+}
+
+nav ul li a ion-icon {
+    margin-right: 10px;
+    font-size: 28px;
+}
+
+nav ul li a span {
+    font-size: 18px;
+}
+
+/*Barra de filtrado*/
+#barra_filtrado {
+    margin-left: 160px;
+    padding: 20px;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+#barra_filtrado #filtro {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#barra_filtrado ion-icon {
+    font-size: 24px;
+    color: #333;
+    cursor: pointer;
+}
+
+#barra_filtrado input {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#barra_filtrado button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #004aad;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    
+}
+
+#barra_filtrado button:hover {
+    background-color: #003080;
+}
+
+/* barra lateral derecha */
+
+#contenedor_barra_lateral_derecha {
+    position: fixed;
+    overflow-y: auto;
+    right: 0;
+    top: 0;
+    width: 200px;
+    height: 100vh;
+    background-color: #f4f4f4;
+    padding: 20px;
+}
+
+#contenedor_titulo_barra_lateral_derecha {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+#parte_superior_derecha {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#parte_superior_derecha button {
+    padding: 5px;
+    font-size: 16px;
+    width: 25%;
+    display: inline-block;
+    background-color: #004aad;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}

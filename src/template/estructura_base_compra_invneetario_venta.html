@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/estructura_base_compra_inventario_venta.css">
     <title>{% block title %} {% endblock %}</title>
 </head>
 <body>
     <header>
-        <h2> {% block h2 %} {% endblock %} </h2>
+        <h2 id="titulo_pagina"> {% block h2 %} {% endblock %} </h2>
     </header>
     <nav>
         <h2 id="titulo_nav">Sistema Gomeria</h2>
@@ -36,9 +37,10 @@
             </li>
         </ul>
     </nav>
+
     <div id="barra_filtrado">
         <div id="filtro">
-            <ion-icon name="filter-outline"></ion-icon>
+            <ion-icon name="search-outline"></ion-icon>
             <span> Filtrar por: </span>
             <input type="text" placeholder="Buscar...">
         </div>
@@ -49,8 +51,24 @@
             <button>Parches</button>
             <button>Lúbricantes</button>
         </div>
-
     </div>
+
+    <div id="contenedor_barra_lateral_derecha">
+        <div id="contenedor_titulo_barra_lateral_derecha">
+            <p>{% block p  %} {% endblock %} </p>
+        </div>
+        <div id="parte_superior_derecha">
+            <button><ion-icon name="refresh-outline"></ion-icon></button>
+            {% block fecha %} {% endblock %}
+        </div>
+        <div id="cuerpo_barra_derecha">
+            {% block cuerpo_derecha %} [% endblock %]
+        </div>
+        <div id="opciones_derecha">
+            {% block opciones_derecha %} {% endblock %}
+        </div>
+    </div>
+
     <main>
         {% block main %} {% endblock %}
     </main>
