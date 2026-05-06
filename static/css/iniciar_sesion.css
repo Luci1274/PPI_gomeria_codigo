@@ -8,6 +8,7 @@
     --color_fondo: #5c6bc0;
     --color_fondo_cajas: #9fa8da;
     --color_letras:#e8eaf6;
+    --color-hover:#7986cb;
 
 }
 
@@ -40,6 +41,7 @@ body {
 .contenedor_iniciar_sesion #caja_iniciar_sesion #caja_titulo h1 {
     margin-bottom: 20px;
     text-align: center;
+    text-decoration: underline;
 }
 
 .contenedor_iniciar_sesion #caja_iniciar_sesion #caja_opciones {
@@ -48,13 +50,16 @@ body {
     margin-bottom: 20px;
 }
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion #caja_opciones a {
+.contenedor_iniciar_sesion #caja_iniciar_sesion #caja_opciones a p {
     text-decoration: none;
     color: var(--color_letras);
+    font-size: 25px;
 }
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion #caja_opciones a:hover {
+.contenedor_iniciar_sesion #caja_iniciar_sesion #caja_opciones p:hover {
     text-decoration: underline;
+    background-color: var(--color-hover);
+    /* Buscar un color del root (crearlo de ser necesario) */
 }
 
 .contenedor_iniciar_sesion #caja_iniciar_sesion form div {
@@ -64,14 +69,17 @@ body {
 }
 
 .contenedor_iniciar_sesion #caja_iniciar_sesion form div ion-icon {
-    font-size: 20px;
-    margin-right: 10px;
+    font-size: 30px;
+    margin-right: 5px;
+    margin-top: 10px;
 }
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion form div input {
+.contenedor_iniciar_sesion #caja_iniciar_sesion form .ingresar_datos input {
     flex: 1;
     padding: 10px;
     border-radius: 5px;
+    width: 50%;
+    height: 100%;
     border: 1px solid #555;
     background-color: var(--color_fondo_cajas);
     color: var(--color_letras);
@@ -80,11 +88,13 @@ body {
 .contenedor_iniciar_sesion #caja_iniciar_sesion form div.recordar {
     display: flex;
     align-items: center;
-    margin-bottom: 15px;
+    margin: 15px;
+    text-decoration: underline;
+    font-size: 18px;
 }
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion form div.recordar label {
-    margin-left: 5px;
+.contenedor_iniciar_sesion #caja_iniciar_sesion form div.recordar input {
+    margin-left: 15px;
 }
 
 .contenedor_iniciar_sesion #caja_iniciar_sesion form div button {
@@ -99,7 +109,8 @@ body {
 }
 
 .contenedor_iniciar_sesion #caja_iniciar_sesion form div button:hover {
-    background-color: #9fa8da;
+    background-color: var(--color-hover); 
+    /* Buscar un color del root (crearlo de ser necesario) */
 }
 
 

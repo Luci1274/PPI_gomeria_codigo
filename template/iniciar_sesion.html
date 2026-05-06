@@ -28,18 +28,17 @@
                     </a>
                 </div>
             </div>
-            <form method="post" action="/menu_principal">
-                    <div>
+            <form method="post" action="/login">
+                    <div class="ingresar_datos">
                         <div>
                             <ion-icon name="person-outline"></ion-icon>
                         </div>
-                        <input type="text" name="txt_input_nombre" id="txt_input_nombre" placeholder="Nombre de usuario"
-                            required>
+                        <input type="text" name="txt_input_nombre" id="txt_input_nombre" placeholder="Nombre de usuario" required>
                     </div>
                     {% if error %}
                         <P class="error"> Usuario y/o contraseña incorrectas</P>
                     {% endif %}
-                    <div>
+                    <div class="ingresar_datos">
                         <div>
                             <ion-icon name="lock-closed-outline"></ion-icon>
                         </div>
@@ -47,8 +46,8 @@
                     </div>
                     
                     <div class="recordar">
-                        <input type="checkbox" name="checkbox_recordar" id="checkbox_recordar">
                         <label for="checkbox_recordar">Recordar información</label>
+                        <input type="checkbox" name="checkbox_recordar" id="checkbox_recordar">
                     </div>
                     <div>
                         <button type="submit">Iniciar sesión</button>
