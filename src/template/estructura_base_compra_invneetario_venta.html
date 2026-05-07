@@ -8,37 +8,49 @@
 </head>
 <body>
     <header>
-        <h2 id="titulo_pagina"> {% block h2 %} {% endblock %} </h2>
+        <div class="contenedor_header_gestion">
+            <h2 id="titulo_pagina"> {% block h2 %} {% endblock %} </h2>
+        </div>
     </header>
     <nav>
-        <h2 id="titulo_nav">Sistema Gomeria</h2>
-        <ul>
-            <li>
-                <a href="">
-                    <ion-icon name="cart-outline"></ion-icon>
-                    <span> Compras</span>
-                </a>
-                <a href="">
-                    <ion-icon name="cash-outline"></ion-icon>
-                    <span> Ventas</span>
-                </a>
-                <a href="">
-                    <ion-icon name="cube-outline"></ion-icon>
-                    <span> Inventario</span>
-                </a>
-                <a href="">
-                    <ion-icon name="person-outline"></ion-icon>
-                    <span> Clientes</span>
-                </a>
-                <a href="">
-                    <ion-icon name="people-outline"></ion-icon>
-                    <span> Proveedores</span>
-                </a>
-            </li>
-        </ul>
+        <div class="conetenedor_navegacion">
+            <h2 id="titulo_nav">Sistema Gomeria</h2>
+            <ul>
+                {% if rol == "operario" %}
+                    <a href="">
+                        <ion-icon name="cash-outline"></ion-icon>
+                        <span> Ventas</span>
+                    </a>
+                {% else %}
+                    <li>
+                        <a href="">
+                            <ion-icon name="cart-outline"></ion-icon>
+                            <span> Compras</span>
+                        </a>
+                        <a href="">
+                            <ion-icon name="cash-outline"></ion-icon>
+                            <span> Ventas</span>
+                        </a>
+                        <a href="">
+                            <ion-icon name="cube-outline"></ion-icon>
+                            <span> Inventario</span>
+                        </a>
+                        <a href="">
+                            <ion-icon name="person-outline"></ion-icon>
+                            <span> Clientes</span>
+                        </a>
+                        <a href="">
+                            <ion-icon name="people-outline"></ion-icon>
+                            <span> Proveedores</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+        
     </nav>
 
-    <div id="barra_filtrado">
+    <div id="contenedor_barra_filtrado">
         <div id="filtro">
             <ion-icon name="search-outline"></ion-icon>
             <span> Filtrar por: </span>
@@ -58,12 +70,20 @@
             <p>{% block p  %} {% endblock %} </p>
         </div>
         <div id="parte_superior_derecha">
-            <button><ion-icon name="refresh-outline"></ion-icon></button>
-            {% block fecha %} {% endblock %}
+            <button class="restablecer"><ion-icon name="refresh-outline"></ion-icon></button>
+            <span>Fecha: <span id="fecha"></span></span>
+            {% block contenido_adicional %} 
+                <select name="" id="">
+                    <option value="0">Elegir cliente</option>
+                    <option value="1">Juan Carlos</option>
+                </select> 
+            {% endblock %}
         </div>
+        <hr>
         <div id="cuerpo_barra_derecha">
             {% block cuerpo_derecha %} [% endblock %]
         </div>
+        <hr>
         <div id="opciones_derecha">
             {% block opciones_derecha %} {% endblock %}
         </div>
@@ -75,7 +95,10 @@
     <footer>
 
     </footer>
-    
+    <script>
+        const fecha = new Date();
+        document.getElementById('fecha').textContent = fecha.toLocaleDateString();
+    </script>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </body>
