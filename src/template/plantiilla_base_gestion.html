@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="../static/css/gestion.css">
+    <title> {% block title %} {% endblock %} </title>
+</head>
+<body>
+    <header>
+        <div class="contenedor_header">
+            <h2 id="titulo_pagina"> {% block h2 %} {% endblock %} </h2>
+        </div>
+    </header>
+    <nav>
+        <div class="conetenedor_navegacion">
+            <h2 id="titulo_nav">Sistema Gomeria</h2>
+            <ul>
+                {% if rol == "operario" %}
+                    <a href="">
+                        <ion-icon name="cash-outline"></ion-icon>
+                        <span> Ventas</span>
+                    </a>
+                {% else %}
+                    <li>
+                        <a href="">
+                            <ion-icon name="cart-outline"></ion-icon>
+                            <span> Compras</span>
+                        </a>
+                        <a href="">
+                            <ion-icon name="cash-outline"></ion-icon>
+                            <span> Ventas</span>
+                        </a>
+                        <a href="">
+                            <ion-icon name="cube-outline"></ion-icon>
+                            <span> Inventario</span>
+                        </a>
+                        <a href="">
+                            <ion-icon name="person-outline"></ion-icon>
+                            <span> Clientes</span>
+                        </a>
+                        <a href="">
+                            <ion-icon name="people-outline"></ion-icon>
+                            <span> Proveedores</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+        
+    </nav>
+
+    <div id="contenedor_barra_filtrado">
+        <div id="filtro">
+            <ion-icon name="search-outline"></ion-icon>
+            <span> Filtrar por: </span>
+            <input type="text" placeholder="Buscar...">
+        </div>
+        <div id="caja_botones_filtrado">
+            {% opciones_filtrado %} {% endblock %}
+        </div>
+    </div>
+
+    <main>
+        <table>
+            <thead>
+                <tr>
+                    <!-- Genera los encabezados dinámicamente -->
+                    {% for col in columnas %}
+                        <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Genera las filas dinámicamente -->
+                {% for fila in filas %}
+                    <td>{{ filas }}</td>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+
+</body>
+</html>
