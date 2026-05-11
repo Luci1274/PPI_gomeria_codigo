@@ -1,17 +1,3 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-:root {
-    --color_fondo: #5c6bc0;
-    --color_fondo_cajas: #9fa8da;
-    --color_letras:#e8eaf6;
-    --color-hover:#7986cb;
-
-}
-
 body {
     font-family: Arial, sans-serif;
     background-color: var(--color_fondo);
@@ -27,6 +13,7 @@ body {
     background: url(../image/fondo-de-pantalla-full-hd-para-tablet-feq8tl3tjm3fokk6.jpg);
     background-size: cover;
     background-position: center;
+    border-radius: 4px;
 }
 
 .contenedor_iniciar_sesion #caja_iniciar_sesion {
@@ -48,18 +35,27 @@ body {
     display: flex;
     justify-content: space-around;
     margin-bottom: 20px;
+    
 }
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion #caja_opciones a p {
+.contenedor_iniciar_sesion #caja_iniciar_sesion #caja_opciones a {
     text-decoration: none;
+    background-color: var(--color_fondo_cajas);
     color: var(--color_letras);
     font-size: 25px;
+    border-radius: 4px;
+    padding: 5px;
 }
 
 .contenedor_iniciar_sesion #caja_iniciar_sesion #caja_opciones p:hover {
     text-decoration: underline;
     background-color: var(--color-hover);
     /* Buscar un color del root (crearlo de ser necesario) */
+}
+
+.contenedor_iniciar_sesion #caja_iniciar_sesion form {
+    background-color: var(--color-hover);
+    border-radius: 5px;
 }
 
 .contenedor_iniciar_sesion #caja_iniciar_sesion form div {
@@ -72,6 +68,7 @@ body {
     font-size: 30px;
     margin-right: 5px;
     margin-top: 10px;
+    background-color: var(--color_fondo_cajas);
 }
 
 .contenedor_iniciar_sesion #caja_iniciar_sesion form .ingresar_datos input {
