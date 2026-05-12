@@ -5,11 +5,12 @@
 }
 
 :root {
-    --color_fondo: #5c6bc0;
-    --color_fondo_cajas: #9fa8da;
-    --color_letras:#e8eaf6;
-    --color-hover:#7986cb;
-
+    --color_fondo: #0d47a1;
+    --color_tarjeta: #e0e0e0;
+    --color_input: #d6d6d6;
+    --color_boton: #0d1b5e;
+    --color_hover: #1b2d85;
+    --color_texto: #000;
 }
 
 body {
@@ -36,7 +37,7 @@ body {
     border-radius: 30px;
     overflow: hidden;
 
-    background-color: var(--color_fondo_alternativo);
+    background-color: white;
 }
 
 .caja_imagen {
@@ -78,8 +79,8 @@ body {
 
 .contenedor_iniciar_sesion #caja_iniciar_sesion #caja_opciones a p {
     text-decoration: none;
-    color: var(--color_letras);
-    font-size: 25px;
+    font-size: 28px;
+    color: #000;
 }
 
 #caja_opciones a:hover {
@@ -100,21 +101,26 @@ body {
     margin-bottom: 20px;
 }
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion form div ion-icon {
-    font-size: 30px;
-    margin-right: 5px;
-    margin-top: 10px;
+.ingresar_datos ion-icon {
+    font-size: 28px;
+    margin-right: 10px;
+    color: #555;
 }
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion form .ingresar_datos input {
-    flex: 1;
-    padding: 10px;
-    border-radius: 5px;
-    width: 50%;
-    height: 100%;
-    border: 1px solid #555;
-    background-color: var(--color_fondo_cajas);
-    color: var(--color_letras);
+.ingresar_datos input {
+    border: none;
+    outline: none;
+    background: transparent;
+
+    width: 100%;
+    font-size: 16px;
+}
+
+/* Error */
+.error {
+    color: red;
+    margin-bottom: 15px;
+    font-weight: bold;
 }
 
 .contenedor_iniciar_sesion #caja_iniciar_sesion form div.recordar {
@@ -135,7 +141,7 @@ button {
 
     background-color: var(--color_boton);
 
-    color: var(--color_input);
+    color: white;
     font-size: 16px;
     cursor: pointer;
 
