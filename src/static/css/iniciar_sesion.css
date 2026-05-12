@@ -5,14 +5,10 @@
 }
 
 :root {
-    --color_fondo: #0d47a1;
-    --color_fondo_alternativo: white;
-    --color_tarjeta: #e0e0e0;
-    --color_input: #d6d6d6;
-    --color_boton: #0d1b5e;
-    --color_hover: #1b2d85;
-    --color_texto: #000;
-    --color_texto_error: red;
+    --color_fondo: #5c6bc0;
+    --color_fondo_cajas: #9fa8da;
+    --color_letras:#e8eaf6;
+    --color-hover:#7986cb;
 
 }
 
@@ -48,6 +44,7 @@ body {
     background: url(../image/fondo-de-pantalla-full-hd-para-tablet-feq8tl3tjm3fokk6.jpg);
     background-size: cover;
     background-position: center;
+    border-radius: 4px;
 }
 
 /* Panel login */
@@ -76,28 +73,22 @@ body {
 #caja_opciones {
     display: flex;
     justify-content: space-around;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
 }
 
-#caja_opciones a {
+.contenedor_iniciar_sesion #caja_iniciar_sesion #caja_opciones a p {
     text-decoration: none;
-    font-size: 28px;
-    color: var(--color_texto);
+    color: var(--color_letras);
+    font-size: 25px;
 }
 
 #caja_opciones a:hover {
     text-decoration: underline;
+    background-color: var(--color-hover);
+    /* Buscar un color del root (crearlo de ser necesario) */
 }
 
-/* Formulario */
-
-form {
-    width: 100%;
-}
-
-/* Input */
-
-.ingresar_datos {
+.contenedor_iniciar_sesion #caja_iniciar_sesion form div {
     display: flex;
     align-items: center;
 
@@ -109,31 +100,24 @@ form {
     margin-bottom: 20px;
 }
 
-.ingresar_datos ion-icon {
-    font-size: 28px;
-    margin-right: 10px;
-    color: var(--color_texto);
+.contenedor_iniciar_sesion #caja_iniciar_sesion form div ion-icon {
+    font-size: 30px;
+    margin-right: 5px;
+    margin-top: 10px;
 }
 
-.ingresar_datos input {
-    border: none;
-    outline: none;
-    background: transparent;
-
-    width: 100%;
-    font-size: 16px;
+.contenedor_iniciar_sesion #caja_iniciar_sesion form .ingresar_datos input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 5px;
+    width: 50%;
+    height: 100%;
+    border: 1px solid #555;
+    background-color: var(--color_fondo_cajas);
+    color: var(--color_letras);
 }
 
-/* Error */
-.error {
-    color: var(--color_texto_error);
-    margin-bottom: 15px;
-    font-weight: bold;
-}
-
-/* Recordar */
-
-.recordar {
+.contenedor_iniciar_sesion #caja_iniciar_sesion form div.recordar {
     display: flex;
     align-items: center;
     gap: 10px;
