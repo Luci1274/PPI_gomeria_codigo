@@ -6,11 +6,13 @@
 
 :root {
     --color_fondo: #0d47a1;
+    --color_fondo_alternativo: white;
     --color_tarjeta: #e0e0e0;
     --color_input: #d6d6d6;
     --color_boton: #0d1b5e;
     --color_hover: #1b2d85;
     --color_texto: #000;
+    --color_texto_error: red;
 }
 
 body {
@@ -37,7 +39,7 @@ body {
     border-radius: 30px;
     overflow: hidden;
 
-    background-color: white;
+    background-color: var(--color_fondo_alternativo);
 }
 
 .caja_imagen {
@@ -80,7 +82,7 @@ body {
 .contenedor_iniciar_sesion #caja_iniciar_sesion #caja_opciones a p {
     text-decoration: none;
     font-size: 28px;
-    color: #000;
+    color: var(--color_texto);
 }
 
 #caja_opciones a:hover {
@@ -104,7 +106,7 @@ body {
 .ingresar_datos ion-icon {
     font-size: 28px;
     margin-right: 10px;
-    color: #555;
+    color: var(--color_texto);
 }
 
 .ingresar_datos input {
@@ -118,7 +120,7 @@ body {
 
 /* Error */
 .error {
-    color: red;
+    color: var(--color_texto_error);
     margin-bottom: 15px;
     font-weight: bold;
 }
@@ -141,7 +143,7 @@ button {
 
     background-color: var(--color_boton);
 
-    color: white;
+    color: var(--color_input);
     font-size: 16px;
     cursor: pointer;
 
