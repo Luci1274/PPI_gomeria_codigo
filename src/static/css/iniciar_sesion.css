@@ -1,14 +1,48 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --color_fondo: #0d47a1;
+    --color_fondo_alternativo: white;
+    --color_tarjeta: #e0e0e0;
+    --color_input: #d6d6d6;
+    --color_boton: #0d1b5e;
+    --color_hover: #1b2d85;
+    --color_texto: #000;
+    --color_texto_error: red;
+}
+
 body {
     font-family: Arial, sans-serif;
     background-color: var(--color_fondo);
+
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    overflow: hidden;
 }
+
+/* Contenedor general */
 
 .contenedor_iniciar_sesion {
+    width: 85%;
+    max-width: 1200px;
+    height: 700px;
+
     display: flex;
-    height: 100vh;
+
+    border-radius: 30px;
+    overflow: hidden;
+
+    background-color: var(--color_fondo_alternativo);
 }
 
-.contenedor_iniciar_sesion .caja_imagen {
+.caja_imagen {
     flex: 1;
     background: url(../image/fondo-de-pantalla-full-hd-para-tablet-feq8tl3tjm3fokk6.jpg);
     background-size: cover;
@@ -16,114 +50,293 @@ body {
     border-radius: 4px;
 }
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion {
+/* Panel login */
+
+#caja_iniciar_sesion {
     flex: 1;
-    background: var(--color_fondo);
-    padding: 40px;
+    background: var(--color_tarjeta);
+    
     display: flex;
     flex-direction: column;
     justify-content: center;
+
+    padding: 60px;
 }
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion #caja_titulo h1 {
-    margin-bottom: 20px;
+/* Titulo */
+
+#caja_titulo h1 {
     text-align: center;
-    text-decoration: underline;
+    font-size: 50px;
+    margin-bottom: 40px;
 }
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion #caja_opciones {
+/* Opciones */
+
+#caja_opciones {
     display: flex;
     justify-content: space-around;
     margin-bottom: 20px;
-    
 }
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion #caja_opciones a {
+.contenedor_iniciar_sesion #caja_iniciar_sesion #caja_opciones a p {
     text-decoration: none;
-    background-color: var(--color_fondo_cajas);
-    color: var(--color_letras);
-    font-size: 25px;
-    border-radius: 4px;
-    padding: 5px;
+    font-size: 28px;
+    color: var(--color_texto);
 }
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion #caja_opciones p:hover {
+#caja_opciones a:hover {
     text-decoration: underline;
     background-color: var(--color-hover);
     /* Buscar un color del root (crearlo de ser necesario) */
-}
-
-.contenedor_iniciar_sesion #caja_iniciar_sesion form {
-    background-color: var(--color-hover);
-    border-radius: 5px;
 }
 
 .contenedor_iniciar_sesion #caja_iniciar_sesion form div {
     display: flex;
     align-items: center;
-    margin-bottom: 15px;
-}
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion form div ion-icon {
-    font-size: 30px;
-    margin-right: 5px;
-    margin-top: 10px;
-    background-color: var(--color_fondo_cajas);
-}
+    background-color: var(--color_input);
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion form .ingresar_datos input {
-    flex: 1;
-    padding: 10px;
+    padding: 12px 15px;
     border-radius: 5px;
-    width: 50%;
-    height: 100%;
-    border: 1px solid #555;
-    background-color: var(--color_fondo_cajas);
-    color: var(--color_letras);
+
+    margin-bottom: 20px;
+}
+
+.ingresar_datos ion-icon {
+    font-size: 28px;
+    margin-right: 10px;
+    color: var(--color_texto);
+}
+
+.ingresar_datos input {
+    border: none;
+    outline: none;
+    background: transparent;
+
+    width: 100%;
+    font-size: 16px;
+}
+
+/* Error */
+.error {
+    color: var(--color_texto_error);
+    margin-bottom: 15px;
+    font-weight: bold;
 }
 
 .contenedor_iniciar_sesion #caja_iniciar_sesion form div.recordar {
     display: flex;
     align-items: center;
-    margin: 15px;
-    text-decoration: underline;
-    font-size: 18px;
+    gap: 10px;
+
+    margin-bottom: 25px;
 }
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion form div.recordar input {
-    margin-left: 15px;
-}
-
-.contenedor_iniciar_sesion #caja_iniciar_sesion form div button {
+/* Botón */
+button {
     width: 100%;
-    padding: 12px;
+    padding: 15px;
+
     border: none;
     border-radius: 5px;
-    background: var(--color_fondo_cajas);
-    color: white;
+
+    background-color: var(--color_boton);
+
+    color: var(--color_input);
     font-size: 16px;
     cursor: pointer;
+
+    transition: 0.3s;
 }
 
-.contenedor_iniciar_sesion #caja_iniciar_sesion form div button:hover {
-    background-color: var(--color-hover); 
-    /* Buscar un color del root (crearlo de ser necesario) */
+button:hover {
+    background-color: var(--color_hover);
+}
+
+/* =========================
+   NOTEBOOKS CHICAS
+========================= */
+@media (max-width: 1200px) {
+
+    .contenedor_iniciar_sesion {
+        width: 95%;
+        height: 650px;
+    }
+
+    #caja_iniciar_sesion {
+        padding: 40px;
+    }
+
+    #caja_titulo h1 {
+        font-size: 40px;
+    }
+
+    #caja_opciones p {
+        font-size: 24px;
+    }
 }
 
 
+/* =========================
+   TABLETS
+========================= */
+@media (max-width: 992px) {
 
-@media (max-width: 768px) {
     .contenedor_iniciar_sesion {
         flex-direction: column;
         height: auto;
+        min-height: 100vh;
     }
 
-    .contenedor_iniciar_sesion .caja_imagen {
-        height: 200px;
-        background-position: center;
+    .caja_imagen {
+        height: 300px;
+        flex: none;
     }
 
-    .contenedor_iniciar_sesion #caja_iniciar_sesion {
-        padding: 20px;
+    #caja_iniciar_sesion {
+        flex: none;
+        padding: 40px 30px;
+    }
+
+    #caja_titulo h1 {
+        font-size: 36px;
+        margin-bottom: 30px;
+    }
+
+    #caja_opciones {
+        margin-bottom: 30px;
+    }
+
+    #caja_opciones p {
+        font-size: 22px;
+    }
+}
+
+
+/* =========================
+   CELULARES GRANDES
+========================= */
+@media (max-width: 768px) {
+
+    body {
+        height: auto;
+    }
+
+    .contenedor_iniciar_sesion {
+        width: 100%;
+        border-radius: 0;
+    }
+
+    .caja_imagen {
+        height: 220px;
+    }
+
+    #caja_iniciar_sesion {
+        padding: 30px 20px;
+    }
+
+    #caja_titulo h1 {
+        font-size: 32px;
+    }
+
+    #caja_opciones {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    #caja_opciones p {
+        font-size: 20px;
+    }
+
+    .ingresar_datos {
+        padding: 10px;
+    }
+
+    .ingresar_datos ion-icon {
+        font-size: 24px;
+    }
+
+    .ingresar_datos input {
+        font-size: 14px;
+    }
+
+    button {
+        padding: 13px;
+        font-size: 15px;
+    }
+}
+
+
+/* =========================
+   CELULARES PEQUEÑOS
+========================= */
+@media (max-width: 480px) {
+
+    .caja_imagen {
+        height: 180px;
+    }
+
+    #caja_iniciar_sesion {
+        padding: 25px 15px;
+    }
+
+    #caja_titulo h1 {
+        font-size: 26px;
+    }
+
+    #caja_opciones p {
+        font-size: 18px;
+    }
+
+    .ingresar_datos {
+        padding: 8px;
+    }
+
+    .ingresar_datos ion-icon {
+        font-size: 20px;
+        margin-right: 8px;
+    }
+
+    .ingresar_datos input {
+        font-size: 13px;
+    }
+
+    .recordar {
+        font-size: 14px;
+        flex-wrap: wrap;
+    }
+
+    button {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .error {
+        font-size: 14px;
+    }
+}
+
+
+/* =========================
+   CELULARES MUY PEQUEÑOS
+========================= */
+@media (max-width: 320px) {
+
+    #caja_titulo h1 {
+        font-size: 22px;
+    }
+
+    #caja_opciones p {
+        font-size: 16px;
+    }
+
+    .ingresar_datos input {
+        font-size: 12px;
+    }
+
+    button {
+        font-size: 13px;
     }
 }
