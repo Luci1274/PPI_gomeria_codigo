@@ -233,6 +233,10 @@
     padding: 15px;
     transition: 0.3s ease;
 }
+.contenedor_barra_lateral_derecha.oculta_derecha {
+    transform: translateX(100%);
+}
+
 
 .contenedor_titulo_barra_lateral_derecha p {
     font-size: 18px;
@@ -267,6 +271,33 @@
     font-size: 20px;
 }
 
+/* Botón carrito */
+.boton_carrito {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+
+    width: 45px;
+    height: 45px;
+
+    border: none;
+    border-radius: 10px;
+
+    background-color: var(--color_fondo);
+    color: var(--color_letras);
+
+    font-size: 26px;
+    cursor: pointer;
+
+    z-index: 300;
+    display: none;
+    transition: 0.3s;
+}
+.boton_carrito:hover {
+    background-color: var(--color-hover);
+}
+
+
 main {
     margin-top: 150px;
     margin-left: var(--ancho-nav);
@@ -286,7 +317,10 @@ main {
 
     :root {
         --ancho-nav: 0px;
+        --ancho-panel: 0px;
     }
+
+    /* BOTÓN HAMBURGUESA */
 
     .boton_menu {
         display: flex;
@@ -299,23 +333,48 @@ main {
         transform: translateX(-100%);
         width: 189px;
     }
-    #titulo_nav {
-        visibility: hidden;
-    }
 
     .conetenedor_navegacion.abierto {
         transform: translateX(0);
     }
 
+    #titulo_nav {
+        visibility: hidden;
+    }
+
+    /* BOTÓN CARRITO */
+
+    .boton_carrito {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: var(--color_fondo_cajas);
+    }
+
+    .contenedor_barra_lateral_derecha {
+        transform: translateX(100%);
+        width: 220px;
+        z-index: 250;
+    }
+
+    .contenedor_barra_lateral_derecha.abierta_derecha {
+        transform: translateX(0);
+    }
+
+    /* AJUSTES GENERALES */
+
     .contenedor_header_gestion {
         left: 0;
+        right: 0;
     }
 
     .contenedor_barra_filtrado {
         left: 0;
+        right: 0;
     }
 
     main {
         margin-left: 0;
+        margin-right: 0;
     }
 }
