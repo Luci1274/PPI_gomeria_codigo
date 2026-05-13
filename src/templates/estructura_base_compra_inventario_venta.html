@@ -14,32 +14,58 @@
         </div>
     </header>
     <nav>
-        <div class="conetenedor_navegacion">
+        <!-- Botón hamburguesa -->
+        <button class="boton_menu" id="boton_menu">
+            <ion-icon name="menu-outline"></ion-icon>
+        </button>
+
+        <!-- Fondo oscuro mobile
+            °el usuario toca afuera del menú
+            °el menú se cierra 
+        -->
+        <div class="overlay_nav" id="overlay_nav"></div>
+
+        <!-- Barra lateral -->
+        <div class="conetenedor_navegacion" id="barra_navegacion">
             <h2 id="titulo_nav">Sistema Gomería</h2>
             <ul>
                 {% if rol == "operario" %}
-                    <a href="">
-                        <ion-icon name="cash-outline"></ion-icon>
-                        <span> Ventas</span>
-                    </a>
+                    <li>
+                        <a href="">
+                            <ion-icon name="cash-outline"></ion-icon>
+                            <span> Ventas</span>
+                        </a>
+                    </li>
                 {% else %}
                     <li>
                         <a href="">
                             <ion-icon name="cart-outline"></ion-icon>
                             <span> Compras</span>
                         </a>
+                    </li>
+                        
+                    <li>
                         <a href="">
                             <ion-icon name="cash-outline"></ion-icon>
                             <span> Ventas</span>
                         </a>
+                    </li>
+
+                    <li>
                         <a href="">
                             <ion-icon name="cube-outline"></ion-icon>
                             <span> Inventario</span>
                         </a>
+                    </li>
+                        
+                    <li>
                         <a href="">
                             <ion-icon name="person-outline"></ion-icon>
                             <span> Clientes</span>
                         </a>
+                    </li>
+                        
+                    <li>
                         <a href="">
                             <ion-icon name="people-outline"></ion-icon>
                             <span> Proveedores</span>
@@ -48,16 +74,15 @@
                 {% endif %}
             </ul>
         </div>
-        
     </nav>
 
-    <div id="contenedor_barra_filtrado">
-        <div id="filtro">
+    <div class="contenedor_barra_filtrado">
+        <div class="filtro">
             <ion-icon name="search-outline"></ion-icon>
             <span> Filtrar por: </span>
             <input type="text" placeholder="Buscar...">
         </div>
-        <div id="caja_botones_filtrado">
+        <div class="caja_botones_filtrado">
             <button>Picos</button>
             <button>Rodados</button>
             <button>Cámaras</button>
@@ -66,26 +91,21 @@
         </div>
     </div>
 
-    <div id="contenedor_barra_lateral_derecha">
-        <div id="contenedor_titulo_barra_lateral_derecha">
+    <div class="contenedor_barra_lateral_derecha">
+        <div class="contenedor_titulo_barra_lateral_derecha">
             <p>{% block p  %} {% endblock %} </p>
         </div>
-        <div id="parte_superior_derecha">
+        <div class="parte_superior_derecha">
             <button class="restablecer"><ion-icon name="refresh-outline"></ion-icon></button>
             <span>Fecha: <span id="fecha"></span></span>
-            {% block contenido_adicional %} 
-                <select name="" id="">
-                    <option value="0">Elegir cliente</option>
-                    <option value="1">Juan Carlos</option>
-                </select> 
-            {% endblock %}
+            {% block contenido_adicional %} {% endblock %}
         </div>
         <hr>
-        <div id="cuerpo_barra_derecha">
-            {% block cuerpo_derecha %} [% endblock %]
+        <div class="cuerpo_barra_derecha">
+            {% block cuerpo_derecha %} {% endblock %}
         </div>
         <hr>
-        <div id="opciones_derecha">
+        <div class="opciones_derecha">
             {% block opciones_derecha %} {% endblock %}
         </div>
     </div>
@@ -96,11 +116,11 @@
     <footer>
 
     </footer>
-    <script>
-        const fecha = new Date();
-        document.getElementById('fecha').textContent = fecha.toLocaleDateString();
-    </script>
+    <script type="module" src="../static/js/barral_navegacion.js"></script>
+    
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    <script type="module" src="../static/js/estructura_base_compra_inventario_venta.js"></script>
 </body>
 </html>
