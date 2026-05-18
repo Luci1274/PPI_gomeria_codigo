@@ -1,0 +1,100 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body{
+    background-color: #d9d9d9;
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 10px;
+}
+
+/* CONTENEDOR */
+.contenedor{
+    width: 100%;
+    max-width: 960px;
+    min-height: 100vh;
+
+    background: linear-gradient(
+        to bottom,
+        #00d9ff,
+        #00a2ff,
+        #2456ff,
+        #32007c
+    );
+
+    border: 2px solid black;
+}
+
+/* BARRA SUPERIOR */
+.barra-superior{
+    width: 100%;
+    background-color: #1c0077;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 15px;
+    color: rgb(0, 0, 0);
+    gap: 10px;
+}
+
+/* IZQUIERDA */
+.izquierda h2{
+    font-size: 1.8rem;
+}
+
+.izquierda p{
+    font-size: 0.8rem;
+    margin-top: 5px;
+}
+
+/* CENTRO */
+.centro{
+    flex: 1;
+    text-align: center;
+}
+
+.centro h1{
+    font-size: 2rem;
+    color: black;
+}
+
+/* DERECHA */
+.usuario-box{
+    text-align: center;
+}
+
+.usuario-box h3{
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.usuario-box img{
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: white;
+}
+
+.usuario-box p{
+    font-size: 0.8rem;
+}
+
+/* LINEA */
+.linea{
+    width: 70%;
+    height: 3px;
+    background-color: #7be9ff;
+
+    margin: 20px auto;
+}
+
