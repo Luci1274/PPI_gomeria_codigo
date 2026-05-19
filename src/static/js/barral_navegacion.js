@@ -11,6 +11,8 @@ botonMenu.addEventListener("click", () => {
 
     overlay.classList.toggle("activo");
 
+    botonMenu.classList.toggle("oculto_menu");
+
 });
 
 
@@ -20,5 +22,7 @@ overlay.addEventListener("click", () => {
     barraNavegacion.classList.remove("abierto");
 
     overlay.classList.remove("activo");
+
+    botonMenu.classList.remove("oculto_menu");
 
 });
