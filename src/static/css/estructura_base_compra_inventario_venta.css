@@ -65,13 +65,13 @@ nav {
     position: fixed;
     top: 15px;
     left: 15px;
-    width: 45px;
-    height: 45px;
+    width: 60px;
+    height: 60px;
     border: none;
     border-radius: 10px;
     background-color: var(--color_fondo_cajas);
     color: var(--color_letras);
-    font-size: 28px;
+    font-size: 35px;
     cursor: pointer;
     z-index: 300;
     display: flex;
@@ -129,6 +129,7 @@ nav {
 
 .contenedor_navegacion ul li {
     display: block;
+    gap: 15px;
 }
 
 .contenedor_navegacion ul li a {
@@ -148,10 +149,11 @@ nav {
 
 .contenedor_navegacion ul li a ion-icon {
     font-size: 25px;
+    height: 35px;
 }
 
 .contenedor_navegacion ul li a span {
-    font-size: 18px;
+    font-size: 20px;
 }
 
 /* Overlay */
@@ -202,7 +204,7 @@ nav {
     align-items: center;
     gap: 10px;
     padding: 10px;
-    font-size: 16px;
+    font-size: 20px;
     border: 1px solid var(--color_fondo);
     border-radius: 4px;
     background-color: white;
@@ -217,7 +219,7 @@ nav {
 .contenedor_barra_filtrado input {
     flex: 1;
     padding: 8px;
-    font-size: 16px;
+    font-size: 20px;
     border: none;
     border-radius: 4px;
     cursor: text;
@@ -230,12 +232,13 @@ nav {
 }
 
 .contenedor_barra_filtrado button {
-    padding: 10px 15px;
-    font-size: 14px;
+    padding: 25px 5px;
+    font-size: 18px;
+    min-height: 48px;
     background-color: var(--color_fondo);
     color: var(--color_letras);
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     transition: 0.3s;
     white-space: nowrap;
@@ -250,13 +253,13 @@ nav {
     position: fixed;
     top: 15px;
     right: 15px;
-    width: 45px;
-    height: 45px;
+    width: 60px;
+    height: 60px;
     border: none;
     border-radius: 10px;
     background-color: var(--color_fondo_cajas);
     color: var(--color_letras);
-    font-size: 26px;
+    font-size: 35px;
     cursor: pointer;
     z-index: 300;
     display: flex;
@@ -315,7 +318,7 @@ nav {
 
 .parte_superior_derecha .restablecer {
     padding: 8px;
-    font-size: 16px;
+    font-size: 20px;
     width: 100%;
     background-color: var(--color_fondo_cajas);
     color: var(--color_letras);
@@ -330,7 +333,7 @@ nav {
 }
 
 .parte_superior_derecha span {
-    font-size: 16px;
+    font-size: 20px;
 }
 
 .cuerpo_barra_derecha {
@@ -484,7 +487,9 @@ footer {
     }
 
     .contenedor_barra_filtrado button {
-        padding: 10px 20px;
+        padding: 14px 24px;
+        font-size: 20px;
+        min-height: 50px;
     }
 
     /* Botón carrito - Desktop */
