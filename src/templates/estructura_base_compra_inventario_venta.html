@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="../static/css/estructura_base_compra_inventario_venta.css">
+    <title>{% block title %} {% endblock %}</title>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="contenedor_header_gestion">
+                <h2 id="titulo_pagina"> {% block h2 %} {% endblock %} </h2>
+            </div>
+        </header>
+        
+        {% include 'componentes/navbar.html' %}
+
+        <div class="contenedor_barra_filtrado">
+            <div class="filtro">
+                <ion-icon name="search-outline"></ion-icon>
+                <span> Filtrar por: </span>
+                <input type="text" placeholder="Buscar...">
+            </div>
+            <div class="caja_botones_filtrado">
+                <button>Picos</button>
+                <button>Rodados</button>
+                <button>Cámaras</button>
+                <button>Parches</button>
+                <button>Lúbricantes</button>
+            </div>
+        </div>
+
+        <!-- Botón carrito mobile -->
+            <button class="boton_carrito" id="boton_carrito">
+                {% block ion-icon_barra_derecha %}<ion-icon name="cart-outline"></ion-icon> {% endblock %}
+            </button>
+
+        <!-- Overlay barra derecha -->
+            <div class="overlay_derecha" id="overlay_derecha"></div>
+
+        <div class="contenedor_barra_lateral_derecha" id="barra_derecha">
+
+            <div class="contenedor_titulo_barra_lateral_derecha">
+                <p>{% block p  %} {% endblock %} </p>
+            </div>
+            <div class="parte_superior_derecha">
+                <button class="restablecer"><ion-icon name="refresh-outline"></ion-icon></button>
+                <span>Fecha: <span id="fecha"></span></span>
+                {% block contenido_adicional %} {% endblock %}
+            </div>
+            <hr>
+            <div class="cuerpo_barra_derecha">
+                {% block cuerpo_derecha %} {% endblock %}
+            </div>
+            <hr>
+            <div class="opciones_derecha">
+                {% block opciones_derecha %} {% endblock %}
+            </div>
+        </div>
+
+        <main>
+            {% block main %} {% endblock %}
+        </main>
+        <footer>
+
+        </footer>
+    </div>
+    <script type="module" src="../static/js/barral_navegacion.js"></script>
+    
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    <script type="module" src="../static/js/estructura_base_compra_inventario_venta.js"></script>
+</body>
+</html>
