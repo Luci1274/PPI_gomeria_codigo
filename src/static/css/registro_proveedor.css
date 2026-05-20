@@ -1,0 +1,45 @@
+body {
+    font-family: sans-serif;
+    background-color: #fff;
+}
+
+.contenedor{
+    width: 400px;
+    background-color: white;
+    margin: auto;
+    margin-top: 50px;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+h1 {
+    text-align: center;
+}
+
+.campo  {
+    margin-bottom: 50px;
+}
+
+button {
+    border: solid 1px black;
+    border-radius: 10px;
+    width: 200px;
+    height: 50px;
+    display: block;
+    background-color: rgb(2, 176, 2);
+    color: white;
+}   
+
+input{
+    width: 20%;
+    padding: 10px;
+    border: solid 2px black;
+    border-radius: 8px;
+}
+
+.img{
+    display: block;
+    margin: auto;
+    border: solid 2px black;
+    border-radius: 15px;
+}
