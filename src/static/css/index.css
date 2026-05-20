@@ -42,7 +42,7 @@ body{
     align-items: center;
 
     padding: 15px;
-    color: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
     gap: 10px;
 }
 
@@ -64,7 +64,7 @@ body{
 
 .centro h1{
     font-size: 2rem;
-    color: black;
+    color: rgb(255, 255, 255);
 }
 
 /* DERECHA */
@@ -87,6 +87,7 @@ body{
 
 .usuario-box p{
     font-size: 0.8rem;
+    color: snow;
 }
 
 /* LINEA */
@@ -100,11 +101,13 @@ body{
 /* MENU */
 .menu{
     width: 100%;
-    margin-top: 70px;
 
-    display: flex;
-    justify-content: center;
-    gap: 25px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+
+    gap: 20px;
+
+    padding: 30px;
 }
 
 /* BOTONES */
@@ -139,4 +142,51 @@ body{
 .boton p{
     font-size: 18px;
     font-weight: bold;
+}
+
+/*Celulares*/
+@media (max-width: 768px){
+
+    .barra-superior{
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .centro h1{
+        font-size: 1.5rem;
+    }
+
+    .menu{
+        grid-template-columns: repeat(2, 1fr);
+        padding: 20px;
+    }
+
+    .boton{
+        min-height: 130px;
+    }
+
+    .boton img{
+        width: 50px;
+        height: 50px;
+    }
+}
+
+/* CELULARES CHICOS */
+@media (max-width: 480px){
+
+    .centro h1{
+        font-size: 1.2rem;
+    }
+
+    .izquierda h2{
+        font-size: 1.2rem;
+    }
+
+    .menu{
+        grid-template-columns: 1fr;
+    }
+
+    .boton{
+        width: 100%;
+    }
 }
