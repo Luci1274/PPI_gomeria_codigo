@@ -9,28 +9,22 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <div class="contenedor_header_gestion">
-                <h2 id="titulo_pagina"> {% block h2 %} {% endblock %} </h2>
-            </div>
-        </header>
+
+        {% include 'componentes/header.html'%}
         
         {% include 'componentes/navbar.html' %}
 
-        <div class="contenedor_barra_filtrado">
-            <div class="filtro">
-                <ion-icon name="search-outline"></ion-icon>
-                <span> Filtrar por: </span>
-                <input type="text" placeholder="Buscar...">
-            </div>
-            <div class="caja_botones_filtrado">
-                <button>Picos</button>
-                <button>Rodados</button>
-                <button>Cámaras</button>
-                <button>Parches</button>
-                <button>Lúbricantes</button>
-            </div>
-        </div>
+        
+        {% set opciones_filtrado%}
+            <button>Picos</button>
+            <button>Rodados</button>
+            <button>Cámaras</button>
+            <button>Parches</button>
+            <button>Lúbricantes</button>
+        {% endset %}
+
+
+        {% include 'componentes/filtro.html' %}
 
         <!-- Botón carrito mobile -->
             <button class="boton_carrito" id="boton_carrito">

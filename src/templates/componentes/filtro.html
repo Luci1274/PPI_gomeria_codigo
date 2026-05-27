@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <div class="contenedor_barra_filtrado">
+        <div class="filtro">
+            <ion-icon name="search-outline"></ion-icon>
+            <span> Filtrar por: </span>
+            <input type="text" placeholder="Buscar...">
+        </div>
+        <div class="caja_botones_filtrado">
+            {{ opciones_filtrado | safe }}
+            
+        </div>
+    </div>
+
+</body>
+</html>

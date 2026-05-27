@@ -6,6 +6,8 @@ app = Flask(__name__)
 def inicio():
     return render_template("estructura_base_compra_inventario_venta.html")
     
-
+@app.route("/gestion")
+def gestion():
+    return render_template("plantiilla_base_gestion.html")
 
 app.run(debug=True)   
