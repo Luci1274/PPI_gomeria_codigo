@@ -6,6 +6,8 @@ app = Flask(__name__)
 def inicio():
     return render_template("estructura_base_compra_inventario_venta.html")
     
-
+@app.route("/resumen_orden_compra")
+def resumen_orden_compra():
+    return render_template("componentes/resumen_orden_compra.html")
 
 app.run(debug=True)   

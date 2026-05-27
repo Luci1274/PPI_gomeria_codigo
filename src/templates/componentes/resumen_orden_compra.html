@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumen de orden de compra</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/resumen_orden_compra.css') }}">
+</head>
+
+<body>
+
+    <header>
+        <h1>Resumen de orden de compra</h1>
+    </header>
+
+    {% include 'componentes/navbar.html' %}
+
+    <!-- CONTENIDO CENTRAL -->
+    <div class="contenido-resumen">
+
+        <!-- TITULO -->
+        <div class="titulo-resumen">
+
+            <div>
+                <h1>Resumen de Orden de Compra</h1>
+                <p>Detalle completo de la orden realizada</p>
+            </div>
+
+            <div class="numero-orden">
+                <span>N° Orden</span>
+            </div>
+        </div>
+        <!-- INFO -->
+        <div class="info-superior">
+
+        <div class="info-card">
+          <div>
+            <h4>Fecha</h4>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div>
+            <h4>Proveedor</h4>
+          </div>
+        </div>
+
+      </div>
+        </div>
+
+</body>
+</html>
