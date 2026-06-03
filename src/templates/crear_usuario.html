@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../static/css/../css/iniciar_sesion.css">
-    <title>Iniciar sesión</title>
+    <title>Crear usuario</title>
 </head>
 
 <body>
@@ -24,16 +24,21 @@
                     <a href="crear_usuario.html" id="crear_usuario"> Crear usuario</a>
                 </div>
             </div>
-            <form method="post" action="/login">
+            <form method="post" action="/registro">
                     <div class="ingresar_datos">
                         <div>
                             <ion-icon name="person-outline"></ion-icon>
                         </div>
                         <input type="text" name="txt_input_nombre" id="txt_input_nombre" placeholder="Nombre de usuario" required>
                     </div>
-                    {% if error %}
-                        <P class="error"> Usuario y/o contraseña incorrectas</P>
-                    {% endif %}
+                    
+                    <div class="ingresar_datos">
+                        <div>
+                            <ion-icon name="mail-outline"></ion-icon>
+                        </div>
+                        <input type="email" name="email_input" id="email_input" placeholder="Ingrese su email" required>
+                    </div>
+
                     <div class="ingresar_datos">
                         <div>
                             <ion-icon name="lock-closed-outline"></ion-icon>
@@ -41,10 +46,16 @@
                         <input type="password" name="password_input" id="password_input" placeholder=" Contraseña " required>
                     </div>
                     
-                    <div class="recordar">
-                        <label for="checkbox_recordar">Recordar información</label>
-                        <input type="checkbox" name="checkbox_recordar" id="checkbox_recordar">
+                    <div class="ingresar_datos">
+                        <div>
+                            <ion-icon name="lock-closed-outline"></ion-icon>
+                        </div>
+                        <input type="password" name="password_input" id="password_input" placeholder=" Confirme su contraseña " required>
                     </div>
+
+                    {% if error %}
+                        <P class="error"> Complete todos los campos</P>
+                    {% endif %}
                     <div>
                         <button type="submit">Iniciar sesión</button>
                     </div>
