@@ -72,16 +72,21 @@ body {
     display: flex;
     justify-content: space-around;
     margin-bottom: 40px;
+    
 }
 
 #caja_opciones a {
     text-decoration: none;
-    font-size: 28px;
+    font-size: 30px;
     color: var(--color_texto);
+    border-radius: 5px;
+    gap: 5px;
+
 }
 
 #caja_opciones a:hover {
     text-decoration: underline;
+    background-color: rgb(199, 195, 195);
 }
 
 /* FORM */
@@ -114,7 +119,7 @@ form {
     background: transparent;
 
     width: 100%;
-    font-size: 16px;
+    font-size: 25px;
 }
 
 /* ERROR */
@@ -122,6 +127,7 @@ form {
     color: var(--color_texto_error);
     margin-bottom: 15px;
     font-weight: bold;
+    font-size: 20px;
 }
 
 /* RECORDAR */
@@ -129,7 +135,7 @@ form {
     display: flex;
     align-items: center;
     gap: 10px;
-
+    font-size: 25px;
     margin-bottom: 25px;
 }
 
@@ -144,7 +150,7 @@ button {
     background-color: var(--color_boton);
 
     color: white;
-    font-size: 16px;
+    font-size: 25px;
     cursor: pointer;
 
     transition: 0.3s;
@@ -209,7 +215,7 @@ button:hover {
     }
 
     #caja_opciones p {
-        font-size: 22px;
+        font-size: 30px;
     }
 }
 
@@ -295,26 +301,26 @@ button:hover {
     }
 
     .ingresar_datos ion-icon {
-        font-size: 20px;
+        font-size: 30px;
         margin-right: 8px;
     }
 
     .ingresar_datos input {
-        font-size: 13px;
+        font-size: 25px;
     }
 
     .recordar {
-        font-size: 14px;
+        font-size: 25px;
         flex-wrap: wrap;
     }
 
     button {
         padding: 12px;
-        font-size: 14px;
+        font-size: 25px;
     }
 
     .error {
-        font-size: 14px;
+        font-size: 25px;
     }
 }
 
