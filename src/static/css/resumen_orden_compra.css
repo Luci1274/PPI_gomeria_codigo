@@ -178,3 +178,89 @@ tfoot td{
     transform: scale(1.03);
 }
 
+/* TABLETS */
+@media (max-width: 1024px){
+
+    .titulo-resumen{
+        flex-direction: column;
+        gap: 20px;
+        align-items: flex-start;
+    }
+
+    .info-superior{
+        flex-direction: column;
+    }
+
+    .info-card{
+        min-width: 100%;
+    }
+
+    .acciones{
+        justify-content: center;
+    }
+}
+
+/* CELULARES */
+@media (max-width: 768px){
+
+    .contenido-resumen{
+        width: 100%;
+        margin-left: 0;
+        padding: 15px;
+    }
+
+    .titulo-resumen h1{
+        font-size: 28px;
+    }
+
+    .numero-orden{
+        width: 100%;
+        max-width: 250px;
+    }
+
+    .tabla-container{
+        overflow-x: auto;
+    }
+
+    table{
+        min-width: 600px;
+    }
+
+    .acciones{
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn{
+        width: 100%;
+    }
+}
+
+/* CELULARES PEQUEÑOS */
+@media (max-width: 480px){
+
+    .titulo-resumen h1{
+        font-size: 22px;
+    }
+
+    .titulo-resumen p{
+        font-size: 14px;
+    }
+
+    .producto-info{
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .producto-info img{
+        width: 40px;
+        height: 40px;
+    }
+
+    thead th,
+    tbody td,
+    tfoot td{
+        padding: 10px;
+        font-size: 14px;
+    }
+}
