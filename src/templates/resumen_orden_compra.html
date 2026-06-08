@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumen de orden de compra</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/resumen_orden_compra.css') }}">
+</head>
+
+<body>
+
+    
+  <!-- CONTENIDO CENTRAL -->
+  <div class="container">
+    {% include 'componentes/navbar.html' %}
+    <!-- TITULO -->
+    <div class="contenedor_header">
+      {% include 'componentes/header.html' %}
+      <p>Detalle completo de la orden realizada</p>
+
+      <div class="numero-orden">
+        <span>N° Orden</span>
+      </div>
+    </div>
+    <!-- INFO -->
+    <div class="info-superior">
+
+      <div class="info-card">
+        <div>
+          <h4>Fecha</h4>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div>
+          <h4>Proveedor</h4>
+        </div>
+      </div>
+    </div>
+    <!-- TABLA -->
+    <div class="contenedor_tabla">
+      <main>
+        <h3>Productos solicitados</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <!-- EJEMPLO CON DATOS DE BASE -->
+            <tr>
+              <td class="producto-info">
+                <img src="img/cubierta.png" alt="">
+                <span>Cubierta 175/65 R14</span>
+              </td>
+              <td>10 unidades</td>
+            </tr>
+
+            <tr>
+              <td class="producto-info">
+                <img src="img/camara.png" alt="">
+                <span>Cámara G14</span>
+              </td>
+              <td>3 unidades</td>
+            </tr>
+
+            <tr>
+              <td class="producto-info">
+                <img src="img/lubricante.png" alt="">
+                <span>Lubricante X 500ml</span>
+              </td>
+              <td>5 unidades</td>
+            </tr>
+
+          </tbody>
+
+          <tfoot>
+            <tr>
+              <td>TOTAL PRODUCTOS</td>
+              <td>18 unidades</td>
+            </tr>
+          </tfoot>
+        </table>
+      </main>
+    </div>
+    <!-- BOTONES -->
+    <div class="contenedor_acciones">
+
+      <button class="btn pdf">
+        Descargar PDF
+      </button>
+
+      <button class="btn imprimir">
+        Imprimir
+      </button>
+
+      <button class="btn email">
+        Enviar por Email
+      </button>
+
+      <button class="btn whatsapp">
+        Enviar por WhatsApp
+      </button>
+
+    </div>
+    <!-- PIE DE PAGINA -->
+    <footer>
+        <p>&copy; 2026 Neumáticos Gatica. Todos los derechos reservados.</p>
+    </footer>
+  </div>
+  <script type="module" src="../static/js/barral_navegacion.js"></script>
+    
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</body>
+</html>
