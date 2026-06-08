@@ -70,3 +70,111 @@
     font-weight: bold;
     font-size: 18px;
 }
+/* TABLA */
+.tabla-container{
+    background: #ececec;
+    border: 3px solid #000;
+    border-radius: 30px;
+    padding: 20px;
+}
+
+.tabla-container h3{
+    margin-bottom: 20px;
+}
+
+table{
+    width: 100%;
+    border-collapse: collapse;
+    overflow: hidden;
+    border-radius: 15px;
+}
+
+thead{
+    background: #3d3d3d;
+    color: white;
+}
+
+thead th{
+    padding: 15px;
+    text-align: center;
+}
+
+tbody td{
+    padding: 15px;
+    border: 1px solid #555;
+    background: #d9d9d9;
+    text-align: center;
+}
+
+.producto-info{
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.producto-info img{
+    width: 55px;
+    height: 55px;
+    object-fit: contain;
+}
+
+/* FOOTER TABLA */
+tfoot{
+    background: #83bdf4;
+}
+
+tfoot td{
+    padding: 15px;
+    font-weight: bold;
+    color: #2d00d7;
+    font-size: 20px;
+    text-align: center;
+}
+
+/* BOTONES */
+.acciones{
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.btn{
+    padding: 15px 30px;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.pdf{
+    border-color: red;
+    color: red;
+    background: white;
+}
+
+.imprimir{
+    border-color: #6c4cff;
+    color: #6c4cff;
+    background: white;
+}
+
+.email{
+    border-color: #555;
+    color: #333;
+    background: white;
+}
+
+.whatsapp{
+    border-color: #1bbf5c;
+    color: #1bbf5c;
+    background: white;
+}
+
+.btn:hover{
+    transform: scale(1.03);
+}
+
