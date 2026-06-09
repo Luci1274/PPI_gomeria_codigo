@@ -8,7 +8,7 @@ def inicio():
     
 @app.route("/resumen_orden_compra")
 def resumen_orden_compra():
-    return render_template("componentes/resumen_orden_compra.html")
+    return render_template("resumen_orden_compra.html")
 @app.route("/gestion")
 def gestion():
     return render_template("plantiilla_base_gestion.html")

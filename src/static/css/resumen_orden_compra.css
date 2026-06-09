@@ -1,7 +1,25 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --ancho-nav: 189px;
+    --ancho-panel: 220px;
+    --alto-header: 80px;
+
+    --color_fondo: #5c6bc0;
+    --color_fondo_cajas: #9fa8da;
+    --color_letras:#e8eaf6;
+    --color_letras_alterno: #000;
+    --color-hover:#7986cb;
+}
+
 /* CONTENIDO GENERAL */
 .contenido-resumen{
-    width: calc(100% - 120px);
-    margin-left: 120px;
+    width: calc(100% - 189px); /* CAMBIADO: De 120px a 189px (el ancho real de tu nav) */
+    margin-left: 189px;        /* CAMBIADO: De 120px a 189px */
     padding: 30px;
     background: #f5f5f5;
     min-height: 100vh;
@@ -16,7 +34,7 @@
     margin-bottom: 30px;
 }
 
-.titulo-resumen h1{
+.titulo-resumen header h1{
     font-size: 42px;
     margin: 0;
     color: #000;
@@ -45,6 +63,126 @@
     margin: 0;
     color: #2d00d7;
 }
+
+nav {
+    position: relative;
+    z-index: 300;
+}
+
+/* Ocultamos el botón hamburguesa en PC ya que el menú estará fijo */
+.boton_menu {
+    display: none; /* CAMBIADO: Oculto en PC */
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    width: 60px;
+    height: 60px;
+    border: none;
+    border-radius: 10px;
+    background-color: var(--color_fondo_cajas);
+    color: var(--color_letras);
+    font-size: 35px;
+    cursor: pointer;
+    z-index: 300;
+    justify-content: center;
+    align-items: center;
+    transition: 0.3s;
+}
+
+.boton_menu:hover {
+    background-color: var(--color-hover);
+}
+
+.boton_menu.oculto_menu {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+/* Modifica esta clase para que el menú se vea por defecto */
+.contenedor_navegacion {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 189px;
+    height: 100vh;
+    background-color: var(--color_fondo);
+    transition: 0.3s ease;
+    z-index: 200;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+    transform: translateX(0); /* CAMBIADO: De -100% a 0 para que sea visible en PC */
+}
+
+.contenedor_navegacion.abierto {
+    transform: translateX(0);
+}
+
+.contenedor_navegacion.oculto {
+    transform: translateX(-100%);
+}
+
+/* Modifica esta clase para que el título del menú sea visible en PC */
+.contenedor_navegacion h2 {
+    text-align: center;
+    padding: 20px 0;
+    color: var(--color_letras);
+    text-decoration: underline;
+    visibility: visible; /* CAMBIADO: De hidden a visible */
+}
+
+.contenedor_navegacion ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.contenedor_navegacion ul li {
+    display: block;
+    gap: 15px;
+}
+
+.contenedor_navegacion ul li a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    text-decoration: none;
+    color: var(--color_letras);
+    transition: 0.3s;
+}
+
+.contenedor_navegacion ul li a:hover {
+    background-color: var(--color-hover);
+    padding-left: 25px;
+}
+
+.contenedor_navegacion ul li a ion-icon {
+    font-size: 25px;
+    height: 35px;
+}
+
+.contenedor_navegacion ul li a span {
+    font-size: 20px;
+}
+
+/* Overlay */
+.overlay_nav {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s ease;
+    z-index: 150;
+}
+
+.overlay_nav.activo {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* INFO */
 .info-superior{
     display: flex;
@@ -178,88 +316,128 @@ tfoot td{
     transform: scale(1.03);
 }
 
-/* TABLETS */
-@media (max-width: 1024px){
+/* ==========================================================================
+   MEDIA QUERIES (RESPONSIVE)
+   ========================================================================== */
 
-    .titulo-resumen{
+/* TABLETS Y CELULARES (De 1024px para abajo: Menú oculto + Hamburguesa) */
+/* TABLETS Y CELULARES (De 1024px para abajo: Menú oculto + Hamburguesa) */
+@media (max-width: 1024px) {
+
+    /* El contenido ahora ocupa el 100% porque el menú se oculta a la izquierda */
+    .contenido-resumen {
+        width: 100%;
+        margin-left: 0;
+        padding: 20px;
+    }
+
+    /* Forzamos a que el botón hamburguesa y el overlay aparezcan en tablets */
+    /* Forzamos a que el botón hamburguesa aparezca en tablets y móviles */
+    .boton_menu {
+        display: flex; /* CAMBIADO: Vuelve a aparecer en estas pantallas */
+    }
+
+    .overlay_nav {
+        display: block; /* Permite que la transición de opacidad funcione */
+    }
+
+    /* Aseguramos que el menú se mantenga oculto a la izquierda */
+    .contenedor_navegacion {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 189px;
+        height: 100vh;
+        transform: translateX(-100%);
+        z-index: 200;
+    }
+
+    /* Clase que añade tu JS para mostrar el menú */
+    .contenedor_navegacion.abierto {
+        transform: translateX(0);
+    }
+
+    .contenedor_navegacion h2 {
+        visibility: visible;
+    }
+
+    /* Ajustes visuales de la página de resumen en tablets */
+    .titulo-resumen {
         flex-direction: column;
         gap: 20px;
         align-items: flex-start;
     }
 
-    .info-superior{
+    .info-superior {
         flex-direction: column;
     }
 
-    .info-card{
+    .info-card {
         min-width: 100%;
     }
 
-    .acciones{
+    .acciones {
         justify-content: center;
     }
 }
 
-/* CELULARES */
-@media (max-width: 768px){
 
-    .contenido-resumen{
-        width: 100%;
-        margin-left: 0;
+/* CELULARES (Cambios menores de tamaño y tablas) */
+@media (max-width: 768px) {
+    .contenido-resumen {
         padding: 15px;
     }
 
-    .titulo-resumen h1{
+    .titulo-resumen h1 {
         font-size: 28px;
     }
 
-    .numero-orden{
+    .numero-orden {
         width: 100%;
         max-width: 250px;
     }
 
-    .tabla-container{
+    .tabla-container {
         overflow-x: auto;
     }
 
-    table{
+    table {
         min-width: 600px;
     }
 
-    .acciones{
+    .acciones {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .btn{
+    .btn {
         width: 100%;
     }
 }
 
 /* CELULARES PEQUEÑOS */
-@media (max-width: 480px){
-
-    .titulo-resumen h1{
+@media (max-width: 480px) {
+    .titulo-resumen h1 {
         font-size: 22px;
     }
 
-    .titulo-resumen p{
+    .titulo-resumen p {
         font-size: 14px;
     }
 
-    .producto-info{
+    .producto-info {
         flex-direction: column;
         text-align: center;
     }
 
-    .producto-info img{
+    .producto-info img {
         width: 40px;
         height: 40px;
     }
 
     thead th,
     tbody td,
-    tfoot td{
+    tfoot td {
         padding: 10px;
         font-size: 14px;
     }

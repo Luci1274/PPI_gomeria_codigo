@@ -8,11 +8,7 @@
 </head>
 
 <body>
-
-    <header>
-        <h1>Resumen de orden de compra</h1>
-    </header>
-
+    <!-- NAVEGACION -->
     {% include 'componentes/navbar.html' %}
 
     <!-- CONTENIDO CENTRAL -->
@@ -22,8 +18,10 @@
         <div class="titulo-resumen">
 
             <div>
+              <header>
                 <h1>Resumen de Orden de Compra</h1>
-                <p>Detalle completo de la orden realizada</p>
+              </header>
+              <p>Detalle completo de la orden realizada</p>
             </div>
 
             <div class="numero-orden">
@@ -121,5 +119,9 @@
       <footer>
           <p>&copy; 2026 Neumáticos Gatica. Todos los derechos reservados.</p>
       </footer>
+  <script type="module" src="{{ url_for('static', filename='js/barral_navegacion.js') }}"></script>
+    
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </body>
 </html>
