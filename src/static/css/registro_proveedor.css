@@ -5,9 +5,8 @@
 }
 
 body{
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: sans-serif;
     background: linear-gradient(135deg, #f4f6f8, #e5e7eb);
-    padding: 40px; 
 }
 
 .contenedor{
@@ -15,32 +14,26 @@ body{
     justify-content: center;
     align-items: flex-start;
     gap: 50px;
-    margin-top: 50px;
+    margin-top: 40px;
     flex-wrap: wrap;
 }
 
 .formulario{
     width: 100%;
-    max-width: 800px;
+    max-width: 900px;
     background-color: white;
-    padding: 15px;
-    border-radius: 15px;
+    padding: 30px;
+    border-radius: 20px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, .08); 
 }
 
-.titulo {
-    background: #0141c0; 
+#titulo_pagina {
+    background: #44f; 
     color: white;
     text-align: center;
-    padding: 25px;
-    font-size: 20px;
-    border-radius: 20px;
+    padding: 30px;
+    font-size: 25px;
     margin-bottom: 40px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, .08);
-}
-
-.titulo h1 {
-    font-size: 56px;
 }
 
 .descripcion {
@@ -49,8 +42,17 @@ body{
     font-size: 20px;
 }
 
-.campo{
-    margin-bottom: 25px;
+.fila {
+    display: flex;
+    gap: 20px;
+}
+
+.fila .campo{
+    flex: 1;
+}
+
+.campo {
+    margin-bottom: 30px;
 }
 
 label{
@@ -70,6 +72,13 @@ select{
     padding: 12px;
     font-size: 16px;
     background-color: white;
+}
+
+input:focus,
+select:focus{
+    outline: none;
+    border-color: #0141c0;
+    box-shadow: 0 0 0 3px rgba(1, 65, 192, 0.15);
 }
 
 .imagen{
@@ -116,7 +125,8 @@ button:hover{
     }
 
     .formulario {
-        width: 60%;
+        width: 100%;
+        max-width: 700px;
     }
 
     .img_proveedor {
@@ -126,6 +136,10 @@ button:hover{
 
 /* MOBILE */
 @media (max-width: 768px){
+    body {
+        padding: 20px;
+    }
+
     .contenedor {
         flex-direction: column;
         align-items: center;
@@ -163,5 +177,10 @@ button:hover{
 
     .titulo h1 {
         font-size: 32px;
+    }
+
+    .fila {
+        flex-direction: column;
+        gap: 0;
     }
 }
