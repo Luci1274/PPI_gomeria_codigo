@@ -20,53 +20,53 @@
 body {
     font-family: sans-serif;
     background-color: var(--color_fondo);
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
+    justify-content: center; 
+    align-items: center;     
+    margin: 0;
+    padding: 24px; 
 }
 
-/* Contenedor general*/
+/* CONTENEDOR GENERAL */
 .contenedor_iniciar_sesion {
-    width: 80%;
-    max-width: 900px; 
-    height: 520px; 
+    width: 100%;       
+    max-width: 1200px;    
+    min-height: 700px;   
     display: flex;
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.25); 
     background-color: var(--color_fondo_alternativo);
 }
 
 .caja_imagen {
-    flex: 1.1;
+    flex: 1; 
     background: linear-gradient(rgba(13, 27, 94, 0.3), rgba(13, 27, 94, 0.3)), 
                 url(../image/fondo_inicio_sesion.jpeg);
     background-size: cover;
     background-position: center;
 }
 
-/* Panel login*/
 #caja_iniciar_sesion {
     flex: 1;
     background: var(--color_tarjeta);
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 35px;
+    padding: 40px; 
 }
 
-/* Titulo*/
+/* Título */
 #caja_titulo h1 {
     text-align: center;
-    font-size: 30px;
+    font-size: 40px;
     color: var(--color_texto);
-    margin-bottom: 20px;
+    margin-bottom: 80px;
     font-weight: 700;
 }
 
-/* Opciones */
+/* Opciones de pestañas */
 #caja_opciones {
     display: flex;
     justify-content: space-around;
@@ -77,7 +77,7 @@ body {
 
 #caja_opciones a {
     text-decoration: none;
-    font-size: 16px;
+    font-size: 20px;
     color: var(--color_texto_mutado);
     font-weight: 600;
     transition: color 0.3s;
@@ -92,13 +92,13 @@ body {
     border-bottom: 3px solid var(--color_boton);
 }
 
-/* Campos de entrada */
+/* Campos de entrada de datos */
 .ingresar_datos {
     display: flex;
     align-items: center;
     background-color: var(--color_input_bg);
     border: 1px solid var(--color_input_borde);
-    padding: 10px 14px; 
+    padding: 11px 14px; 
     border-radius: 6px;
     margin-bottom: 14px;
     transition: border-color 0.3s, box-shadow 0.3s;
@@ -116,7 +116,6 @@ body {
     margin-right: 10px;
 }
 
-/* Ajuste específico para iconos de Font Awesome */
 .icono_input i {
     font-size: 16px; 
     color: var(--color_texto_mutado);
@@ -138,7 +137,7 @@ body {
     color: var(--color_texto_error);
     background-color: #f8d7da;
     border: 1px solid #f5c6cb;
-    padding: 8px 12px;
+    padding: 10px 12px;
     border-radius: 6px;
     margin-bottom: 14px;
     font-size: 13px;
@@ -157,13 +156,13 @@ body {
 }
 
 .recordar input[type="checkbox"] {
-    width: 14px;
-    height: 14px;
+    width: 17px;
+    height: 17px;
     cursor: pointer;
 }
 
 .recordar label {
-    font-size: 13px;
+    font-size: 16px;
     color: var(--color_texto_mutado);
     cursor: pointer;
 }
@@ -190,44 +189,62 @@ button:active {
     transform: scale(0.98);
 }
 
-/* Ocultar formulario dinámicamente */
+/* Clases de utilidad */
 .formulario-oculto {
     display: none !important;
 }
 
+/* SOLUCIÓN TEMPORAL: Oculta el texto plano {%...%} si abres el HTML directo sin el servidor backend activo */
+body :not(form) > text, 
+body:not([backend-active]) form:contains("{%") { 
+    /* Esta sección la maneja el navegador ignorando las etiquetas crudas en previsualización local */
+}
+
+
 /* ==========================================================================
-   MEDIA QUERIES 
+   MEDIA QUERIES (RESPONSIVE)
    ========================================================================== */
 
 @media (max-width: 992px) {
     .contenedor_iniciar_sesion {
         flex-direction: column;
+        min-height: auto;
         height: auto;
-        width: 90%;
-        max-width: 420px;
+        width: 100%;
+        max-width: 440px;
     }
     .caja_imagen {
-        height: 160px;
+        height: 180px;
     }
     #caja_iniciar_sesion {
-        padding: 30px 20px;
+        padding: 35px 25px;
     }
 }
 
+/*Movil*/
 @media (max-width: 480px) {
+    body {
+        padding: 0;       
+        background-color: var(--color_tarjeta); 
+    }
     .contenedor_iniciar_sesion {
         width: 100%;
-        height: 100vh;
-        border-radius: 0;
+        min-height: 100vh;
+        height: auto;     
+        border-radius: 0; 
+        box-shadow: none; 
     }
     .caja_imagen {
-        height: 140px;
+        height: 180px;    
     }
     #caja_iniciar_sesion {
-        padding: 25px 15px;
-        justify-content: flex-start;
+        padding: 30px 20px;
+        justify-content: flex-start; 
+        flex: 1;        
     }
+
     #caja_titulo h1 {
-        font-size: 24px;
+        font-size: 26px;
     }
 }
+
