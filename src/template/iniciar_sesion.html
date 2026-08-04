@@ -4,56 +4,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../static/css/style.css">
-    <link rel="stylesheet" href="../static/css/../css/iniciar_sesion.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../static/css/iniciar_sesion.css">
     <title>Iniciar sesión</title>
 </head>
 
 <body>
     <div class="contenedor_iniciar_sesion">
-        <div class="caja_imagen">
-        </div>
+        <div class="caja_imagen"></div>
+
         <div id="caja_iniciar_sesion">
             <div id="caja_titulo">
-                <h1>¡Bienvenido!</h1>
+                <h1 id="titulo_dinamico">¡Bienvenido!</h1>
             </div>
+
             <div id="caja_opciones">
                 <div id="caja_opcion_iniciar_sesion">
-                    <a href="#" id="iniciar_sesion">Iniciar sesión</a>
+                    <a href="#" id="btn_pestaña_login" class="pestana-activa">Iniciar sesión</a>
                 </div>
                 <div id="caja_opcion_crear_usuario">
-                    <a href="#" id="crear_usuario"> Crear usuario</a>
+                    <a href="#" id="btn_pestaña_registro">Crear usuario</a>
                 </div>
             </div>
-            <form method="post" action="/login">
-                    <div class="ingresar_datos">
-                        <div>
-                            <ion-icon name="person-outline"></ion-icon>
-                        </div>
-                        <input type="text" name="txt_input_nombre" id="txt_input_nombre" placeholder="Nombre de usuario" required>
+
+            <!-- FORMULARIO DE LOGIN -->
+            <form method="post" action="/login" id="form_login">
+                {% if error %}
+                <p class="error">Usuario y/o contraseña incorrectas</p>
+                {% endif %}
+
+                <div class="ingresar_datos">
+                    <div class="icono_input">
+                        <i class="fa-solid fa-user"></i>
                     </div>
-                    {% if error %}
-                        <P class="error"> Usuario y/o contraseña incorrectas</P>
-                    {% endif %}
-                    <div class="ingresar_datos">
-                        <div>
-                            <ion-icon name="lock-closed-outline"></ion-icon>
-                        </div>
-                        <input type="password" name="password_input" id="password_input" placeholder=" Contraseña " required>
+                    <input type="text" name="txt_input_nombre" id="txt_input_nombre" placeholder="Nombre de usuario" required>
+                </div>
+
+                <div class="ingresar_datos">
+                    <div class="icono_input">
+                        <i class="fa-solid fa-lock"></i>
                     </div>
-                    
-                    <div class="recordar">
-                        <label for="checkbox_recordar">Recordar información</label>
-                        <input type="checkbox" name="checkbox_recordar" id="checkbox_recordar">
-                    </div>
-                    <div>
-                        <button type="submit">Iniciar sesión</button>
-                    </div>
+                    <input type="password" name="password_input" id="password_input" placeholder="Contraseña" required>
+                </div>
+
+                <div class="recordar">
+                    <input type="checkbox" name="checkbox_recordar" id="checkbox_recordar">
+                    <label for="checkbox_recordar">Recordar</label>
+                </div>
+
+                <div>
+                    <button type="submit">Iniciar sesión</button>
+                </div>
             </form>
+
+            <!-- FORMULARIO DE REGISTRO -->
+            <form method="post" action="/register" id="form_registro" class="formulario-oculto">
+                <div class="ingresar_datos">
+                    <div class="icono_input">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <input type="text" name="input_nombre" placeholder="Nombre de usuario" required>
+                </div>
+                
+                <div class="ingresar_datos">
+                    <div class="icono_input">
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
+                    <input type="email" name="txt_registro_email" placeholder="Correo electrónico" required>
+                </div>
+
+                <div class="ingresar_datos">
+                    <div class="icono_input">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <input type="password" name="password_registro" placeholder="Contraseña" required>
+                </div>
+
+                <div>
+                    <button type="submit">Registrar</button>
+                </div>
+            </form>
+            
         </div>
     </div>
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    
+    <!-- Script de JS -->
+    <script src="../static/js/login.js"></script>
 </body>
 
 </html>
