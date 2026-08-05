@@ -171,6 +171,7 @@ body {
 button {
     width: 100%;
     padding: 12px;
+    margin-bottom: 20px;
     border: none;
     border-radius: 6px;
     background-color: var(--color_boton);
@@ -189,18 +190,19 @@ button:active {
     transform: scale(0.98);
 }
 
-/* Clases de utilidad */
 .formulario-oculto {
     display: none !important;
 }
 
-/* SOLUCIÓN TEMPORAL: Oculta el texto plano {%...%} si abres el HTML directo sin el servidor backend activo */
-body :not(form) > text, 
-body:not([backend-active]) form:contains("{%") { 
-    /* Esta sección la maneja el navegador ignorando las etiquetas crudas en previsualización local */
+.recuperar_contraseña {
+    font-size: 16px;
+    text-decoration: none;
 }
 
-
+.recuperar_contraseña:hover {
+    color: #00fa;
+    text-decoration: underline;
+}
 /* ==========================================================================
    MEDIA QUERIES (RESPONSIVE)
    ========================================================================== */
