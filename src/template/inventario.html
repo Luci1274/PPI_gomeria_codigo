@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/inventario.css">
+    <title>Inventario</title>
+</head>
+<body>
+      <div class="contenedor">
+        
+        <!--MENÚ LATERAL-->
+        <aside class="menu-lateral">
+            <div class="menu-encabezado">
+                <h2>Sistema Gomeria</h2>
+            </div>
+            <nav class="menu-navegacion">
+                <a href="#" class="enlace-nav">Principal</a>
+                <a href="#" class="enlace-nav">Ventas / Compras</a>
+                <a href="#" class="enlace-nav activo">Inventario</a>
+                <a href="#" class="enlace-nav">Clientes</a>
+                <a href="#" class="enlace-nav">Proveedores</a>
+            </nav>
+            <div class="menu-pie">
+                <div class="usuario-info">
+                    <p class="usuario-nombre">Luciano Gonzalez</p>
+                    <p class="usuario-rol">Administrador</p>
+                </div>
+            </div>
+        </aside>
+
+        <!--CONTENIDO PRINCIPAL-->
+        <main class="contenido-principal">
+            
+            <!--Barra Superior de Navegación Externa-->
+            <header class="barra-superior">
+                <div class="titulo-pagina">
+                    <h1>Gestión de Inventario e Insumos</h1>
+                    <p>Control de stock y precios</p>
+                </div>
+                <div class="barra-superior-acciones">
+                    <button class="btn btn-primario">Nuevo Producto</button>
+                </div>
+            </header>
+
+            <!--TARJETAS-->
+            <section class="cuadricula-metricas">
+                <div class="tarjeta-metrica">
+                    <div class="datos-metrica">
+                        <h3>Total Productos</h3>
+                        <p class="valor-metrica">1,240</p>
+                    </div>
+                </div>
+                <div class="tarjeta-metrica alerta-destacada">
+                    <div class="datos-metrica">
+                        <h3>Stock Bajo</h3>
+                        <p class="valor-metrica texto-rojo">7 Items</p>
+                    </div>
+                </div>
+                <div class="tarjeta-metrica">
+                    <div class="datos-metrica">
+                        <h3>Valor del Stock</h3>
+                        <p class="valor-metrica">$2.000.000</p>
+                    </div>
+                </div>
+            </section>
+
+            <!--BARRA DE FILTROS Y BUSQUEDA-->
+            <section class="barra-filtros">
+                <div class="contenedor-busqueda">
+                    <input type="text" placeholder="Buscar por nombre de producto o marca...">
+                </div>
+                <div class="acciones-filtros">
+                    <select class="filtro-seleccion">
+                        <option value="todos">Todos los Tipos</option>
+                        <option value="neumaticos">Neumáticos</option>
+                        <option value="insumos">Insumos Taller</option>
+                        <option value="camaras">Cámaras</option>
+                    </select>
+                    <select class="filtro-seleccion">
+                        <option value="todos">Todas las Marcas</option>
+                        <option value="fate">Fate</option>
+                        <option value="pirelli">Pirelli</option>
+                        <option value="michelin">Michelin</option>
+                    </select>
+                </div>
+            </section>
+
+            <!--TABLA DE DATOS-->
+            <section class="contenedor-tabla">
+                <table class="tabla-datos">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Tipo</th>
+                            <th>Marca</th>
+                            <th class="texto-derecha">Costo Unitario</th>
+                            <th class="texto-derecha">Precio Venta (Total)</th>
+                            <th class="texto-centro">Stock</th>
+                            <th class="texto-centro">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!--Fila 1-->
+                        <tr>
+                            <td>
+                                <div class="informacion-producto">
+                                    <span class="nombre-producto">Fate Cargo 295/80 R22.5</span>
+                                </div>
+                            </td>
+                            <td><span class="etiqueta etiqueta-azul">Neumático</span></td>
+                            <td><strong>Fate</strong></td>
+                            <td class="texto-derecha">$120,000.00</td>
+                            <td class="texto-derecha-negrita">$162,000.00</td>
+                            <td class="texto-centro">
+                                <span class="estado-stock stock-ok">45 u.</span>
+                            </td>
+                            <td class="texto-centro">
+                                <div class="botones-accion">
+                                    <button class="btn-accion" title="Editar">Modificar</button>
+                                    <button class="btn-accion borrar" title="Eliminar">Eliminar</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!--Fila 2-->
+                        <tr class="fila-alerta">
+                            <td>
+                                <div class="informacion-producto">
+                                    <span class="nombre-producto">Parches para Camión</span>
+                                </div>
+                            </td>
+                            <td><span class="etiqueta etiqueta-morada">Insumos Taller</span></td>
+                            <td><strong>Generico</strong></td>
+                            <td class="texto-derecha">$850.00</td>
+                            <td class="texto-derecha-negrita">$1,190.00</td>
+                            <td class="texto-centro">
+                                <span class="estado-stock stock-bajo" title="¡Alerta! Stock por debajo del mínimo">3 u.</span>
+                            </td>
+                            <td class="texto-centro">
+                                <div class="botones-accion">
+                                    <button class="btn-accion" title="Editar">Modificar</button>
+                                    <button class="btn-accion borrar" title="Eliminar">Eliminar</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </main>
+    </div>
+</body>
+</html>
