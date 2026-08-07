@@ -1,4 +1,35 @@
-from modulos.conexion import conectar_db
+import pymysql
+from modulos.comandos_db.conexion import conectar_db
+
+#----------------------------------------------------------------------------
+def sql_crear_producto(nombre, tipo, marca=None, medidas=None, imagen_producto=None, cantidad_actual=0, cantidad_minima=0, precio=0.0, activo=1):
+    """Crea un nuevo producto en la DB"""
+    sql = """INSERT INTO producto_servicio (
+            nombre, tipo, marca, medidas, imagen_producto,
+            activo, cantidad_actual, cantidad_minima, precio
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+    conexion = conectar_db()
+    try:
+        with conexion.cursor() as cursor:
+            valores = (nombre, tipo, marca, medidas, imagen_producto, cantidad_actual, cantidad_minima, precio)
+            cursor.execute(sql, valores)
+        conexion.commit()
+        id_nuevo_producto = cursor.lastrowid
+            
+        """Esto es para nosotros"""
+        print("Producto guardado correctamnete")
+        return id_nuevo_producto
+    
+    except pymysql.MySQLError as e:
+        conexion.rollback()
+        print(f"Error al crear producto/servicio: {e}")
+        return None
+    
+    finally:
+        conexion.close()
+            
+            
 #----------------------------------------------------------------------------
 def sql_leer_productos(tipo=None, busqueda=None):
     """Lee los productos activos de la base de datos."""
@@ -20,11 +51,14 @@ def sql_leer_productos(tipo=None, busqueda=None):
                 parametros.append(busqueda)
             
             cursor.execute(sql, parametros)
-            return cursor.fetchall()
+            listado_productos = cursor.fetchall()
+            return listado_productos
         
-    except Exception as e:
-        print(f"Error al consultar productos: {e}")
-        return []
+    except pymysql.MySQLError as e:
+            conexion.rollback()
+            print(f"Error al crear producto/servicio: {e}")
+            return []
+        
     finally:
         conexion.close()
 #----------------------------------------------------------------------------
@@ -38,16 +72,20 @@ def sql_leer_producto(id):
             valor = (id,)
             
             cursor.execute(sql, valor)
-            return cursor.fetchone()
-    except Exception as e:
-        print(f"Error al consulta el producto: {e}")
-        return None
-
+            devuelto_producto = cursor.fetchone()
+            return devuelto_producto
+        
+    except pymysql.MySQLError as e:
+            conexion.rollback()
+            print(f"Error al crear producto/servicio: {e}")
+            return None
+        
     finally:
         conexion.close()
 #----------------------------------------------------------------------------    
-def sql_leer_tipo():
-    """Lee el tipo de los productos y servicios para el filtro"""
+def sql_leer_tipos():
+    """Lee el tipo(es la categoría) de los productos y servicios y los devuelve."""
+    """La idea es que lea el tipo y con eso armamos un filtro dinamico"""
     
     conexion = conectar_db()
     
@@ -56,12 +94,16 @@ def sql_leer_tipo():
             sql = ("SELECT DISTINCT tipo FROM producto_servicio WHERE activo = 1;")
 
             cursor.execute(sql)
-            return cursor.fetchall()
+            listado_tipos = cursor.fetchall()
+            return listado_tipos
     
-    except Exception as e:
-        print(f"Error al consultar los tipos (categorias): {e}")
-        return[]
-    
+    except pymysql.MySQLError as e:
+            conexion.rollback()
+            print(f"Error al crear producto/servicio: {e}")
+            return []
+        
     finally:
         conexion.close()
 #----------------------------------------------------------------------------
+def sql_actualizar_producto():
+    
