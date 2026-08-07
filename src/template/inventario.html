@@ -39,7 +39,7 @@
                     <p>Control de stock y precios de productos</p>
                 </div>
                 <div class="barra-superior-acciones">
-                    <button class="btn btn-primario">Nuevo Producto</button>
+                    <button class="btn btn-primario" id="btn-nuevo-producto">Nuevo Producto</button>
                 </div>
             </header>
 
@@ -156,8 +156,58 @@
                     </tbody>
                 </table>
             </section>
-
         </main>
     </div>
+    <!--Ventana emergente para registro de producto-->
+    <div id="modal-producto" class="modal-overlay">
+        <div class="modal-contenido">
+            <div class="modal-cabecera">
+                <h2>Nuevo Producto</h2>
+                <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
+            </div>
+            <form class="modal-cuerpo">
+                <div class="grupo-input">
+                    <label for="input-producto">Nombre del producto/insumo</label>
+                    <input type="text" id="input-producto" placeholder="Ej. Neumático Fate Cargo 295/80 R22.5">
+                </div>
+                <div class="fila-doble">
+                    <div class="grupo-input">
+                        <label for="select-type">Tipo</label>
+                        <select name="select-type" id="select-type">
+                            <option value="neumatico">Neumático</option>
+                            <option value="insumo">Insumo Taller</option>
+                            <option value="camara">Cámara</option>
+                        </select>
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-marca">Marca</label>
+                        <input type="text" id="input-marca" placeholder="Ej. Fate / Generico">
+                    </div>
+                </div>
+
+                <div class="fila-triple">
+                    <div class="grupo-input">
+                        <label for="input-cant-producto">Cantidad</label>
+                        <input type="number" id="input-cant-producto" placeholder="5">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-costo-uni">Costo Unitario ($)</label>
+                        <input type="number" id="input-costo-uni" placeholder="12000">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-precio-venta">Precio Venta ($)</label>
+                        <input type="number" placeholder="162000">
+                    </div>
+                </div>
+
+                <div class="modal-pie">
+                    <button type="button" class="btn-cancelar" id="btn-cancelar-modal">Cancelar</button>
+                    <button type="submit" class="btn-guardar">Guardar Producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!--Script de JS-->
+    <script src="../static/js/inventario.js"></script>
 </body>
 </html>
