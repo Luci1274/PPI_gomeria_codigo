@@ -36,7 +36,7 @@
             <header class="barra-superior">
                 <div class="titulo-pagina">
                     <h1>Gestión de Inventario</h1>
-                    <p>Control de stock y precios</p>
+                    <p>Control de stock y precios de productos</p>
                 </div>
                 <div class="barra-superior-acciones">
                     <button class="btn btn-primario">Nuevo Producto</button>
@@ -57,7 +57,17 @@
                         <p class="valor-metrica">$2.000.000</p>
                     </div>
                 </div>
+                <div class="tarjeta-metrica tarjeta-alerta">
+                    <div class="datos-metrica cabecera-alerta">
+                        <h3>Productos en alerta</h3>
+                        <p class="valor-metrica tarjeta-valor">12</p>
+                        <span class="tarjeta-subtitulo">3 sin stock / 9 stock bajo</span>
+                    </div>
+                    
+
+                </div>
             </section>
+
 
             <!--BARRA DE FILTROS Y BUSQUEDA-->
             <section class="barra-filtros">
@@ -77,6 +87,12 @@
                         <option value="pirelli">Pirelli</option>
                         <option value="michelin">Michelin</option>
                     </select>
+                    <select class="filtro-seleccion">
+                        <option value="todos">Todos los Estados</option>
+                        <option value="bajo">Stock Bajo</option>
+                        <option value="agotado">Sin Stock</option>
+                        <option value="normal">Stock Normal</option>
+    </select>
                 </div>
             </section>
 

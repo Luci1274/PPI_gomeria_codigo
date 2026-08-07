@@ -217,6 +217,10 @@ body {
     border: 1px solid rgba(0, 0, 0, 0.01);
 }
 
+.tarjeta-alerta {
+    border-left: 5px solid rgb(221, 1, 1);
+}
+
 .datos-metrica h3 {
     font-size: 13px;
     color: var(--texto-atenuado);
@@ -301,7 +305,7 @@ body {
 .tabla-datos {
     width: 100%;
     border-collapse: collapse;
-    text-align: left;
+    text-align: center;
     font-size: 15px;
 }
 
@@ -336,7 +340,7 @@ body {
 }
 
 .texto-derecha-negrita {
-    text-align: right;
+    text-align: center;
     font-weight: 700;
     color: var(--color-primario);
 }
@@ -349,12 +353,11 @@ body {
     font-weight: 600;
 }
 
-.texto-derecha { text-align: right; }
+.texto-derecha { text-align: center; }
 .texto-centro { text-align: center; }
 
 .estado-stock {
     display: inline-block;
-    padding: 6px 14px;
     border-radius: var(--radio-medio);
     font-weight: 700;
     font-size: 14px;
