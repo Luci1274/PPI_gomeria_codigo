@@ -1,0 +1,27 @@
+{% extends "plantilla_base_gestion.html" %}
+
+{% block title %} Gestion de Ventas {% endblock %}
+
+{% block tablas %}
+<div class="contenedor_tabla">
+    
+    <div class="tabla">
+        <div class="cabecera_tabla">
+            <div class="fila">N° Venta</div>
+            <div class="fila">Fecha</div>
+            <div class="fila">Cliente</div>
+            <div class="fila">Total productos</div>
+            <div class="fila">Precio</div>
+        </div>
+        
+        {% for venta in ventas %}
+        <div class="cuerpo_tabla">
+            <div class="fila"> {{"%03d"| format(venta.idventas) }} </div>
+            <div class="fila"> {{venta.fecha_emision_factura.strtime('%d/%m/%Y')}} </div>
+            <div class="fila"> {{venta.cliente}} </div>
+            <div class="fila"> {{venta.cantidad_total_productos}} productos </div>
+            <div class="fila"> {{"{:,.0f}".format(venta.total_precio).replace(',', '.')}} </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
