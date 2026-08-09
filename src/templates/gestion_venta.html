@@ -3,6 +3,28 @@
 {% block title %} Gestion de Ventas {% endblock %}
 
 {% block tablas %}
+<form action="/ventas" method="get" id="form_filtros" class="contenedor_filtros">
+    <div class="campo_busqueda">
+        <input type="text" name="busqueda" placeholder="Buscar por cliente o n° venta " value="{{ busqueda_actual}}" onchange="this.form.submit()">
+    </div>
+
+    <div class="campo_fecha">
+        <select name="fecha" onchange="this.form.submit()">
+            <option value="todos" {% if fecha_actual == 'todos' %}selected{% endif %}>Fecha: Todos</option>
+            <option value="hoy" {% if fecha_actual == 'hoy' %}selected{% endif %}>Fecha: Hoy</option>
+            <option value="semana" {% if fecha_actual == 'semana' %}selected{% endif %}>Últimos 7 días</option>
+            <option value="mes" {% if fecha_actual == 'mes' %}selected{% endif %}>Último mes</option>
+            <option value="anio" {% if fecha_actual == 'anio' %}selected{% endif %}>Último año</option>
+        </select>
+    </div>
+
+    <a href="/ventas/nueva" class=""btn_nueva_venta>
+        <span>+</span> Nueva venta
+    </a>
+
+</form>
+
+
 <div class="contenedor_tabla">
     
     <div class="tabla">
