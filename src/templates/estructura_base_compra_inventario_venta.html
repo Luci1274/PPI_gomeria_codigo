@@ -16,11 +16,9 @@
 
         
         {% set opciones_filtrado%}
-            <button>Picos</button>
-            <button>Rodados</button>
-            <button>Cámaras</button>
-            <button>Parches</button>
-            <button>Lúbricantes</button>
+            {% for tipo in tipos %}
+                <button> {{tipo.tipo}} </button>
+            {% endfor %}
         {% endset %}
 
 
@@ -55,7 +53,19 @@
         </div>
 
         <main>
-            {% block main %} {% endblock %}
+            {% for producto in productos %}
+                <div class="tarjeta_producto">
+                    <div class="imagen_producto">
+                        <img src="/static/{{producto.imagen_producto}}" alt="" height="50px">
+                    </div>
+                    <div class="info_producto">
+                        <p> Nombre: {{producto.nombre}} </p>
+                        <p> Precio: {{producto.precio}} </p>
+                        <p> Cantidad en stock: {{producto.cantidad_actual}} </p>
+                    </div>
+                </div>
+            {% endfor %}
+
         </main>
         <footer>
 
