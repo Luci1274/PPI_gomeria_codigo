@@ -3,6 +3,9 @@
 {% block title %} Gestion de Ventas {% endblock %}
 
 {% block tablas %}
+
+<!-- FALTA CSS -->
+
 <form action="/ventas" method="get" id="form_filtros" class="contenedor_filtros">
     <div class="campo_busqueda">
         <input type="text" name="busqueda" placeholder="Buscar por cliente o n° venta " value="{{ busqueda_actual}}" onchange="this.form.submit()">
@@ -26,7 +29,7 @@
 
 
 <div class="contenedor_tabla">
-    
+        
     <div class="tabla">
         <div class="cabecera_tabla">
             <div class="fila">N° Venta</div>

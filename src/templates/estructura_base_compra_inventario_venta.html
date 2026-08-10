@@ -11,18 +11,6 @@
     <div class="container">
 
         {% include 'componentes/header.html'%}
-        
-        {% include 'componentes/navbar.html' %}
-
-        
-        {% set opciones_filtrado%}
-            {% for tipo in tipos %}
-                <button> {{tipo.tipo}} </button>
-            {% endfor %}
-        {% endset %}
-
-
-        {% include 'componentes/filtro.html' %}
 
         <!-- Botón carrito mobile -->
             <button class="boton_carrito" id="boton_carrito">
@@ -53,19 +41,32 @@
         </div>
 
         <main>
-            {% for producto in productos %}
-                <div class="tarjeta_producto">
-                    <div class="imagen_producto">
-                        <img src="/static/{{producto.imagen_producto}}" alt="" height="50px">
-                    </div>
-                    <div class="info_producto">
-                        <p> Nombre: {{producto.nombre}} </p>
-                        <p> Precio: {{producto.precio}} </p>
-                        <p> Cantidad en stock: {{producto.cantidad_actual}} </p>
-                    </div>
-                </div>
-            {% endfor %}
+            <!-- Falta CSS -->
+            <form action="" method="get" id="form_list_producto">
+            
+                {% include 'componentes/navbar.html' %}
 
+                    {% set opciones_filtrado%}
+                        {% for tipo in tipos %}
+                            <button> {{tipo.tipo}} </button>
+                        {% endfor %}
+                    {% endset %}
+
+                {% include 'componentes/filtro.html' %}
+
+                {% for producto in productos %}
+                    <div class="tarjeta_producto">
+                        <div class="imagen_producto">
+                            <img src="/static/{{producto.imagen_producto}}" alt="" height="50px">
+                        </div>
+                        <div class="info_producto">
+                            <p> Nombre: {{producto.nombre}} </p>
+                            <p> Precio: {{producto.precio}} </p>
+                            <p> Cantidad en stock: {{producto.cantidad_actual}} </p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </form>
         </main>
         <footer>
 

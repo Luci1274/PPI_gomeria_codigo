@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import modulos.comandos_db.comandos_db_productos as db_productos
 from modulos.comandos_db.comandos_db_venta import sql_leer_ventas
 
@@ -22,7 +22,8 @@ def gestion():
 ########################################################################
 @app.route("/estructura_base_compra_inventario_venta")
 def prueba():
-    listado_productos = db_productos.sql_leer_productos()
+    busqueda = request.args.get('busqueda', '')
+    listado_productos = db_productos.sql_leer_productos(busqueda=busqueda)
     listado_tipos = db_productos.sql_leer_tipos()
     return render_template("estructura_base_compra_inventario_venta.html", productos = listado_productos, tipos = listado_tipos)
 
