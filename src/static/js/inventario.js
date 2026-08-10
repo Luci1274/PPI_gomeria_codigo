@@ -17,7 +17,7 @@ modal.classList.remove('activo');
 btnCerrar.addEventListener('click', cerrarModal);
 btnCancelar.addEventListener('click', cerrarModal);
 
-// Cerrar al hacer clic fuera del recuadro blanco (en la zona oscura)
+// Cerrar al hacer clic
 window.addEventListener('click', (e) => {
 if (e.target === modal) {
     cerrarModal();
