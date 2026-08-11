@@ -2,7 +2,7 @@ import pymysql
 from modulos.comandos_db.conexion import conectar_db
 
 #----------------------------------------------------------------------------
-def sql_leer_ventas(busqueda=None, filtro_fecha=None):
+def sql_leer_ventas(busqueda=None, filtro_fecha="hoy"):
     """
     Lee las ventas aplicando filtros opcionales de búsqueda y fecha.
     """

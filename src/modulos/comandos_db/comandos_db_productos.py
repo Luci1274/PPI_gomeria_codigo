@@ -38,7 +38,7 @@ def sql_leer_productos(tipo=None, busqueda=None):
     conexion = conectar_db()
     try:
         with conexion.cursor() as cursor:
-            sql = ("SELECT p.idproducto_servicio, p.nombre, p.tipo, p.precio, p.imagen_producto, p.cantidad_actual FROM producto_servicio AS p WHERE activo = 1;")
+            sql = ("SELECT p.idproducto_servicio, p.nombre, p.medidas, p.tipo, p.precio, p.imagen_producto, p.cantidad_actual FROM producto_servicio AS p WHERE activo = 1;")
             
             parametros = []
             

@@ -57,7 +57,7 @@
                 {% for producto in productos %}
                     <div class="tarjeta_producto">
                         <div class="imagen_producto">
-                            <img src="/static/{{producto.imagen_producto}}" alt="" height="50px">
+                            <button class="Producto" style="background-image: url({{producto.imagen_producto}});">{{producto.nombre ~"-"~ producto.medidas}}</button>
                         </div>
                         <div class="info_producto">
                             <p> Nombre: {{producto.nombre}} </p>
