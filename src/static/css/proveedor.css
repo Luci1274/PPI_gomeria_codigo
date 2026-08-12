@@ -334,7 +334,7 @@ body {
     background-color: #f8fafc;
 }
 
-.nombre-razon_social {
+.nombre-razon-social {
     font-weight: 600;
     color: var(--color-primario);
     display: block;
@@ -462,13 +462,19 @@ body {
 .fila-doble {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 20px;
 }
 
 .fila-triple {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr; 
-    gap: 16px;
+    gap: 20px;
+}
+
+.fila-cuadruple {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
 }
 
 /*Botones del pie */

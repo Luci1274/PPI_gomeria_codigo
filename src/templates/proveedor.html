@@ -10,7 +10,6 @@
 
 <body>
       <div class="contenedor">
-        
         <!--MENÚ LATERAL-->
         <aside class="menu-lateral">
             <div class="menu-encabezado">
@@ -19,9 +18,9 @@
             <nav class="menu-navegacion">
                 <a href="#" class="enlace-nav">Principal</a>
                 <a href="#" class="enlace-nav">Ventas / Compras</a>
-                <a href="#" class="enlace-nav activo">Inventario</a>
+                <a href="#" class="enlace-nav">Inventario</a>
                 <a href="#" class="enlace-nav">Clientes</a>
-                <a href="#" class="enlace-nav">Proveedores</a>
+                <a href="#" class="enlace-nav activo">Proveedores</a>
             </nav>
             <div class="menu-pie">
                 <div class="usuario-info">
@@ -41,7 +40,7 @@
                     <p>Administra y consulta de proveedores</p>
                 </div>
                 <div class="barra-superior-acciones">
-                    <button class="btn btn-primario" id="btn-nuevo-producto">Nuevo Proveedor</button>
+                    <button class="btn btn-primario" id="btn-nuevo-proveedor">Nuevo Proveedor</button>
                 </div>
             </header>
 
@@ -54,7 +53,6 @@
                     </div>
                 </div>
             </section>
-
 
             <!--BARRA DE FILTROS Y BUSQUEDA-->
             <section class="barra-filtros">
@@ -106,7 +104,7 @@
                                 </div>
                             </td>
                             <td>
-                                <div class="nombre-razon_social">
+                                <div class="nombre-razon-social">
                                     Alvarez y Hijos Neumáticos
                                 </div>
                             </td>
@@ -115,7 +113,7 @@
                             <td class="texto-derecha">01145678901</td>
                             <td class="texto-derecha-negrita">ventas@alvarezyhijos.com</td>
                             <td class="texto-centro">
-                                <span class="estado-stock stock-ok">Activo</span>
+                                <span class="estado-proveedor">Activo</span>
                             </td>
                             <td class="texto-centro">
                                 <div class="botones-accion">
@@ -125,12 +123,12 @@
                             </td>
                         </tr>
                         <!--Fila 2-->
-                        <tr class="fila-alerta">
+                        <tr>
                             <td>
                                 <div class="etiqueta etiqueta-azul">02</div>
                             </td>
                             <td>
-                                <div class="nombre-razon_social">Neumáticos Distribuidora del Sur
+                                <div class="nombre-razon-social">Neumáticos Distribuidora del Sur
                                 </div>
                             </td>
                             <td><span class="etiqueta etiqueta-morada">30710080001</span></td>
@@ -138,7 +136,7 @@
                             <td class="texto-derecha">01134567890</td>
                             <td class="texto-derecha-negrita">contac@distrisur.com</td>
                             <td class="texto-centro">
-                                <span class="estado-stock stock-bajo" >Inactivo</span>
+                                <span class="estado-proveedor">Inactivo</span>
                             </td>
                             <td class="texto-centro">
                                 <div class="botones-accion">
@@ -152,6 +150,7 @@
             </section>
         </main>
     </div>
+
     <!--Ventana emergente para registro de producto-->
     <div id="modal-proveedor" class="modal-overlay">
         <div class="modal-contenido">
@@ -169,23 +168,22 @@
                         <label for="input-cuit">CUIT</label>
                         <input type="text" id="input-cuit" placeholder="20463324324">
                     </div>
-                </div>
-                <div class="fila-triple">
                     <div class="grupo-input">
                         <label for="input-telefono">Teléfono</label>
                         <input type="text" id="input-telefono" placeholder="cod.area:341">
                         <input type="text" id="input-telefono" placeholder="345223">
                     </div>
-                <div class="fila-cuadruple">
+                </div>
+                <div class="fila-triple">
                     <div class="grupo-input">
                         <label for="input-email">Email</label>
                         <input type="email" id="input-email" placeholder="lucianogonzalez@gmail.com">
                     </div>
                 </div>
-                <div class="fila-quintuple">
+                <div class="fila-cuadruple">
                     <div class="grupo-input">
-                        <label for="input-">Ciudad</label>
-                        <select name="select-type" id="select-type">
+                        <label for="select-ciudad">Ciudad</label>
+                        <select name="select-ciudad" id="select-ciudad">
                             <option value="roldan">Roldan</option>
                             <option value="rosario">Rosario</option>
                             <option value="sanjeronimosud">San Jeronimo Sud</option>
@@ -206,77 +204,5 @@
     </div>
     <!--Script de JS-->
     <script src="../static/js/proveedor.js"></script>
-</body>
-</html>
-
-
-
-
-    <div class="container">
-        <header>
-            <div class="contenedor_header">
-                <h1 id="titulo_pagina">Registro de Proveedor</h1>
-            </div>
-        </header>
-
-        <!-- Contenido principal -->
-        <main>
-            <div class="contenedor">
-                <!-- Formulario -->
-                <div class="formulario">
-                    <p class="descripcion">
-                        Complete los datos del proveedor para registrarlo en el sistema.
-                    </p>
-                    <form action="">
-                        <div class="fila">
-                            <div class="campo">
-                                <label for="InputNombre">Nombre del proveedor/empresa</label>
-                                <input type="text" id="InputNombre" name="InputNombre" required>
-                            </div>
-
-                            <div class="campo">
-                                <label for="InputCuit">CUIT</label>
-                                <input type="text" id="InputCuit" name="InputCuit" required pattern="\d{2}-\d{8}-\d{1}"
-                                    title="El CUIT debe tener el formato XX-XXXXXXXX-X">
-                            </div>
-                        </div>
-
-                        <div class="fila">
-                            <div class="campo">
-                                <label for="InputTelefono">Telefono</label>
-                                <input type="tel" id="InputTelefono" name="InputTelefono" pattern="\d{3}-\d{3}-\d{4}"
-                                    title="El teléfono debe tener el formato XXX-XXX-XXXX">
-                            </div>
-
-                            <div class="campo">
-                                <label for="InputEmail">Email</label>
-                                <input type="email" id="InputEmail" name="InputEmail" required>
-                            </div>
-                        </div>
-                        <div class="fila">
-                            <div class="campo">
-                                <label for="InputCiudad">Ciudad</label>
-                                <select name="InputCiudad" id="InputCiudad">
-                                    <option value="">Seleccione una ciudad</option>
-                                    <option value="Buenos Aires">Buenos Aires</option>
-                                    <option value="Córdoba">Córdoba</option>
-                                    <option value="Rosario">Rosario</option>
-                                    <option value="Funes">Funes</option>
-                                    <option value="Roldan">Roldan</option>
-                                </select>
-                            </div>
-
-                            <div class="campo">
-                                <label for="InputDireccion">Dirección</label>
-                                <input type="text" id="InputDireccion" name="InputDireccion" required>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </main>
-        <footer></footer>
-    </div>
-
 </body>
 </html>
