@@ -4,7 +4,7 @@ from modulos.comandos_db.conexion import conectar_db
 #--------------------------------------------------------------------------
 # TABLA VENTA #
 #--------------------------------------------------------------------------
-def sql_registrar_venta_completa(id_cliente, id_empleado, descuento, iva, lista_items):
+def sql_registrar_venta_completa(id_cliente, id_empleado, lista_items, numero_factura=None, iva=21, descuento=0):
     """
     Registra la Venta, sus Ítems y descuenta el Stock en una sola transacción atómica.
     """
@@ -17,10 +17,10 @@ def sql_registrar_venta_completa(id_cliente, id_empleado, descuento, iva, lista_
             # 2. Insertar la cabecera de la venta
             sql_venta = """
                 INSERT INTO venta (
-                    idclientes, idempleados, descuento, iva, cantidad_total_productos, activa
-                ) VALUES (%s, %s, %s, %s, %s, 1);
+                    idclientes, idempleados, descuento, iva, cantidad_total_productos, numero_factura, fecha_emision_factura, activa
+                ) VALUES (%s, %s, %s, %s, %s, %s, NOW(), 1);
             """
-            cursor.execute(sql_venta, (id_cliente, id_empleado, descuento, iva, total_productos))
+            cursor.execute(sql_venta, (id_cliente, id_empleado, descuento, iva, total_productos, numero_factura))
             id_venta = cursor.lastrowid # Obtenemos el ID generado para la venta
 
             # 3. Preparar e insertar todos los ítems juntos
