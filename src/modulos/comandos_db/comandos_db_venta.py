@@ -14,11 +14,42 @@ def sql_registrar_venta_completa(
     precio_total=0.0,
     total_productos=0,
 ):
-    """Registra la Venta, sus Ítems y descuenta el Stock en una sola transacción atómica."""
+    """Registra la Venta, sus Ítems y descuenta Stock solo si hay disponibilidad suficiente."""
     conexion = conectar_db()
     try:
         with conexion.cursor() as cursor:
-            # 1. Insertar la cabecera de la venta
+            # 1. Validar stock disponible previo a la inserción
+            ids_productos = [item["idproducto_servicio"] for item in lista_items]
+
+            if ids_productos:
+                format_strings = ",".join(["%s"] * len(ids_productos))
+                sql_check = f"""
+                    SELECT idproducto_servicio, nombre, cantidad_actual, tipo 
+                    FROM producto_servicio 
+                    WHERE idproducto_servicio IN ({format_strings});
+                """
+                cursor.execute(sql_check, ids_productos)
+                productos_db = {
+                    p["idproducto_servicio"]: p for p in cursor.fetchall()
+                }
+
+                # Verificar stock ítem por ítem
+                for item in lista_items:
+                    prod_id = item["idproducto_servicio"]
+                    cant_pedida = int(item["cantidad"])
+
+                    if prod_id in productos_db:
+                        prod = productos_db[prod_id]
+                        if (
+                            prod["tipo"] == "producto"
+                            and prod["cantidad_actual"] < cant_pedida
+                        ):
+                            # Cancelar transacción lanzando error
+                            raise ValueError(
+                                f"Stock insuficiente para '{prod['nombre']}'. Disponible: {prod['cantidad_actual']}, Solicitado: {cant_pedida}"
+                            )
+
+            # 2. Insertar la cabecera de la venta
             sql_venta = """
                 INSERT INTO venta (
                     idcliente, idempleado, descuento, iva, cantidad_total_productos, precio_total, numero_factura, fecha_emision_factura, activa
@@ -38,7 +69,7 @@ def sql_registrar_venta_completa(
             )
             id_venta = cursor.lastrowid
 
-            # 2. Insertar los ítems asociados
+            # 3. Insertar ítems
             sql_items = """
                 INSERT INTO item_venta (
                     idventa, idproducto_servicio, precio_unitario, cantidad
@@ -55,7 +86,7 @@ def sql_registrar_venta_completa(
             ]
             cursor.executemany(sql_items, valores_items)
 
-            # 3. Descontar stock únicamente para ítems de tipo 'producto'
+            # 4. Descontar stock
             sql_stock = """
                 UPDATE producto_servicio 
                 SET cantidad_actual = cantidad_actual - %s 
@@ -71,14 +102,13 @@ def sql_registrar_venta_completa(
         print(f"Venta #{id_venta} procesada exitosamente.")
         return id_venta
 
-    except pymysql.MySQLError as e:
+    except Exception as e:
         conexion.rollback()
-        print(f"Error al procesar la venta: {e}")
+        print(f"Error en la transacción de la venta: {e}")
         return None
 
     finally:
         conexion.close()
-
 
 #------------------------------------------------------------------------
 def sql_leer_ventas(busqueda=None, filtro_fecha="hoy"):
