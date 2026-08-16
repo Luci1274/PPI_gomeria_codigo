@@ -38,16 +38,16 @@ def sql_leer_productos(tipo=None, busqueda=None):
     conexion = conectar_db()
     try:
         with conexion.cursor() as cursor:
-            sql = ("SELECT p.idproducto_servicio, p.nombre, p.tipo, p.precio, p.imagen_producto, p.cantidad_actual FROM producto_servicio AS p WHERE activo = 1;")
+            sql = ("SELECT p.idproducto_servicio, p.nombre, p.medidas, p.tipo, p.precio, p.imagen_producto, p.cantidad_actual FROM producto_servicio AS p WHERE activo = 1;")
             
             parametros = []
             
             if tipo:
-                sql += "AND tipo = %s"
+                sql += " AND tipo = %s"
                 parametros.append(tipo)
                 
             if busqueda:
-                sql += "AND (nombre LIKE %s)"
+                sql += " AND (nombre LIKE %s)"
                 parametros.append(busqueda)
             
             cursor.execute(sql, parametros)
@@ -110,7 +110,7 @@ def sql_actualizar_producto(id, datos):
     conexion = conectar_db()
     try:
         with conexion.cursor() as cursor:
-            sql = """UPADATE producto_servicio SET
+            sql = """UPDATE producto_servicio SET
                 nombre = %s,
                 tipo = %s,
                 marca = %s,
@@ -140,7 +140,7 @@ def sql_eliminar_producto(id):
             sql = """ UPDATE producto_servicio SET
                 activo = 0 
                 WHERE idproducto_servicio = %s;"""
-            cursor.execute(sql, (id))
+            cursor.execute(sql, (id,))
         conexion.commit()
         return cursor.rowcount > 0
     
@@ -152,4 +152,16 @@ def sql_eliminar_producto(id):
     finally:
         conexion.close()
         
-        
+#-------------------------------------------------------------------
+def sql_alertar_stock_bajo():
+    conexion = conectar_db()
+    try:
+        with conexion.cursor() as cursor:
+            sql = "SELECT idproducto_servicio, nombre, cantidad_actual, cantidad_minima FROM producto_servicio WHERE activo = 1 AND cantidad_actual < cantidad_minima;"
+            cursor.execute(sql)
+            return cursor.fetchall()
+    except pymysql.MySQLError as e:
+        print(f"Error al alertar stock bajo: {e}")
+        return []
+    finally:
+        conexion.close()
