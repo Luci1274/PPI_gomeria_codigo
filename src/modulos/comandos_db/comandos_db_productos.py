@@ -152,4 +152,16 @@ def sql_eliminar_producto(id):
     finally:
         conexion.close()
         
-        
+#-------------------------------------------------------------------
+def sql_alertar_stock_bajo():
+    conexion = conectar_db()
+    try:
+        with conexion.cursor() as cursor:
+            sql = "SELECT idproducto_servicio, nombre, cantidad_actual, cantidad_minima FROM producto_servicio WHERE activo = 1 AND cantidad_actual < cantidad_minima;"
+            cursor.execute(sql)
+            return cursor.fetchall()
+    except pymysql.MySQLError as e:
+        print(f"Error al alertar stock bajo: {e}")
+        return []
+    finally:
+        conexion.close()
