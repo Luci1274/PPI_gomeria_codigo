@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/clientes.css">
+    <title>Clientes - Sistema Gomería</title>
+</head>
+
+<body>
+    <div class="contenedor">
+        <!--MENÚ LATERAL-->
+        <aside class="menu-lateral">
+            <div class="menu-encabezado">
+                <h2>Sistema Gomeía</h2>
+            </div>
+            <nav class="menu-navegacion">
+                <a href="#" class="enlace-nav">Principal</a>
+                <a href="#" class="enlace-nav">Ventas / Compras</a>
+                <a href="#" class="enlace-nav">Inventario</a>
+                <a href="#" class="enlace-nav activo">Clientes</a>
+                <a href="#" class="enlace-nav">Proveedor</a>
+            </nav>
+            <div class="menu-pie">
+                <div class="usuario-info">
+                    <p class="usuario nombre">Luciano Gonzalez</p>
+                    <p class="usuario-rol">Administrador</p>
+                </div>
+            </div>
+        </aside>
+
+        <!--CONTENIDO PRINCIPAL-->
+        <main class="contenido-principal">
+            <!--Barra Superior de Navegación Externa-->
+            <header class="barra-superior">
+                <div class="titulo-pagina">
+                    <h1>Gestión de Clientes</h1>
+                    <p>Administra y consulta los clientes.</p>
+                </div>
+                <div class="barra-superior-acciones">
+                    <button class="btn btn-primario" id="btn-open-modal">Nuevo Cliente</button>
+                </div>
+            </header>
+
+            <!--Tarjetas-->
+            <section class="cuadricula-metricas">
+                <div class="tarjeta-metrica">
+                    <div class="datos-metrica">
+                        <h3>Total Clientes</h3>
+                        <p class="valor-metrica">20</p>
+                    </div>
+                </div>
+            </section>
+
+            <!--Barra de Filtros y Busqueda-->
+            <section class="barra-filtros">
+                <div class="contenedor-busqueda">
+                    <input type="text" id="input-busqueda" placeholder="Buscar por Nombre o DNI...">
+                </div>
+                <div class="acciones-filtros">
+                    <select class="filtro-seleccion">
+                        <option value="todos">Todos: Ciudad</option>
+                        <option value="roldan">Roldan</option>
+                        <option value="rosario">Rosario</option>
+                    </select>
+                </div>
+            </section>
+
+            <!--Tabla de datos-->
+            <section class="contenedor-tabla">
+                <table class="tabla-datos">
+                    <thead>
+                        <tr>
+                            <th>Nombre/Razón Social</th>
+                            <th>CUIT/DNI</th>
+                            <th>Teléfono</th>
+                            <th>Ciudad</th>
+                            <th>Dirección</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!--Fila 1-->
+                        <tr>
+                            <td>
+                                <div class="nombre-razon-social">
+                                    Diego Gatica
+                                </div>
+                            </td>
+                            <td>
+                                <div class="etiqueta etiqueta-azul">
+                                    47090234
+                                </div>
+                            </td>
+                            <td>
+                                <div class="etiqueta etiqueta-azul">3414566578</div>
+                            </td>
+                            <td>
+                                <div class="etiqueta etiqueta-azul">Roldan</div>
+                            </td>
+                            <td>
+                                <div class="etiqueta etiqueta-azul">San Martín 1245</div>
+                            </td>
+                            <td>
+                                <div class="botones-accion">
+                                    <button class="btn-accion" title="Editar">
+                                        Modificar
+                                    </button>
+                                    <button class="btn-accion" title="Eliminar">
+                                        Eliminar
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!--Fila 2-->
+                        <tr>
+                            <td>
+                                <div class="nombre-razon-social">Michelin Neumáticos</div>
+                            </td>
+                            <td>
+                                <div class="etiqueta etiqueta-azul">20454634357</div>
+                            </td>
+                            <td>
+                                <div class="etiqueta etiqueta-azul">3413455432</div>
+                            </td>
+                            <td>
+                                <div class="etiqueta etiqueta-azul">Rosario</div>
+                            </td>
+                            <td>
+                                <div class="etiqueta etiqueta-azul">Belgrano 2345</div>
+                            </td>
+                            <td class="texto-centro">
+                                <div class="botones-accion">
+                                    <button class="btn-accion" title="Editar">Modificar</button>
+                                    <button class="btn-accion" title="Eliminar">eliminar</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <!--Ventana emergente para registro de Cliente-->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-contenido">
+            <div class="modal-cabecera">
+                <h2>Nuevo Cliente</h2>
+                <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
+            </div>
+
+        <form action="" class="modal-cuerpo">
+            <div class="grupo-input">
+                <label for="input-cliente">Nombre del Cliente</label>
+                <input type="text" id="input-cliente" placeholder="Ej:Michael zarza">
+            </div>
+            <div class="fila-doble">
+                <div class="grupo-input">
+                    <label for="input-cuit">CUIT/DNI</label>
+                    <input type="text" id="input-cuit" placeholder="Ej:34242532">
+                </div>
+                <div class="grupo-input">
+                    <label for="input-telefono">Teléfono</label>
+                    <input type="text" id="input-telefono" placeholder="Ej: 3413456578">
+                </div>
+            </div>
+            <div class="fila-doble">
+                <div class="grupo-input">
+                    <label for="select-ciudad">Ciudad
+                        <select name="select-ciudad" id="select-ciudad">
+                            <option value="roldan">Roldan</option>
+                            <option value="rosario">Rosario</option>
+                            <option value="funes">Funes</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="grupo-input">
+                    <label for="input-direccion">Dirección</label>
+                    <input type="text" id="input-direccion" placeholder="Ej: San Lorenzo 2134">
+                </div>
+            </div>
+            <div class="modal pie">
+                <button class="btn-cancelar" id="btn-cancelar-modal">Cancelar</button>
+                <button class="btn-guardar">Guardar</button>
+            </div>
+        </form>
+    </div>
+    <!--Script de JS-->
+    <script src="../static/js/open_modal.js"></script>
+</body>
+</html>
