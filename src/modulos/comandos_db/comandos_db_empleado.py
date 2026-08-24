@@ -48,6 +48,7 @@ class Usuario:
                 
                 conexion.commit()
                 self.__id_usuario = cursor.lastrowid
+                return self.__id_usuario
         except pymysql.MySQLError as e:
             print(f"Error al crear el usuario: {e}")
         

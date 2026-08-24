@@ -17,14 +17,14 @@ def vista_gestion_ventas():
     estado_conexion = probar_conexion()
     if not estado_conexion:
         flash("Error: No se pudo conectar a la base de datos. No se podrán ver ni registrar ventas.", "danger")
-        return render_template("ventas/gestion_ventas.html", listado_ventas=[], listado_productos_bajos=[])
+        return render_template("gestion_ventas.html", listado_ventas=[], listado_productos_bajos=[])
 
     listado_productos_bajos = sql_alertar_stock_bajo()
     if listado_productos_bajos:
         flash("Alerta: Algunos productos están por debajo del stock mínimo. Por favor, revise el inventario.", "warning")
         
     listado_ventas = sql_leer_ventas()
-    return render_template("ventas/gestion_ventas.html", listado_ventas=listado_ventas, listado_productos_bajos=listado_productos_bajos)
+    return render_template("gestion_ventas.html", listado_ventas=listado_ventas, listado_productos_bajos=listado_productos_bajos)
 
 
 # ------------------------------------------
@@ -68,7 +68,7 @@ def vista_detalle_venta(id):
         flash(f"Error: No se encontró la venta con ID {id}.", "danger")
         return redirect("/ventas")
 
-    return render_template("ventas/detalle_venta.html", venta=venta)    
+    return render_template("detalle_venta.html", venta=venta)    
 
 # ------------------------------------------
 # Anular Venta                             #
@@ -95,11 +95,11 @@ def vista_realizar_venta():
     estado_conexion = probar_conexion()
     if not estado_conexion:
         flash("Error: No se pudo conectar a la base de datos. No se podrán ver ni registrar ventas.", "danger")
-        return render_template("ventas/realizar_venta.html", listado_productos=[], listado_productos_bajos=[])
+        return render_template("realizar_venta.html", listado_productos=[], listado_productos_bajos=[])
 
     listado_productos = sql_leer_productos()
 
-    return render_template("ventas/realizar_venta.html", listado_productos=listado_productos)
+    return render_template("realizar_venta.html", listado_productos=listado_productos)
 
 # ------------------------------------------
 # Procesar Venta (Recibe el carrito)       #
