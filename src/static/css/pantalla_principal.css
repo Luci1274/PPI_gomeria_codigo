@@ -1,0 +1,173 @@
+:root {
+    --color-primario: #0b2240;
+    --primario-claro: #16355d;
+    --fondo-principal: #f4f6f9;
+    --fondo-tarjeta: #fff;
+    --texto-principal: #2c3e50;
+    
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sans-serif;
+}
+
+body {
+    background-color: var(--fondo-principal);
+    color: var(--texto-principal);
+}
+
+.contenedor {
+    display: flex;
+    min-height: 100vh;
+}
+
+.menu-lateral {
+    width: 260px;
+    height: 100vh;
+    background-color: var(--color-primario);
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    z-index: 100;
+}
+
+.menu-encabezado {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+
+.menu-encabezado h2 {
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.menu-navegacion {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.enl-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: rgb(255, 255, 255, 0.7);
+    text-decoration: none;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+
+.enl-nav:hover {
+    color: #fff;
+    background-color: rgb(255, 255, 255, 0.1);
+}
+
+.enl-nav.activo {
+    color: #fff;
+    background-color: var(--primario-claro);
+}
+
+.contenido-principal {
+    margin-left: 260px;
+    width: 100%;
+}
+
+.cuadricula-metricas {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 20px;
+}
+
+.tarjeta-metrica {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.valor-metrica {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--color-primario);
+}
+
+.enl-acciones-rapidas {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.accion-rapida a {
+    display: block;
+    background-color: #fff;
+    border: 2px solid black;
+    text-decoration: none;
+    border-radius: 15px;
+    padding: 10px;
+}
+
+.accion-rapida a:hover {
+    background-color: var(--color-primario);
+    color: #fff;
+    transform: translateY(-2px);
+    transition: all 0.2s ease;
+}
+
+.panel-inferior {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.contenido-tabla {
+    background-color: var(--fondo-tarjeta);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #fffa;
+}
+
+.tabla-datos {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    padding: 12px 16px;
+    background-color: #fafbfc;
+    font-size: 12px;
+    color: var(--color-primario);
+    text-align: left;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+td {
+    padding: 12px 16px;
+    font-size: 14px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.btn-accion {
+    padding: 6px 12px;
+    border-radius: 6px;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: none;
+    cursor: pointer;
+}
+
+
+
