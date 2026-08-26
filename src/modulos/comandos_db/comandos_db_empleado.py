@@ -18,16 +18,17 @@ class Usuario:
     @staticmethod
     def verificar_credenciales(self, nombre_ingresado, contrasena_ingresada):
         """Verifica si las credenciales ingresadas coinciden con las almacenadas en la base de datos.
-        Esto es para el login de los usuarios"""
+        Esto es para el login de los empleados"""
         conexion = conectar_db()
         try:
             with conexion.cursor() as cursor:
-                sql = "SELECT idempleado, nombre_usuario, contraseña FROM usuarios WHERE nombre_usuario = %s AND activo = 1"
+                sql = "SELECT idempleado, nombre_usuario, contraseña, tipo FROM empleado WHERE nombre_usuario = %s AND activo = 1"
                 cursor.execute(sql, (nombre_ingresado,))
                 usuario = cursor.fetchone()
                 
                 if usuario and check_password_hash(usuario["contraseña"], contrasena_ingresada):
-                    return Usuario
+                    datos_devolver = [usuario["idempleado"], usuario["tipo"]]
+                    return datos_devolver
                 else:
                     return None
         except pymysql.MySQLError as e:
@@ -43,7 +44,7 @@ class Usuario:
         try:
             hash_contrasena = self.hash_contraseña(self.__contrasena)
             with conexion.cursor() as cursor:
-                sql = "INSERT INTO usuarios (nombre_usuario, mail, telefono, contrasena, tipo) VALUES (%s, %s, %s, %s, %s)"
+                sql = "INSERT INTO empleado (nombre_usuario, mail, telefono, contrasena, tipo) VALUES (%s, %s, %s, %s, %s)"
                 cursor.execute(sql, (self.__nombre, self.__correo, self.__telefono, hash_contrasena, self.__tipo))
                 
                 conexion.commit()
@@ -54,7 +55,26 @@ class Usuario:
         
         finally:
             conexion.close()
-            
+    
+    @staticmethod
+    def existe_usuario(self, nombre_usuario):
+        conexion = conectar_db()
+        """Comprobar la no existencia del usuario"""
+        try:
+            with conexion.cursor() as cursor:        
+                buscar_nombre = "SELECT nombre_usuario FROM empleado WHERE nombre_usuario = %s"
+                cursor.execute(buscar_nombre,(nombre_usuario))
+                nombre_db = cursor.fetchone()
+                if nombre_db == nombre_usuario:
+                    return True
+                else:
+                    return False
+        except pymysql.MySQLError as e:
+            print(f"Error al intentar verificar la no existencia del usuario a crear: {e}")
+            return False
+        finally:
+            conexion.close()
+        
     @staticmethod        
     def leer_usuarios(self):
         """Lee todos los usuarios de la base de datos y los devuelve en un diccionario.
@@ -62,7 +82,7 @@ class Usuario:
         conecxion = conectar_db()
         try:
             with conecxion.cursor() as cursor:
-                sql = "SELECT idusuario, nombre_usuario, mail, telefono, tipo FROM usuarios WHERE activo = 1"
+                sql = "SELECT idempleado, nombre_usuario, mail, telefono, tipo FROM empleado WHERE activo = 1"
                 cursor.execute(sql)
                 conecxion.commit()
                 resultados = cursor.fetchall()
@@ -80,7 +100,7 @@ class Usuario:
         conexion = conectar_db()
         try:
             with conexion.cursor() as cursor:
-                sql = "SELECT idusuario, nombre_usuario, mail, telefono, tipo FROM usuarios WHERE idusuario = %s"
+                sql = "SELECT idempleado, nombre_usuario, mail, telefono, tipo FROM empleado WHERE idempleado = %s"
                 cursor.execute(sql, (id,))
                 resultado = cursor.fetchone()
                 return resultado
@@ -91,16 +111,16 @@ class Usuario:
         finally:
             conexion.close()
             
-    def actualizar_usuario(self, nueva_contraseña = None):
+    def actualizar_usuario(self, nueva_contrasena = None):
         conexion = conectar_db()
         try:
             with conexion.cursor() as cursor:
-                if nueva_contraseña:
-                    hash_contrasena = self.hash_contraseña(nueva_contraseña)
-                    sql = "UPDATE usuarios SET nombre_usuario = %s, mail = %s, telefono = %s, contrasena = %s, tipo = %s WHERE idusuario = %s"
+                if nueva_contrasena:
+                    hash_contrasena = self.hash_contraseña(nueva_contrasena)
+                    sql = "UPDATE empleado SET nombre_usuario = %s, mail = %s, telefono = %s, contrasena = %s, tipo = %s WHERE idempleado = %s"
                     valores = (self.__nombre, self.__correo, self.__telefono, hash_contrasena, self.__tipo, self.__id_usuario)
                 else:
-                    sql = "UPDATE usuarios SET nombre_usuario = %s, mail = %s, telefono = %s, tipo = %s WHERE idusuario = %s"
+                    sql = "UPDATE empleado SET nombre_usuario = %s, mail = %s, telefono = %s, tipo = %s WHERE idempleado = %s"
                     valores = (self.__nombre, self.__correo, self.__telefono, self.__tipo, self.__id_usuario)
                 cursor.execute(sql, valores)
                 conexion.commit()
@@ -117,7 +137,7 @@ class Usuario:
         conexion = conectar_db()
         try:
             with conexion.cursor() as cursor:
-                sql = "UPDATE usuarios SET activo = 0 WHERE idusuario = %s"
+                sql = "UPDATE empleado SET activo = 0 WHERE idempleado = %s"
                 cursor.execute(sql, (id,))
                 conexion.commit()
                 return True
