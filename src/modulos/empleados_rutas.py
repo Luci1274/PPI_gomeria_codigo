@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, flash, redirect, session
+from flask import Blueprint, render_template, request, jsonify, session
 from modulos.comandos_db.conexion import probar_conexion
 from modulos.comandos_db.comandos_db_empleado import Usuario
 
@@ -61,7 +61,7 @@ def api_registrarse():
     telefono = datos.get("telefono_usuario")
     contrasena = datos.get("contrasena_usuario")  
     
-    if Usuario().no_repetir(nombre):
+    if Usuario.no_repetir(nombre):
         return jsonify({
             "exito": False,
             "mensaje": "El usuario que intentó registrar ya existe, por favor ingrese otro"
@@ -113,7 +113,7 @@ def modificar_usuario(id):
                 "mensaje": f"Base de datos fuera de linea",
                 "redireccion": "/empleados"
             }), 500
-    datos_usuario = Usuario().leer_usuario(id)
+    datos_usuario = Usuario.leer_usuario(id)
     if datos_usuario:
         return render_template("editar_usuario.html", nombre = datos_usuario[1], mail = datos_usuario[2], telefono = datos_usuario[3], tipo = datos_usuario[4]) #nombre del archivo HTML Provicional
 
