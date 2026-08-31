@@ -45,6 +45,10 @@ body {
     z-index: 100;
 }
 
+img {
+    width: 80px;
+}
+
 .menu-encabezado {
     display: flex;
     align-items: center;
