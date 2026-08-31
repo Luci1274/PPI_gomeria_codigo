@@ -1,82 +1,69 @@
+<!-- templates/estructura_base_compra_inventario_venta.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../static/css/style.css">
-    <link rel="stylesheet" href="../static/css/estructura_base_compra_inventario_venta.css">
-    <title>{% block title %} {% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estructura_base_compra_inventario_venta.css') }}">
+    <title>{% block title %} Sistema {% endblock %}</title>
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     <div class="container">
 
-        {% include 'componentes/header.html'%}
+        {% include 'componentes/header.html' %}
+
+        {% include 'componentes/navbar.html' %}
 
         <!-- Botón carrito mobile -->
-            <button class="boton_carrito" id="boton_carrito">
-                {% block ion_icon %}<ion-icon name="cart-outline"></ion-icon> {% endblock %}
-            </button>
+        <button class="boton_carrito" id="boton_carrito">
+            {% block ion_icon %}<ion-icon name="cart-outline"></ion-icon>{% endblock %}
+        </button>
 
         <!-- Overlay barra derecha -->
-            <div class="overlay_derecha" id="overlay_derecha"></div>
+        <div class="overlay_derecha" id="overlay_derecha"></div>
 
+        <!-- Sidebar Lateral Derecha -->
         <div class="contenedor_barra_lateral_derecha" id="barra_derecha">
-
             <div class="contenedor_titulo_barra_lateral_derecha">
-                <p>{% block p  %} {% endblock %} </p>
+                <p>{% block titulo_barra_derecha %} Resumen {% endblock %}</p>
             </div>
             <div class="parte_superior_derecha">
-                <button class="restablecer"><ion-icon name="refresh-outline"></ion-icon></button>
+                <button class="restablecer" id="btn_restablecer">
+                    <ion-icon name="refresh-outline"></ion-icon>
+                </button>
                 <span>Fecha: <span id="fecha"></span></span>
-                {% block contenido_adicional %} {% endblock %}
+                {% block contenido_adicional_derecha %}{% endblock %}
             </div>
             <hr>
             <div class="cuerpo_barra_derecha">
-                {% block cuerpo_derecha %} {% endblock %}
+                {% block cuerpo_derecha %}{% endblock %}
             </div>
             <hr>
             <div class="opciones_derecha">
-                {% block opciones_derecha %} {% endblock %}
+                {% block opciones_derecha %}{% endblock %}
             </div>
         </div>
 
+        <!-- Contenido Principal -->
         <main>
-            <!-- Falta CSS -->
-            <form action="" method="get" id="form_list_producto">
-            
-                {% include 'componentes/navbar.html' %}
-
-                    {% set opciones_filtrado%}
-                        {% for tipo in tipos %}
-                            <button> {{tipo.tipo}} </button>
-                        {% endfor %}
-                    {% endset %}
-
-                {% include 'componentes/filtro.html' %}
-
-                {% for producto in productos %}
-                    <div class="tarjeta_producto">
-                        <div class="imagen_producto">
-                            <button class="Producto" style="background-image: url({{producto.imagen_producto}});">{{producto.nombre ~"-"~ producto.medidas}}</button>
-                        </div>
-                        <div class="info_producto">
-                            <p> Nombre: {{producto.nombre}} </p>
-                            <p> Precio: {{producto.precio}} </p>
-                            <p> Cantidad en stock: {{producto.cantidad_actual}} </p>
-                        </div>
-                    </div>
-                {% endfor %}
-            </form>
+            {% block contenido_principal %}
+            <!-- Aquí las vistas hijas cargarán el filtro y la grilla de productos -->
+            {% endblock %}
         </main>
-        <footer>
 
+        <footer>
+            {% block footer %}{% endblock %}
         </footer>
     </div>
-    <script type="module" src="../static/js/barral_navegacion.js"></script>
-    
+
+    <!-- Scripts Globales -->
+    <script type="module" src="{{ url_for('static', filename='js/barral_navegacion.js') }}"></script>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-
-    <script type="module" src="../static/js/estructura_base_compra_inventario_venta.js"></script>
+    <script type="module" src="{{ url_for('static', filename='js/estructura_base_compra_inventario_venta.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
