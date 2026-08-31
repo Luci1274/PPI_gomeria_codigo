@@ -25,7 +25,7 @@
             <div class="titulo-pagina">
                 <h1>Bienvenido <strong id="nombre-usuario">Usuario</strong></h1>
                 <p>Fecha: <strong id="fecha-actual">fecha_actual</strong></p>
-                <p>Resumen operativo del dia</p>
+                <h2 class="info-operativo">Resumen operativo del dia</h2>
             </div>
         </header>
         <!--Tarjetas-->
@@ -51,14 +51,16 @@
         </section>
         <section class="enl-acciones-rapidas">
             <h3>Accesos rápidos</h3>
-            <div class="accion-rapida"><a href="#">Nueva venta</a></div>
-            <div class="accion-rapida"><a href="#">Nuevo cliente</a></div>
-            <div class="accion-rapida"><a href="#">Cargar stock</a></div>
-            <div class="accion-rapida"><a href="#">Nueva Compra</a></div>
+            <div class="cuadricula-acceso">
+                <div class="accion-rapida"><a href="#">Nueva venta</a></div>
+                <div class="accion-rapida"><a href="#">Nuevo cliente</a></div>
+                <div class="accion-rapida"><a href="#">Cargar stock</a></div>
+                <div class="accion-rapida"><a href="#">Nueva Compra</a></div>
+            </div>
         </section>
         <div class="panel-inferior">
         <section class="contenido-tabla">
-            <h3>Ultimas Ventas</h3>
+            <h3 class="titulo-tablas">Ultimas Ventas</h3>
             <table class="tabla-datos">
                 <thead>
                     <tr>
@@ -85,8 +87,8 @@
             </table>
         </section>
         <section class="contenido-tabla">
-            <h3>Alertas de stock bajo</h3>
-            <table class="tabla-datos-stock">
+            <h3 class="titulo-tablas">Alertas de stock bajo</h3>
+            <table class="tabla-datos">
                 <thead>
                     <tr>
                         <th>Producto</th>
