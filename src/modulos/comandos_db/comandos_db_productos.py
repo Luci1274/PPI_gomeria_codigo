@@ -1,5 +1,5 @@
 import pymysql
-from modulos.comandos_db.conexion import conectar_db
+from config import Config
 
 #----------------------------------------------------------------------------
 def sql_crear_producto(nombre, tipo, marca=None, medidas=None, imagen_producto=None, cantidad_actual=0, cantidad_minima=0, precio=0.0, activo=1):
@@ -9,7 +9,7 @@ def sql_crear_producto(nombre, tipo, marca=None, medidas=None, imagen_producto=N
             activo, cantidad_actual, cantidad_minima, precio
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     try:
         with conexion.cursor() as cursor:
             valores = (nombre, tipo, marca, medidas, imagen_producto, cantidad_actual, cantidad_minima, precio)
@@ -35,7 +35,7 @@ def sql_leer_productos(tipo=None, busqueda=None):
     """Lee los productos activos de la base de datos."""
     """Tipo: permite filtrar por categoria, Busqueda: permite buscar por texto ingresado en la barra de busqueda"""
     
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     try:
         with conexion.cursor() as cursor:
             sql = ("SELECT p.idproducto_servicio, p.nombre, p.medidas, p.tipo, p.precio, p.imagen_producto, p.cantidad_actual FROM producto_servicio AS p WHERE activo = 1;")
@@ -64,7 +64,7 @@ def sql_leer_productos(tipo=None, busqueda=None):
 #----------------------------------------------------------------------------
 def sql_leer_producto(id):
     """Busca el producto por el id y lo devuelve"""
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     
     try:
         with conexion.cursor() as cursor:
@@ -87,7 +87,7 @@ def sql_leer_tipos():
     """Lee el tipo(es la categoría) de los productos y servicios y los devuelve."""
     """La idea es que lea el tipo y con eso armamos un filtro dinamico"""
     
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     
     try:
         with conexion.cursor() as cursor:
@@ -107,7 +107,7 @@ def sql_leer_tipos():
 #----------------------------------------------------------------------------
 def sql_actualizar_producto(id, datos):
     """Actualiza los datos del producto """
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     try:
         with conexion.cursor() as cursor:
             sql = """UPDATE producto_servicio SET
@@ -134,7 +134,7 @@ def sql_actualizar_producto(id, datos):
 #----------------------------------------------------------------------------
 def sql_eliminar_producto(id):
     """Elimina el producto de forma logica, no de db"""
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     try:
         with conexion.cursor() as cursor:
             sql = """ UPDATE producto_servicio SET
@@ -154,7 +154,7 @@ def sql_eliminar_producto(id):
         
 #-------------------------------------------------------------------
 def sql_alertar_stock_bajo():
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     try:
         with conexion.cursor() as cursor:
             sql = "SELECT idproducto_servicio, nombre, cantidad_actual, cantidad_minima FROM producto_servicio WHERE activo = 1 AND cantidad_actual < cantidad_minima;"
