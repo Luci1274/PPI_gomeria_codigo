@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, session
 from modulos.comandos_db.comandos_db_venta import Venta
-from modulos.comandos_db.comandos_db_productos import sql_leer_productos, sql_alertar_stock_bajo, sql_leer_tipos
-from modulos.comandos_db.comandos_db_clientes import sql_leer_clientes
+from modulos.comandos_db.comandos_db_productos import sql_alertar_stock_bajo
 from modulos.comandos_db.conexion import probar_conexion
 
 ventas_bp = Blueprint("ventas", __name__)

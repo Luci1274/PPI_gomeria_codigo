@@ -1,270 +1,231 @@
-document.addEventListener("DOMContentLoaded", () => {
-    // Estado global del carrito en la vista actual
+document.addEventListener('DOMContentLoaded', () => {
     let carrito = [];
+    let filtroTipoActual = 'todos';
 
-    // Captura de elementos del DOM
-    const contenedorProductos = document.querySelector(".contenedor_grilla_productos");
-    const listaCarrito = document.getElementById("lista_carrito");
-    const totalVentaSpan = document.getElementById("total_venta");
-    const btnConfirmarVenta = document.getElementById("btn_confirmar_venta");
-    const btnRestablecer = document.getElementById("btn_restablecer") || document.querySelector(".restablecer");
+    // Referencias al DOM
+    const listaCarrito = document.getElementById('lista_carrito');
+    const totalVentaElem = document.getElementById('total_venta');
+    const inputDescuento = document.getElementById('input_descuento');
+    const selectCliente = document.getElementById('select_cliente');
+    const btnConfirmarVenta = document.getElementById('btn_confirmar_venta');
+    const contenedorProductos = document.querySelector('.contenedor_grilla_productos');
+    
+    // Elementos de Filtrado y Búsqueda
     const inputBusqueda = document.querySelector('input[name="busqueda"]');
-    const botonesTipo = document.querySelectorAll(".btn_tipo");
+    const botonesTipo = document.querySelectorAll('.btn_tipo');
 
-    // ------------------------------------------
-    // 1. Añadir Producto al Carrito             #
-    // ------------------------------------------
-    if (contenedorProductos) {
-        contenedorProductos.addEventListener("click", (e) => {
-            const btn = e.target.closest(".btn_agregar_carrito");
-            if (!btn) return;
+    // ----------------------------------------------------
+    // 1. FILTRADO Y BÚSQUEDA EN TIEMPO REAL
+    // ----------------------------------------------------
+    function aplicarFiltros() {
+        const tarjetas = document.querySelectorAll('.tarjeta_producto');
+        const textoBusqueda = inputBusqueda ? inputBusqueda.value.toLowerCase().trim() : '';
 
-            const idproducto = parseInt(btn.dataset.id);
-            const nombre = btn.dataset.nombre;
-            const precio = parseFloat(btn.dataset.precio);
+        tarjetas.forEach(tarjeta => {
+            const nombre = (tarjeta.dataset.nombre || '').toLowerCase();
+            const tipo = (tarjeta.dataset.tipo || '').toLowerCase();
 
-            agregarAlCarrito(idproducto, nombre, precio);
+            const coincideNombre = nombre.includes(textoBusqueda);
+            const coincideTipo = (filtroTipoActual === 'todos' || tipo === filtroTipoActual.toLowerCase());
+
+            if (coincideNombre && coincideTipo) {
+                tarjeta.style.display = '';
+            } else {
+                tarjeta.style.display = 'none';
+            }
         });
     }
 
-    function agregarAlCarrito(idproducto, nombre, precio) {
-        const itemExistente = carrito.find(item => item.idproducto === idproducto);
+    if (inputBusqueda) {
+        inputBusqueda.addEventListener('input', aplicarFiltros);
+        // Evitar que la tecla Enter recargue la página si está en un form
+        inputBusqueda.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') e.preventDefault();
+        });
+    }
+
+    if (botonesTipo.length > 0) {
+        botonesTipo.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                botonesTipo.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                filtroTipoActual = btn.dataset.tipo || 'todos';
+                aplicarFiltros();
+            });
+        });
+    }
+
+    // ----------------------------------------------------
+    // 2. GESTIÓN DE PRODUCTOS Y CARRITO
+    // ----------------------------------------------------
+    if (contenedorProductos) {
+        contenedorProductos.addEventListener('click', (e) => {
+            const tarjeta = e.target.closest('.tarjeta_producto');
+            if (!tarjeta) return;
+
+            const id = tarjeta.dataset.id;
+            const nombre = tarjeta.dataset.nombre;
+            const precio = parseFloat(tarjeta.dataset.precio);
+
+            if (!id) return;
+            agregarAlCarrito({ id, nombre, precio });
+        });
+    }
+
+    function agregarAlCarrito(producto) {
+        const itemExistente = carrito.find(item => String(item.idproducto_servicio) === String(producto.id));
 
         if (itemExistente) {
             itemExistente.cantidad += 1;
         } else {
             carrito.push({
-                idproducto: idproducto,
-                nombre: nombre,
-                precio: precio,
+                idproducto_servicio: producto.id,
+                nombre: producto.nombre,
+                precio_unitario: producto.precio,
                 cantidad: 1
             });
         }
-        actualizarVistaCarrito();
+
+        renderizarCarrito();
     }
 
-    // ------------------------------------------
-    // 2. Dibujar / Renderizar el Carrito       #
-    // ------------------------------------------
-    function actualizarVistaCarrito() {
-        if (!listaCarrito) return;
+    // ----------------------------------------------------
+    // 3. CÁLCULO DE TOTALES (SUBTOTAL - DESCUENTO)
+    // ----------------------------------------------------
+    function calcularTotales() {
+        const subtotal = carrito.reduce((acc, item) => acc + (item.precio_unitario * item.cantidad), 0);
+
+        let descuento = 0;
+        if (inputDescuento && inputDescuento.value) {
+            descuento = parseInt(inputDescuento.value, 10) || 0;
+            if (descuento < 0) descuento = 0; // Prevenir números negativos
+        }
+
+        const totalFinal = Math.max(0, subtotal - descuento);
+        return { subtotal, descuento, totalFinal };
+    }
+
+    function renderizarCarrito() {
+        if (!listaCarrito || !totalVentaElem) return;
 
         if (carrito.length === 0) {
             listaCarrito.innerHTML = '<p class="carrito_vacio">No hay productos agregados a la venta.</p>';
-            if (totalVentaSpan) totalVentaSpan.textContent = "0.00";
+            totalVentaElem.textContent = '0.00';
             return;
         }
 
-        listaCarrito.innerHTML = "";
-        let total = 0;
+        listaCarrito.innerHTML = '';
 
-        carrito.forEach((item, index) => {
-            const subtotal = item.precio * item.cantidad;
-            total += subtotal;
+        carrito.forEach(item => {
+            const subtotalItem = item.precio_unitario * item.cantidad;
 
-            const itemDiv = document.createElement("div");
-            itemDiv.className = "item_carrito";
+            const itemDiv = document.createElement('div');
+            itemDiv.classList.add('item_carrito');
             itemDiv.innerHTML = `
-                <div class="info_item_carrito">
+                <div class="info_item">
                     <p class="nombre_item"><strong>${item.nombre}</strong></p>
-                    <p class="subtotal_item">$${item.precio.toFixed(2)} x ${item.cantidad} = <strong>$${subtotal.toFixed(2)}</strong></p>
+                    <p class="subtotal_item">$${item.precio_unitario.toFixed(2)} x ${item.cantidad} = $${subtotalItem.toFixed(2)}</p>
                 </div>
-                <div class="acciones_item_carrito">
-                    <button type="button" class="btn_restar" data-index="${index}">-</button>
-                    <span class="cant_item">${item.cantidad}</span>
-                    <button type="button" class="btn_sumar" data-index="${index}">+</button>
-                    <button type="button" class="btn_eliminar" data-index="${index}">
-                        <ion-icon name="trash-outline"></ion-icon>
-                    </button>
+                <div class="acciones_item">
+                    <button type="button" class="btn_decrementar" data-id="${item.idproducto_servicio}">-</button>
+                    <span>${item.cantidad}</span>
+                    <button type="button" class="btn_incrementar" data-id="${item.idproducto_servicio}">+</button>
+                    <button type="button" class="btn_eliminar" data-id="${item.idproducto_servicio}">&times;</button>
                 </div>
             `;
             listaCarrito.appendChild(itemDiv);
         });
 
-        if (totalVentaSpan) totalVentaSpan.textContent = total.toFixed(2);
+        const { totalFinal } = calcularTotales();
+        totalVentaElem.textContent = totalFinal.toFixed(2);
     }
 
-    // ------------------------------------------
-    // 3. Modificar Cantidades o Eliminar Items #
-    // ------------------------------------------
+    // Recalcular total cuando se escribe un descuento
+    if (inputDescuento) {
+        inputDescuento.addEventListener('input', () => {
+            const { totalFinal } = calcularTotales();
+            totalVentaElem.textContent = totalFinal.toFixed(2);
+        });
+    }
+
+    // Controles dentro de las tarjetas del carrito (+, -, eliminar)
     if (listaCarrito) {
-        listaCarrito.addEventListener("click", (e) => {
-            const btn = e.target.closest("button");
-            if (!btn) return;
+        listaCarrito.addEventListener('click', (e) => {
+            const id = e.target.dataset.id;
+            if (!id) return;
 
-            const index = parseInt(btn.dataset.index);
+            const item = carrito.find(i => String(i.idproducto_servicio) === String(id));
 
-            if (btn.classList.contains("btn_sumar")) {
-                carrito[index].cantidad += 1;
-            } else if (btn.classList.contains("btn_restar")) {
-                carrito[index].cantidad -= 1;
-                if (carrito[index].cantidad <= 0) {
-                    carrito.splice(index, 1);
+            if (e.target.classList.contains('btn_incrementar')) {
+                if (item) item.cantidad += 1;
+            } else if (e.target.classList.contains('btn_decrementar')) {
+                if (item) {
+                    item.cantidad -= 1;
+                    if (item.cantidad <= 0) {
+                        carrito = carrito.filter(i => String(i.idproducto_servicio) !== String(id));
+                    }
                 }
-            } else if (btn.classList.contains("btn_eliminar")) {
-                carrito.splice(index, 1);
+            } else if (e.target.classList.contains('btn_eliminar')) {
+                carrito = carrito.filter(i => String(i.idproducto_servicio) !== String(id));
             }
 
-            actualizarVistaCarrito();
+            renderizarCarrito();
         });
     }
 
-    // ------------------------------------------
-    // 4. Vaciar Carrito (Botón Restablecer)    #
-    // ------------------------------------------
-    if (btnRestablecer) {
-        btnRestablecer.addEventListener("click", () => {
-            carrito = [];
-            actualizarVistaCarrito();
-        });
-    }
-
-    // ------------------------------------------
-    // 5. Enviar Transacción (POST al Backend)  #
-    // ------------------------------------------
+    // ----------------------------------------------------
+    // 4. CONFIRMAR Y ENVIAR VENTA
+    // ----------------------------------------------------
     if (btnConfirmarVenta) {
-        btnConfirmarVenta.addEventListener("click", async () => {
+        btnConfirmarVenta.addEventListener('click', async () => {
             if (carrito.length === 0) {
-                alert("El carrito de compra está vacío.");
+                alert('Debe agregar al menos un producto para realizar la venta.');
                 return;
             }
 
-            btnConfirmarVenta.disabled = true;
-            btnConfirmarVenta.textContent = "Procesando...";
+            const idCliente = selectCliente && selectCliente.value !== "" ? selectCliente.value : null;
+            const { descuento } = calcularTotales();
 
             const payload = {
+                id_cliente: idCliente,
                 carrito: carrito,
-                id_cliente: null, // Puedes vincularlo a un <select> de clientes si agregas uno
-                descuento: 0.0,
-                numero_factura: `FAC-${Date.now()}`
+                descuento: descuento,
+                numero_factura: null
             };
 
             try {
-                const respuesta = await fetch("/api/ventas/realizar", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                btnConfirmarVenta.disabled = true;
+                btnConfirmarVenta.textContent = 'Procesando...';
+
+                const respuesta = await fetch('/api/ventas/realizar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
                 const resultado = await respuesta.json();
 
                 if (respuesta.ok && resultado.exito) {
-                    alert(resultado.mensaje);
-                    carrito = [];
-                    actualizarVistaCarrito();
+                    alert(resultado.mensaje || 'Venta realizada con éxito.');
                     if (resultado.redireccion) {
                         window.location.href = resultado.redireccion;
-                    }
-                } else {
-                    alert(`Error: ${resultado.mensaje || "No se pudo procesar la venta."}`);
-                    if (resultado.redireccion) {
-                        window.location.href = resultado.redireccion;
-                    }
-                }
-            } catch (error) {
-                console.error("Error al enviar la venta:", error);
-                alert("Ocurrió un error de conexión al intentar enviar la venta.");
-            } finally {
-                btnConfirmarVenta.disabled = false;
-                btnConfirmarVenta.textContent = "Confirmar Venta";
-            }
-        });
-    }
-
-    // Captura del elemento select
-    const selectCliente = document.getElementById("select_cliente");
-
-    if (btnConfirmarVenta) {
-        btnConfirmarVenta.addEventListener("click", async () => {
-            if (carrito.length === 0) {
-                alert("El carrito de compra está vacío.");
-                return;
-            }
-
-            // Si hay un ID seleccionado lo convierte a número; si es cadena vacía, asigna null
-            const idClienteSeleccionado = (selectCliente && selectCliente.value) 
-                ? parseInt(selectCliente.value, 10) 
-                : null;
-
-            btnConfirmarVenta.disabled = true;
-            btnConfirmarVenta.textContent = "Procesando...";
-
-            const payload = {
-                carrito: carrito,
-                id_cliente: idClienteSeleccionado, // Se envía null o el ID del cliente seleccionado
-                descuento: 0.0,
-                numero_factura: `FAC-${Date.now()}`
-            };
-
-            try {
-                const respuesta = await fetch("/api/ventas/realizar", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-
-                const resultado = await respuesta.json();
-
-                if (respuesta.ok && resultado.exito) {
-                    alert(resultado.mensaje);
-                    carrito = [];
-                    actualizarVistaCarrito();
-                    
-                    // Limpia el selector de cliente al reiniciar el carrito
-                    if (selectCliente) selectCliente.value = "";
-
-                    if (resultado.redireccion) {
-                        window.location.href = resultado.redireccion;
-                    }
-                } else {
-                    alert(`Error: ${resultado.mensaje || "No se pudo procesar la venta."}`);
-                }
-            } catch (error) {
-                console.error("Error al registrar venta:", error);
-                alert("Ocurrió un error de conexión al enviar la venta.");
-            } finally {
-                btnConfirmarVenta.disabled = false;
-                btnConfirmarVenta.textContent = "Confirmar Venta";
-            }
-        });
-    }
-
-    // ------------------------------------------
-    // 6. Filtrado Dinámico Instantáneo (Frontend)
-    // ------------------------------------------
-    if (inputBusqueda && contenedorProductos) {
-        inputBusqueda.addEventListener("input", (e) => {
-            const termino = e.target.value.toLowerCase().trim();
-            const tarjetas = contenedorProductos.querySelectorAll(".tarjeta_producto");
-
-            tarjetas.forEach(tarjeta => {
-                const texto = tarjeta.textContent.toLowerCase();
-                tarjeta.style.display = texto.includes(termino) ? "" : "none";
-            });
-        });
-    }
-
-    if (botonesTipo.length > 0 && contenedorProductos) {
-        botonesTipo.forEach(btn => {
-            btn.addEventListener("click", () => {
-                botonesTipo.forEach(b => b.classList.remove("active"));
-                btn.classList.add("active");
-
-                const tipoSeleccionado = btn.dataset.tipo;
-                const tarjetas = contenedorProductos.querySelectorAll(".tarjeta_producto");
-
-                tarjetas.forEach(tarjeta => {
-                    if (tipoSeleccionado === "todos" || !tipoSeleccionado) {
-                        tarjeta.style.display = "";
                     } else {
-                        // Compara con un atributo data-tipo en la tarjeta si lo incluyes
-                        const tipoTarjeta = tarjeta.dataset.tipo;
-                        tarjeta.style.display = (tipoTarjeta === tipoSeleccionado) ? "" : "none";
+                        carrito = [];
+                        if (inputDescuento) inputDescuento.value = '';
+                        renderizarCarrito();
                     }
-                });
-            });
+                } else {
+                    alert(resultado.mensaje || 'Error al procesar la venta.');
+                }
+            } catch (error) {
+                console.error('Error en la petición:', error);
+                alert('Ocurrió un error de red al intentar procesar la venta.');
+            } finally {
+                btnConfirmarVenta.disabled = false;
+                btnConfirmarVenta.textContent = 'Confirmar Venta';
+            }
         });
     }
 });

@@ -28,6 +28,8 @@
     </div>
 
     <div class="resumen_pago">
+        <label for="input_descuento">Descuento:</label>
+        <p> <input type="number" name="Descuento" id="input_descuento" min="0" placeholder="Ej 2000"> </p>
         <p><strong>Total:</strong> $<span id="total_venta">0.00</span></p>
         <button class="btn_confirmar_venta" id="btn_confirmar_venta">Confirmar Venta</button>
     </div>
@@ -64,24 +66,24 @@
         <!-- 4. Grilla/Listado de productos -->
         <div class="contenedor_grilla_productos">
             {% for producto in listado_productos %}
-                <div class="tarjeta_producto">
-                    <div class="imagen_producto">
-                        <button class="Producto" style="background-image: url('{{ producto.imagen_producto }}');">
-                            {{ producto.nombre }} - {{ producto.medidas }}
-                        </button>
+                
+                <button class="tarjeta_producto"
+                    data-id="{{producto.idproducto_servicio}}"
+                    data-nombre="{{producto.nombre}}"
+                    data-precio="{{producto.precio}}"
+                    data-tipo="{{producto.tipo}}">
+                    
+                    <div class="contenido_producto">
+                        <img src="{{producto.imagen_producto}}" alt="{{ producto.nombre }} - {{ producto.medidas }}" height="150px" class="imagen_producto">
+                        
+                        <div class="info_producto">
+                            <p><strong>Nombre:</strong> {{ producto.nombre }} - {{producto.medidas}}</p>
+                            <p><strong>Precio:</strong> ${{ producto.precio }}</p>
+                            <p><strong>Stock:</strong> {{ producto.cantidad_actual }}</p>
+                        </div>
                     </div>
-                    <div class="info_producto">
-                        <p><strong>Nombre:</strong> {{ producto.nombre }}</p>
-                        <p><strong>Precio:</strong> ${{ producto.precio }}</p>
-                        <p><strong>Stock:</strong> {{ producto.cantidad_actual }}</p>
-                        <button class="btn_agregar_carrito" 
-                                data-id="{{ producto.idproducto_servicio }}"
-                                data-nombre="{{ producto.nombre }}"
-                                data-precio="{{ producto.precio }}">
-                            Agregar a la Venta
-                        </button>
-                    </div>
-                </div>
+                </button>
+
             {% else %}
                 <p class="sin_resultados">No se encontraron productos disponibles.</p>
             {% endfor %}
@@ -90,5 +92,5 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script type="module" src="{{ url_for('static', filename='js/realizar_ventas.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/realizar_venta.js') }}"></script>
 {% endblock %}
