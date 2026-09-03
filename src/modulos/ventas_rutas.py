@@ -1,4 +1,3 @@
-@ -0,0 +1,198 @@
 from flask import Blueprint, render_template, request, jsonify, session
 from modulos.comandos_db.comandos_db_venta import Venta
 from modulos.comandos_db.comandos_db_productos import sql_alertar_stock_bajo
