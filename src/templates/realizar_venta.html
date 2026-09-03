@@ -1,0 +1,96 @@
+<!-- templates/realizar_venta.html -->
+{% extends 'estructura_base_compra_inventario_venta.html' %}
+
+{% block title %} Emitir Venta - Sistema {% endblock %}
+
+{% block titulo_barra_derecha %} Carrito de Venta {% endblock %}
+
+{% block cuerpo_derecha %}
+    <!-- Lista dinámica de items seleccionados en la venta (Manejado por JS) -->
+    <div id="lista_carrito">
+        <p class="carrito_vacio">No hay productos agregados a la venta.</p>
+    </div>
+{% endblock %}
+
+<!-- templates/realizar_venta.html -->
+{% block opciones_derecha %}
+    <!-- Selector opcional de cliente -->
+    <div class="contenedor_select_cliente">
+        <label for="select_cliente"><strong>Cliente (Opcional):</strong></label>
+        <select id="select_cliente" class="input_select_cliente">
+            <option value="">-- Consumidor Final / Sin Registrar --</option>
+            {% for cliente in listado_clientes %}
+                <option value="{{ cliente.idcliente }}">
+                    {{ cliente.nombre }} {{ cliente.apellido }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="resumen_pago">
+        <label for="input_descuento">Descuento: Ejemplo 2000</label>
+        <p> <input type="number" name="Descuento" id="input_descuento" min="0" placeholder="Ej 2000" value="0"> </p>
+        <p><strong>Total:</strong> $<span id="total_venta">0.00</span></p>
+        <button class="btn_confirmar_venta" id="btn_confirmar_venta">Confirmar Venta</button>
+    </div>
+{% endblock %}
+
+{% block contenido_principal %}
+    <!-- 1. Generación de botones de filtrado -->
+    {% set opciones_filtrado %}
+        {% if error_db %}
+            <button type="button" class="btn_tipo disabled" disabled>Sin categorías</button>
+        {% else %}
+            <button type="button" class="btn_tipo active" data-tipo="todos">Todos</button>
+            {% for item in listado_tipos %}
+                <!-- Usamos item.tipo como el identificador de filtro -->
+                <button type="button" class="btn_tipo" data-tipo="{{ item.tipo }}">{{ item.tipo }}</button>
+            {% endfor %}
+        {% endif %}
+    {% endset %}
+
+    <!-- 2. Inclusión del filtro -->
+    {% include 'componentes/filtro.html' %}
+
+    <!-- 3. Alerta en pantalla si la base de datos no está disponible -->
+    {% if error_db %}
+        <div class="alerta_error_db">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <h3>Error de conexión con la Base de Datos</h3>
+            <p>No se pudieron cargar los productos. Por favor, reintente en unos momentos.</p>
+            <button onclick="window.location.reload();" class="btn_reintentar">
+                <ion-icon name="refresh-outline"></ion-icon> Reintentar
+            </button>
+        </div>
+    {% else %}
+        <!-- 4. Grilla/Listado de productos -->
+        <div class="contenedor_grilla_productos">
+            {% for producto in listado_productos %}
+                
+                <button class="tarjeta_producto"
+                    data-id="{{producto.idproducto_servicio}}"
+                    data-nombre="{{producto.nombre}}"
+                    data-precio="{{producto.precio}}"
+                    data-tipo="{{producto.tipo}}">
+                    
+                    <div class="contenido_producto">
+                        <img src="{{producto.imagen_producto}}" alt="{{ producto.nombre }} - {{ producto.medidas }}" height="150px" class="imagen_producto">
+                        
+                        <div class="info_producto">
+                            <p><strong>Nombre:</strong> {{ producto.nombre }} - {{producto.medidas}}</p>
+                            <p><strong>Precio:</strong> ${{ producto.precio }}</p>
+                            <p><strong>Stock:</strong> {{ producto.cantidad_actual }}</p>
+                        </div>
+                    </div>
+                </button>
+
+            {% else %}
+                <p class="sin_resultados">No se encontraron productos disponibles.</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+    <script type="module" src="{{ url_for('static', filename='js/realizar_venta.js') }}"></script>
+{% endblock %}

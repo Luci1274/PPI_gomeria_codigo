@@ -1,11 +1,11 @@
 import pymysql
-from modulos.comandos_db.conexion import conectar_db
+from config import Config
 
 #----------------------------------------------------------------------------
 def sql_crear_cliente(nombre, apellido, cuit, numero_tel, mail, plazo_de_pago, deuda = "no", activo = 1):
     """Crea un nuevo cliente en la base de datos"""
     sql = """INSERT INTO clientes (nombre, apellido, cuit, numero_tel, mail, plazo_de_pago, deuda, activo) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     try:
         with conexion.cursor() as cursor:
             valores = (nombre, apellido, cuit, numero_tel, mail, plazo_de_pago, deuda, activo)
@@ -27,10 +27,10 @@ def sql_crear_cliente(nombre, apellido, cuit, numero_tel, mail, plazo_de_pago, d
 #----------------------------------------------------------------------------
 def sql_leer_clientes(busqueda=None):
     """Lee los clientes activos de la base de datos."""
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     try:
         with conexion.cursor() as cursor:
-            sql = "SELECT * FROM clientes WHERE activo = 1"
+            sql = "SELECT * FROM cliente WHERE activo = 1"
             
             parametros = []
             
@@ -40,8 +40,12 @@ def sql_leer_clientes(busqueda=None):
             
             cursor.execute(sql, parametros)
             listado_clientes = cursor.fetchall()
-            return listado_clientes
-        
+            if len(listado_clientes) == 0:
+                return []
+
+            else:
+                return listado_clientes
+            
     except pymysql.MySQLError as e:
             conexion.rollback()
             print(f"Error al leer clientes: {e}")
@@ -52,7 +56,7 @@ def sql_leer_clientes(busqueda=None):
 #----------------------------------------------------------------------------
 def sql_leer_cliente(id):
     """Lee un cliente específico de la base de datos por su ID."""
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     try:
         with conexion.cursor() as cursor:
             sql = "SELECT * FROM clientes WHERE id = %s AND activo = 1"
@@ -71,7 +75,7 @@ def sql_leer_cliente(id):
 def sql_actualizar_cliente(id, nombre, apellido, cuit, numero_tel, mail, plazo_de_pago, deuda):
     """Actualiza un cliente existente en la base de datos."""
     sql = """UPDATE clientes SET nombre = %s, apellido = %s, cuit = %s, numero_tel = %s, mail = %s, plazo_de_pago = %s, deuda = %s WHERE id = %s"""
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     try:
         with conexion.cursor() as cursor:
             valores = (nombre, apellido, cuit, numero_tel, mail, plazo_de_pago, deuda, id)
@@ -91,7 +95,7 @@ def sql_actualizar_cliente(id, nombre, apellido, cuit, numero_tel, mail, plazo_d
 def sql_eliminar_cliente(id):
     """Elimina un cliente de la base de datos (eliminación lógica)."""
     sql = "UPDATE clientes SET activo = 0 WHERE id = %s"
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     try:
         with conexion.cursor() as cursor:
             cursor.execute(sql, (id,))

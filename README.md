@@ -62,133 +62,410 @@
 ### Instalación
 - Para instalar las dependencias necesarias, puedes usar pip:
 
-### SECCION VENTA
+### SECCIÓN VENTA
 
 ## Documentación técnica del módulo de ventas
 
-El módulo de ventas del proyecto permite registrar transacciones, listar ventas, consultar detalle, filtrar por búsqueda y fecha, y anular ventas manteniendo el stock actualizado. La lógica principal se encuentra en `src/modulos/comandos_db/comandos_db_venta.py` y en `src/modulos/ventas_rutas.py`.
+Aquí tienes la documentación técnica completa y actualizada del módulo de ventas, adaptada a la clase `Venta` y a los nuevos formatos de respuesta JSON con redirección.
 
-### 1. Funciones de base de datos (`comandos_db_venta.py`)
+### Códigos de estado HTTP utilizados
 
-#### `sql_registrar_venta_completa(...)`
-- Recibe: `id_cliente` (int | None), `id_empleado` (int), `lista_items` (list[dict]), `numero_factura` (str | None), `iva` (float), `descuento` (float), `precio_total` (float), `total_productos` (int).
-- Devuelve: `int` con el ID de la venta generada si la transacción fue exitosa; `None` si ocurre un error y se ejecuta `rollback`.
-- Funcionalidad:
-  - Inserta la cabecera de la venta en la tabla `venta`.
-  - Inserta cada ítem en `item_venta`.
-  - Descuenta stock de productos desde `producto_servicio`.
-  - Ejecuta todo dentro de una única transacción atómica.
+| Código | Significado | Contexto de uso |
+|--------|-------------|----------------|
+| 200 OK | Solicitud exitosa | Consulta de datos o anulación correcta de una venta. |
+| 201 Created | Recurso creado exitosamente | Procesamiento y registro exitoso de una nueva venta. |
+| 400 Bad Request | Petición inválida | Carrito vacío, datos faltantes o intento de anular una venta inexistente/ya anulada. |
+| 401 Unauthorized | No autorizado | Intento de procesar una venta sin `session["usuario"]` activa. |
+| 404 Not Found | No encontrado | Búsqueda de una venta por ID que no existe en la base de datos. |
+| 500 Internal Error | Error interno del servidor | Fallo de conexión con MySQL o excepción no controlada en el backend. |
 
-#### `sql_leer_ventas(busqueda=None, filtro_fecha="hoy")`
-- Recibe: `busqueda` (str | None) y `filtro_fecha` ("hoy", "semana", "mes", "anio").
-- Devuelve: una `list[dict]` con las ventas filtradas o vacía (`[]`) si ocurre un error.
-- Funcionalidad:
-  - Busca por ID de venta, número de factura, nombre y apellido del cliente.
-  - Filtra por rango de fecha según el valor recibido.
-  - Ordena por fecha más reciente.
+### Clase `Venta` (Capa de Base de Datos / Repositorio)
 
-#### `sql_leer_venta(id_venta)`
-- Recibe: `id_venta` (int).
-- Devuelve: un `dict` con la cabecera de la venta y una lista embebida de ítems, o `None` si la venta no existe.
-- Funcionalidad:
-  - Obtiene datos principales de la venta y del cliente.
-  - Consulta los productos asociados a la operación.
-  - Arma la estructura completa usada por la vista de detalle.
+#### 1. `Venta.registrar(...)`
 
-#### `sql_anular_venta(id_venta)`
-- Recibe: `id_venta` (int).
-- Devuelve: `True` si anuló la venta y restituyó el stock; `False` si la venta no existe, ya estaba anulada o falló la operación SQL.
-- Funcionalidad:
-  - Verifica si la venta está activa.
-  - Obtiene los productos vendidos.
-  - Reintegra cantidades al stock en `producto_servicio`.
-  - Actualiza `venta.activa = 0` para realizar la anulación lógica.
+Descripción: Ejecuta una transacción SQL para validar stock, registrar la cabecera de la venta, insertar los ítems y descontar el inventario de productos.
 
-### 2. Estructura de diccionarios embebidos
+Recibe:
+- `id_cliente` (int | None)
+- `id_empleado` (int)
+- `lista_items` (list[dict]): ejemplo `[{"idproducto_servicio": 1, "cantidad": 2, "precio_unitario": 100.0}]`
+- `numero_factura` (str | None, opcional)
+- `iva` (int | float, por defecto 21)
+- `descuento` (float, por defecto 0)
+- `precio_total` (float)
+- `total_productos` (int)
 
-La función `sql_leer_venta(id_venta)` devuelve una estructura del tipo:
+Devuelve: `int` (ID de la venta generada) si es exitoso, o `None` en caso de falla o stock insuficiente.
 
-```python
-{
-    "idventa": 15,
-    "numero_factura": "F-000123",
-    "fecha_emision_factura": "2026-08-16 14:30:00",
-    "descuento": 10.0,
-    "cantidad_total_productos": 3,
-    "precio_total": 4500.0,
-    "nombre_cliente": "Juan Pérez",
-    "items": [
-        {
-            "iditem_venta": 101,
-            "cantidad": 2,
-            "precio_unitario": 2000.0,
-            "subtotal": 4000.0,
-            "producto_nombre": "Aceite Sintético",
-            "imagen_url": "/static/img/aceite.jpg"
-        },
-        {
-            "iditem_venta": 102,
-            "cantidad": 1,
-            "precio_unitario": 500.0,
-            "subtotal": 500.0,
-            "producto_nombre": "Filtro de Aire",
-            "imagen_url": None
-        }
-    ]
-}
-```
+#### 2. `Venta.obtener_todas(busqueda=None, filtro_fecha="hoy")`
 
-Estructura del JSON que se recibe en `/api/ventas/procesar` desde el frontend:
+Descripción: Consulta el listado general de ventas activas aplicando filtros por término y/o rango de fecha.
+
+Recibe:
+- `busqueda` (str | None)
+- `filtro_fecha` (str: `"hoy"`, `"semana"`, `"mes"`, `"anio"`)
+
+Devuelve: `list[dict]` (lista de diccionarios con el resumen de cada venta).
+
+#### 3. `Venta.obtener_por_id(id_venta)`
+
+Descripción: Obtiene los datos de la cabecera de la venta e incrusta la lista de productos asociados.
+
+Recibe:
+- `id_venta` (int)
+
+Devuelve: `dict` (estructura embebida) o `None` si no existe:
 
 ```json
 {
-  "id_cliente": 1,
-  "id_empleado": 4,
-  "descuento": 10,
-  "iva": 21,
-  "numero_factura": "FC-0012",
-  "carrito": [
+  "idventa": 10,
+  "numero_factura": "F-001",
+  "fecha_emision_factura": "2026-08-28 14:00:00",
+  "descuento": 0.0,
+  "cantidad_total_productos": 3,
+  "precio_total": 1500.0,
+  "nombre_cliente": "Juan Pérez",
+  "items": [
     {
-      "idproducto_servicio": 5,
-      "precio_unitario": 1200.5,
-      "cantidad": 2
+      "id_item_venta": 1,
+      "cantidad": 2,
+      "precio_unitario": 500.0,
+      "subtotal": 1000.0,
+      "producto_nombre": "Aceite 1L",
+      "imagen_producto": "aceite.jpg"
     }
   ]
 }
 ```
 
-### 3. Endpoints API y vistas (`ventas_bp`)
+#### 4. `Venta.anular(id_venta)`
 
-| Ruta | Método | Espera | Devuelve | Estado HTTP |
-|------|--------|--------|----------|-------------|
-| `/ventas` | GET | Ninguno | HTML de `gestion_ventas.html` | 200 |
-| `/api/ventas` | POST | JSON: `{"busqueda": str, "fecha": str}` | JSON: `{"listado_ventas": [...]}` | 200, 500 |
-| `/venta/<id>/detalle` | GET | Parámetro de ruta: `id` | HTML de `detalle_venta.html` o redirect | 200, 302 |
-| `/api/ventas/anular/<id_venta>` | POST | Parámetro de ruta: `id_venta` | JSON: `{"exito": bool, "mensaje": str}` | 200, 400, 500 |
-| `/ventas/realizar` | GET | Ninguno | HTML de `realizar_venta.html` | 200 |
-| `/api/ventas/procesar` | POST | JSON con datos de venta y carrito | JSON: `{"exito": bool, "id_venta": int}` | 201, 400, 500 |
+Descripción: Anula la venta de forma lógica (`activa = 0`) y devuelve las cantidades al inventario (`cantidad_actual`).
 
-#### Descripción funcional
-- `vista_gestion_ventas()`: carga la pantalla principal de ventas y muestra alertas de productos con stock bajo.
-- `api_filtrar_ventas()`: devuelve un listado de ventas según búsqueda y filtro de fecha.
-- `vista_detalle_venta(id)`: recupera la información completa de una venta y la renderiza.
-- `api_anular_venta(id_venta)`: anula de forma lógica la venta y devuelve mensaje de éxito o error.
-- `vista_realizar_venta()`: carga la vista del carrito de venta para crear una nueva transacción.
-- `api_procesar_venta()`: procesa el carrito enviado por el frontend y registra la venta completa.
+Recibe:
+- `id_venta` (int)
 
-### 4. Significado de códigos HTTP utilizados
+Devuelve: `bool` (`True` si se anuló correctamente, `False` si falló o ya estaba anulada).
 
-- `200 OK`: la consulta o petición se procesó correctamente.
-- `201 Created`: la venta fue creada correctamente y se asignó un nuevo ID en la base de datos.
-- `302 Found`: se redirecciona a `/ventas` cuando la venta no existe o falla la conexión.
-- `400 Bad Request`: error de validación del cliente, por ejemplo carrito vacío o intento de anular una venta inexistente/anulada.
-- `500 Internal Server Error`: ocurrió una excepción no controlada en el servidor o falló una transacción SQL con rollback.
+### Rutas de Flask (`ventas_bp`)
 
-### 5. Consideraciones faltantes para tener en cuenta
+#### 1. `GET /ventas` (`vista_gestion_ventas`)
 
-- Arquitectura actual: el módulo de ventas está bien segmentado por rutas y consultas, pero aún conviene agregar validaciones de negocio más robustas para evitar inconsistencias de stock, cliente y facturación.
-- Se recomienda implementar pruebas unitarias y de integración para los endpoints de ventas, asegurando que las transacciones sean atómicas y que los errores se manejen adecuadamente.
-- Falta terminar la funcion de calcular precio total, se realizará una vez terminado el frontend de ventas, ya que se necesita la información del carrito para poder calcular el precio total de la venta.
+Recibe: petición HTTP GET limpia.
+
+Devuelve: HTML renderizado (`gestion_ventas.html`) o JSON en caso de error de conexión:
+
+```json
+{
+  "exito": false,
+  "mensaje": "Error: No se pudo conectar a la base de datos.",
+  "redireccion": "/index"
+}
+```
+
+Estado HTTP: `500`.
+
+#### 2. `POST /api/ventas` (`api_filtrar_ventas`)
+
+Recibe JSON:
+
+```json
+{
+  "busqueda": "Juan",
+  "fecha": "semana"
+}
+```
+
+Devuelve JSON (`HTTP 200`):
+
+```json
+{
+  "exito": true,
+  "listado_ventas": [
+    /* Lista de ventas */
+  ]
+}
+```
+
+#### 3. `GET /venta/<int:id>/detalle` (`vista_detalle_venta`)
+
+Recibe: parámetro de URL `id` (int).
+
+Devuelve: render de `detalle_venta.html` o JSON de error si no la encuentra:
+
+```json
+{
+  "exito": false,
+  "mensaje": "Error: No se encontró la venta con ID 10.",
+  "redireccion": "/ventas"
+}
+```
+
+Estado HTTP: `404`.
+
+#### 4. `POST /api/ventas/anular/<int:id_venta>` (`api_anular_venta`)
+
+Recibe: parámetro de URL `id_venta` (int).
+
+Devuelve JSON (`HTTP 200 / 400 / 500`):
+
+```json
+{
+  "exito": true,
+  "mensaje": "La venta #10 fue anulada y el stock restituido.",
+  "redireccion": "/ventas"
+}
+```
+
+#### 5. `POST /api/ventas/procesar` (`api_procesar_venta`)
+
+Recibe:
+- Sesión: `session["usuario"]` (contiene el ID del empleado).
+- JSON body:
+
+```json
+{
+  "id_cliente": 5,
+  "numero_factura": "F-1002",
+  "descuento": 0.0,
+  "carrito": [
+    {"idproducto_servicio": 1, "cantidad": 2, "precio_unitario": 250.0}
+  ]
+}
+```
+
+Devuelve JSON (`HTTP 201 Created`):
+
+```json
+{
+  "exito": true,
+  "mensaje": "Venta #15 realizada con éxito.",
+  "id_venta": 15,
+  "redireccion": "/ventas"
+}
+```
+
+### Detalles importantes y consideraciones
+
+- Manejo de sesión expirada: si `session["usuario"]` no existe al intentar procesar una venta, la API responde con un código `401` y redirige a `/login`.
+- Cálculos en servidor: las funciones auxiliares `calcular_total_productos` y `calcular_precio_total` convierten activamente los valores a `int` y `float` para evitar errores si el cliente envía cadenas de texto numéricas.
+- Integridad de stock: la verificación de stock disponible en `Venta.registrar` discrimina por la columna `tipo = 'producto'`, evitando bloqueos si la venta incluye servicios.
+
+### SECCIÓN EMPLEADOS
+
+## Documentación técnica del módulo de empleados y autenticación
+
+Aquí tienes la documentación técnica actualizada para el módulo de empleados y autenticación, reflejando el código refactorizado y corregido.
+
+### Códigos de estado HTTP utilizados
+
+| Código | Significado | Contexto de uso |
+|--------|-------------|----------------|
+| 200 OK | Solicitud exitosa | Inicio de sesión correcto, creación, edición o baja lógica procesada sin fallos. |
+| 400 Bad Request | Petición inválida | Intento de registrar un usuario con un nombre ya existente o error en parámetros. |
+| 401 Unauthorized | No autorizado | Credenciales (usuario o contraseña) incorrectas al intentar iniciar sesión. |
+| 404 Not Found | No encontrado | Consulta de datos para modificar un empleado cuyo ID no existe en la BD. |
+| 500 Internal Error | Error interno del servidor | Base de datos fuera de línea o excepción no controlada en las consultas SQL. |
+
+### Clase `Usuario` (Capa de Base de Datos / Repositorio)
+
+#### 1. `Usuario.__init__(nombre=None, correo=None, telefono=None, contrasena=None, tipo="Empleado", id_usuario=None)`
+
+Descripción: Constructor de la clase. Inicializa un objeto `Usuario` con atributos privados.
+
+Recibe: parámetros opcionales con nombre (`str`, `int`).
+
+Devuelve: objeto de instancia `Usuario`.
+
+#### 2. `Usuario.hash_contraseña(contraseña)`
+
+Descripción: Convierte una clave en texto plano a un hash seguro con Werkzeug.
+
+Recibe: `contraseña` (`str`).
+
+Devuelve: `str` (cadena hash procesada).
+
+#### 3. `Usuario.verificar_credenciales(nombre_ingresado, contrasena_ingresada)`
+
+Descripción: Comprueba si el usuario existe y coincide con la contraseña guardada en la BD.
+
+Recibe:
+- `nombre_ingresado` (`str`)
+- `contrasena_ingresada` (`str`)
+
+Devuelve: `list` -> `[idempleado (int), tipo (str)]` si la validación es correcta. Devuelve `None` si las credenciales fallan o `False` si hay error de SQL.
+
+#### 4. `Usuario.crear_usuario()`
+
+Descripción: Inserta un nuevo empleado en la base de datos con su contraseña encriptada.
+
+Recibe: lee los atributos de la instancia actual (`self`).
+
+Devuelve: `int` (ID asignado en la BD) o `None` en caso de error.
+
+#### 5. `Usuario.existe_usuario(nombre_usuario)` (alias: `no_repetir`)
+
+Descripción: Verifica la disponibilidad de un nombre de usuario en la BD.
+
+Recibe: `nombre_usuario` (`str`).
+
+Devuelve: `bool` (`True` si ya existe, `False` si está libre o falla la consulta).
+
+#### 6. `Usuario.leer_usuarios()`
+
+Descripción: Obtiene todos los empleados con estado activo (`activo = 1`).
+
+Recibe: ninguno.
+
+Devuelve: `list[dict]` con la lista de usuarios.
+
+```json
+[
+  {
+    "idempleado": 1,
+    "nombre_usuario": "admin",
+    "mail": "admin@empresa.com",
+    "telefono": "341123456",
+    "tipo": "Administrador"
+  }
+]
+```
+
+#### 7. `Usuario.leer_usuario(id_usuario)`
+
+Descripción: Busca y devuelve los datos de un único empleado por su ID.
+
+Recibe: `id_usuario` (`int`).
+
+Devuelve: `dict` (con llaves `idempleado`, `nombre_usuario`, `mail`, `telefono`, `tipo`) o `None` si no existe.
+
+#### 8. `Usuario.actualizar_usuario(nueva_contrasena=None)`
+
+Descripción: Actualiza los datos del empleado. Si recibe `nueva_contrasena`, actualiza el hash de la clave.
+
+Recibe: `nueva_contrasena` (`str | None`, opcional).
+
+Devuelve: `bool` (`True` en éxito, `False` en falla).
+
+#### 9. `Usuario.eliminar_usuario(id_usuario)`
+
+Descripción: Ejecuta una baja lógica cambiando `activo = 0`.
+
+Recibe: `id_usuario` (`int`).
+
+Devuelve: `bool` (`True` si se ejecutó la baja, `False` en error).
+
+### Rutas de Flask (`empleados_bp`)
+
+#### 1. `GET /iniciar_sesion` (`iniciar_sesion`)
+
+Recibe: petición HTTP GET.
+
+Devuelve: HTML renderizado (`iniciar_sesion.html`).
+
+#### 2. `POST /api/iniciar_sesion` (`api_iniciar_sesion`)
+
+Recibe body (`JSON` o `Form`):
+
+```json
+{
+  "nombre_usuario": "admin",
+  "contrasena": "1234"
+}
+```
+
+Efecto en sesión: establece `session["usuario"]` y `session["tipo"]`.
+
+Devuelve JSON (`HTTP 200 / 401 / 500`):
+
+```json
+{
+  "exito": true,
+  "mensaje": "Inicio de sesión exitoso",
+  "redireccion": "/index"
+}
+```
+
+#### 3. `GET /registrarse` (`registrarse`)
+
+Recibe: petición HTTP GET.
+
+Devuelve: HTML renderizado (`crear_usuario.html`).
+
+#### 4. `POST /api/registrarse` (`api_registrarse`)
+
+Recibe body (`JSON` o `Form`):
+
+```json
+{
+  "nombre_usuario": "pedro",
+  "mail_usuario": "pedro@mail.com",
+  "telefono_usuario": "443322",
+  "contrasena_usuario": "pass123"
+}
+```
+
+Devuelve JSON (`HTTP 200 / 400 / 500`):
+
+```json
+{
+  "exito": true,
+  "mensaje": "Registro exitoso",
+  "redireccion": "/iniciar_sesion"
+}
+```
+
+#### 5. `GET /empleados` (`gestion_empleados`)
+
+Recibe: petición HTTP GET.
+
+Devuelve: HTML renderizado (`gestion_empleados.html`) pasando la variable `empleados` (`list[dict]`).
+
+#### 6. `GET /empleados/modificar/<int:id>` (`modificar_usuario`)
+
+Recibe: parámetro de URL `id` (`int`).
+
+Devuelve: HTML renderizado (`editar_usuario.html`) con variables individuales (`id_usuario`, `nombre`, `mail`, `telefono`, `tipo`) o JSON de error (`HTTP 404 / 500`).
+
+#### 7. `POST /api/empleados/modificar/<int:id>` (`api_modificar_usuario`)
+
+Recibe:
+- parámetro `id` (`int`)
+- body:
+
+```json
+{
+  "nombre_usuario": "pedro_edit",
+  "mail_usuario": "p@mail.com",
+  "telefono_usuario": "123",
+  "contrasena_usuario": "",
+  "tipo": "Empleado"
+}
+```
+
+Devuelve JSON (`HTTP 200 / 500`):
+
+```json
+{
+  "exito": true,
+  "mensaje": "Empleado actualizado con éxito",
+  "redireccion": "/empleados"
+}
+```
+
+#### 8. `POST /api/empleados/eliminar/<int:id>` (`api_eliminar_usuario`)
+
+Recibe: parámetro de URL `id` (`int`).
+
+Devuelve JSON (`HTTP 200 / 400 / 500`):
+
+```json
+{
+  "exito": true,
+  "mensaje": "El empleado #5 fue dado de baja correctamente.",
+  "redireccion": "/empleados"
+}
+```
 
 ## Esquema de archivos
 
