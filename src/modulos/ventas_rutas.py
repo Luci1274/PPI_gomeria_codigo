@@ -1,3 +1,4 @@
+@ -0,0 +1,198 @@
 from flask import Blueprint, render_template, request, jsonify, session
 from modulos.comandos_db.comandos_db_venta import Venta
 from modulos.comandos_db.comandos_db_productos import sql_alertar_stock_bajo
@@ -140,7 +141,7 @@ def api_procesar_venta():
                 "mensaje": "El carrito de compra no puede estar vacío."
             }), 400
 
-        id_empleado_actual = session.get("usuario")
+        id_empleado_actual = 1
         if not id_empleado_actual:
             return jsonify({
                 "exito": False,
@@ -156,7 +157,7 @@ def api_procesar_venta():
             id_cliente=datos.get("id_cliente"),
             id_empleado=id_empleado_actual,
             lista_items=carrito,
-            numero_factura=datos.get("numero_factura"),
+            numero_factura=1,
             descuento=descuento_valor,
             precio_total=precio_total,
             total_productos=total_productos
