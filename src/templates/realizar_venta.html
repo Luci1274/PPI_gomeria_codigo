@@ -1,3 +1,4 @@
+@ -0,0 +1,96 @@
 <!-- templates/realizar_venta.html -->
 {% extends 'estructura_base_compra_inventario_venta.html' %}
 
@@ -28,8 +29,8 @@
     </div>
 
     <div class="resumen_pago">
-        <label for="input_descuento">Descuento:</label>
-        <p> <input type="number" name="Descuento" id="input_descuento" min="0" placeholder="Ej 2000"> </p>
+        <label for="input_descuento">Descuento: Ejemplo 2000</label>
+        <p> <input type="number" name="Descuento" id="input_descuento" min="0" placeholder="Ej 2000" value="0"> </p>
         <p><strong>Total:</strong> $<span id="total_venta">0.00</span></p>
         <button class="btn_confirmar_venta" id="btn_confirmar_venta">Confirmar Venta</button>
     </div>
