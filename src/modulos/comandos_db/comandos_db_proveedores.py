@@ -1,11 +1,11 @@
 import pymysql
-from modulos.comandos_db.conexion import conectar_db
+from config import Config
 
 #----------------------------------------------------------------------------
 def sql_crear_proveedor(nombre, cuit, direccion, mail, ciudad, telefono):
     """Crea un nuevo proveedor en la base de datos."""
     sql = """INSERT INTO proveedor (nombre, cuit, direccion, mail, ciudad, telefono, activo) VALUES (%s, %s, %s, %s, %s, %s, 1)"""
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     try:
         with conexion.cursor() as cursor:
             valores = (nombre, cuit, direccion, mail, ciudad, telefono)
@@ -29,7 +29,7 @@ def sql_crear_proveedor(nombre, cuit, direccion, mail, ciudad, telefono):
 def sql_leer_proveedores(busqueda=None):
     """ Lee los proveedores activos de la base de datos, aplicando un filtro opcional de búsqueda.
     """
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     try:
         with conexion.cursor() as cursor:
             sql = "SELECT idproveedor, nombre, cuit, direccion, mail, ciudad, telefono FROM proveedor WHERE activo = 1"
@@ -48,7 +48,7 @@ def sql_leer_proveedores(busqueda=None):
 #----------------------------------------------------------------------------
 def sql_leer_proveedor(id):
     """Busca el proveedor por el id y lo devuelve"""
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     try:
         with conexion.cursor() as cursor:
             sql = "SELECT idproveedor, nombre, cuit, direccion, mail, ciudad, telefono FROM proveedor WHERE idproveedor = %s"
@@ -64,7 +64,7 @@ def sql_leer_proveedor(id):
 #----------------------------------------------------------------------------
 def sql_modificar_proveedor(id, nombre, cuit, direccion, mail, ciudad, telefono):
     """Modifica los datos de un proveedor existente en la base de datos."""
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     try:
         with conexion.cursor() as cursor:
             sql = """
@@ -90,7 +90,7 @@ def sql_modificar_proveedor(id, nombre, cuit, direccion, mail, ciudad, telefono)
 #----------------------------------------------------------------------------
 def sql_eliminar_proveedor(id):
     """Elimina un proveedor de la base de datos de forma logica"""
-    conexion = conectar_db()
+    conexion = Config.conectar_db()
     try:
         with conexion.cursor() as cursor:
             sql = "UPDATE proveedor SET activo = 0 WHERE idproveedor = %s"

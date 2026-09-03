@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, session
 from modulos.comandos_db.comandos_db_venta import Venta
-from modulos.comandos_db.comandos_db_productos import sql_leer_productos, sql_alertar_stock_bajo
+from modulos.comandos_db.comandos_db_productos import sql_alertar_stock_bajo
 from modulos.comandos_db.conexion import probar_conexion
 
 ventas_bp = Blueprint("ventas", __name__)
@@ -104,23 +104,30 @@ def api_anular_venta(id_venta):
 # ------------------------------------------
 @ventas_bp.route("/ventas/realizar", methods=["GET"])
 def vista_realizar_venta():
-    """Carga el formulario para la emisión de ventas."""
-    estado_conexion = probar_conexion()
-    if not estado_conexion:
-        return jsonify({
-            "exito": False,
-            "mensaje": "Error: No se pudo conectar a la base de datos.",
-            "redireccion": "/ventas"
-        }), 500
+    
+    productos, tipos, clientes, estado = Venta.obtener_datos_inicio_venta()
+    
+    if not estado:
+        return render_template(
+            "realizar_venta.html", 
+            listado_productos=[], 
+            listado_tipos=[], 
+            listado_clientes=[],
+            error_db=True
+        ), 500
 
-    listado_productos = sql_leer_productos()
-    return render_template("realizar_venta.html", listado_productos=listado_productos)
-
+    return render_template(
+        "realizar_venta.html", 
+        listado_productos=productos, 
+        listado_tipos=tipos,
+        listado_clientes=clientes,
+        error_db=False
+    )
 
 # ------------------------------------------
 # Procesar Venta (Recibe el carrito)       #
 # ------------------------------------------
-@ventas_bp.route("/api/ventas/procesar", methods=["POST"])
+@ventas_bp.route("/api/ventas/realizar", methods=["POST"])
 def api_procesar_venta():
     """Recibe la solicitud del carrito y registra la transacción mediante Venta.registrar."""
     try:
@@ -133,7 +140,7 @@ def api_procesar_venta():
                 "mensaje": "El carrito de compra no puede estar vacío."
             }), 400
 
-        id_empleado_actual = session.get("usuario")
+        id_empleado_actual = 1
         if not id_empleado_actual:
             return jsonify({
                 "exito": False,
@@ -149,7 +156,7 @@ def api_procesar_venta():
             id_cliente=datos.get("id_cliente"),
             id_empleado=id_empleado_actual,
             lista_items=carrito,
-            numero_factura=datos.get("numero_factura"),
+            numero_factura=1,
             descuento=descuento_valor,
             precio_total=precio_total,
             total_productos=total_productos

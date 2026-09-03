@@ -1,5 +1,5 @@
 import pymysql
-from modulos.comandos_db.conexion import conectar_db
+from config import Config
 
 #------------------------------------------------------------------------
 # TABLA VENTA
@@ -12,14 +12,14 @@ class Venta:
         id_cliente,
         id_empleado,
         lista_items,
-        numero_factura=None,
+        numero_factura=1,
         iva=21,
         descuento=0,
         precio_total=0.0,
         total_productos=0,
     ):
         """Registra la Venta, sus Ítems y descuenta Stock solo si hay disponibilidad suficiente."""
-        conexion = conectar_db()
+        conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
                 # 1. Validar stock disponible previo a la inserción
@@ -55,19 +55,19 @@ class Venta:
                 # 2. Insertar la cabecera de la venta
                 sql_venta = """
                     INSERT INTO venta (
-                        idcliente, idempleado, descuento, iva, cantidad_total_productos, precio_total, numero_factura, fecha_emision_factura, activa
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), 1);
+                        numero_factura, fecha_emision_factura, descuento, iva, cantidad_total_productos, precio_total, idcliente, idempleado, activa
+                    ) VALUES (%s, NOW(), %s, %s, %s, %s, %s, %s, 1);
                 """
                 cursor.execute(
                     sql_venta,
                     (
-                        id_cliente,
-                        id_empleado,
+                        numero_factura,
                         descuento,
                         iva,
                         total_productos,
                         precio_total,
-                        numero_factura,
+                        id_cliente,
+                        id_empleado,
                     ),
                 )
                 id_venta = cursor.lastrowid
@@ -116,7 +116,7 @@ class Venta:
     @staticmethod
     def obtener_todas(busqueda=None, filtro_fecha="hoy"):
         """Lee el listado general de ventas aplicando filtros opcionales de búsqueda y fecha."""
-        conexion = conectar_db()
+        conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
                 sql = """
@@ -168,7 +168,7 @@ class Venta:
     @staticmethod
     def obtener_por_id(id_venta):
         """Obtiene la cabecera de la venta y la lista de sus productos para la pantalla de detalle."""
-        conexion = conectar_db()
+        conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
                 sql_cabecera = """
@@ -216,7 +216,7 @@ class Venta:
     @staticmethod
     def anular(id_venta):
         """Anula de forma lógica una venta y reintegra las cantidades al stock de productos."""
-        conexion = conectar_db()
+        conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
                 cursor.execute(
@@ -264,5 +264,28 @@ class Venta:
             print(f"Error al anular la venta ID {id_venta}: {e}")
             return False
 
+        finally:
+            conexion.close()
+            
+    @staticmethod
+    def obtener_datos_inicio_venta():
+        conexion = Config.conectar_db()
+        try:
+            with conexion.cursor() as cursor:
+                cursor.execute("SELECT p.idproducto_servicio, p.nombre, p.medidas, p.tipo, p.precio, p.imagen_producto, p.cantidad_actual FROM producto_servicio AS p WHERE activo = 1;")
+                productos = cursor.fetchall()
+
+                cursor.execute("SELECT DISTINCT tipo FROM producto_servicio WHERE activo = 1;")
+                tipos = cursor.fetchall()
+                
+                cursor.execute("SELECT idcliente, nombre, apellido FROM cliente WHERE activo = 1")
+                cliente = cursor.fetchall()
+                
+                return productos, tipos, cliente, True
+        except pymysql.MySQLError as e:
+                    conexion.rollback()
+                    print(f"Error al crear producto/servicio: {e}")
+                    return [], [], [], False
+                
         finally:
             conexion.close()

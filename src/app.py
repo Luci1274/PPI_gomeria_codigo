@@ -2,14 +2,16 @@ from flask import Flask, render_template, request, redirect, session, flash, jso
 import modulos.comandos_db.comandos_db_productos as db_productos
 import modulos.comandos_db.comandos_db_venta as db_ventas
 import modulos.comandos_db.comandos_db_clientes as db_clientes
-
+from modulos.ventas_rutas import ventas_bp
 
 app = Flask(__name__)
 app.secret_key = "una_clave_secreta_y_segura_aqui"
 
 @app.route("/")
 def inicio():
-    return render_template("estructura_base_compra_inventario_venta.html")
+    return render_template("index.html")
+
+app.register_blueprint(ventas_bp)
     
 @app.route("/resumen_orden_compra")
 def resumen_orden_compra():

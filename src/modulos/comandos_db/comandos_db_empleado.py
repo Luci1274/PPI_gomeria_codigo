@@ -1,5 +1,5 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-from modulos.comandos_db.conexion import conectar_db
+from config import Config
 import pymysql
 
 class Usuario:
@@ -18,7 +18,7 @@ class Usuario:
     @staticmethod
     def verificar_credenciales(nombre_ingresado, contrasena_ingresada):
         """Verifica si las credenciales coinciden con las almacenadas en la base de datos."""
-        conexion = conectar_db()
+        conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
                 sql = "SELECT idempleado, nombre_usuario, contrasena, tipo FROM empleado WHERE nombre_usuario = %s AND activo = 1"
@@ -36,7 +36,7 @@ class Usuario:
 
     def crear_usuario(self):
         """Inserta un nuevo empleado en la base de datos."""
-        conexion = conectar_db()
+        conexion = Config.conectar_db()
         try:
             hash_contrasena = self.hash_contraseña(self.__contrasena)
             with conexion.cursor() as cursor:
@@ -54,7 +54,7 @@ class Usuario:
     @staticmethod
     def existe_usuario(nombre_usuario):
         """Comprueba si un usuario ya existe en la base de datos."""
-        conexion = conectar_db()
+        conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
                 sql = "SELECT nombre_usuario FROM empleado WHERE nombre_usuario = %s"
@@ -73,7 +73,7 @@ class Usuario:
     @staticmethod
     def leer_usuarios():
         """Devuelve todos los usuarios activos de la base de datos."""
-        conexion = conectar_db()
+        conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
                 sql = "SELECT idempleado, nombre_usuario, mail, telefono, tipo FROM empleado WHERE activo = 1"
@@ -88,7 +88,7 @@ class Usuario:
     @staticmethod
     def leer_usuario(id_usuario):
         """Obtiene la información de un empleado específico por su ID."""
-        conexion = conectar_db()
+        conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
                 sql = "SELECT idempleado, nombre_usuario, mail, telefono, tipo FROM empleado WHERE idempleado = %s"
@@ -102,7 +102,7 @@ class Usuario:
 
     def actualizar_usuario(self, nueva_contrasena=None):
         """Actualiza los datos personales y/o la contraseña de un empleado."""
-        conexion = conectar_db()
+        conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
                 if nueva_contrasena:
@@ -126,7 +126,7 @@ class Usuario:
     @staticmethod
     def eliminar_usuario(id_usuario):
         """Aplica la baja lógica del usuario (activo = 0)."""
-        conexion = conectar_db()
+        conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
                 sql = "UPDATE empleado SET activo = 0 WHERE idempleado = %s"
