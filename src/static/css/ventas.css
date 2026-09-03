@@ -1,0 +1,118 @@
+:root {
+    --color-primario: #0b2240;    
+    --primario-claro: #16355d;     
+    --acento-rojo: #e74c3c;       
+    --acento-morado: #9b59b6;     
+    --fondo-principal: #f4f6f9;           
+    --fondo-tarjeta: #ffffff;          
+    --texto-principal: #2c3e50;        
+    --texto-atenuado: #7f8c8d;       
+    --color-borde: #e2e8f0; 
+}
+
+* {
+    box-sizing: border-box;
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--fondo-principal);
+    color: var(--texto-principal);
+    overflow-x: hidden;
+}
+
+.contenedor {
+    display: flex;
+    min-width: 100vh;
+}
+
+.menu-lateral {
+    width: 260px;
+    background-color: var(--color-primario);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    position: fixed;
+    height: 100vh;
+    z-index: 100;
+}
+
+img {
+    width: 80px;
+}
+
+.menu-encabezado {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+
+.menu-encabezado h2 {
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.menu-navegacion {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.enl-nav {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: rgb(255, 255, 255, 0.7);
+    text-decoration: none;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.enl-nav:hover {
+    color: #fff;
+    background-color: var(--color-primario);
+}
+
+.enl-nav.activo {
+    color: #fff;
+    background-color: var(--primario-claro);
+    box-shadow: 0 0 0 0 #444a
+}
+
+.contenido-principal {
+    margin-left: 260px;
+    flex-grow: 1;
+    padding: 40px;
+    max-width: 1400px;
+    width: 100%;
+}
+
+.barra-superior {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.barra-superior h1 {
+    font-size: 26px;
+    font-weight: bold;
+    color: var(--color-primario);
+    margin-bottom: 4px;
+}
+
+.barra-superior p {
+    font-size: 14px;
+    color: var(--texto-atenuado);
+}
+
+.barra-superior-accion

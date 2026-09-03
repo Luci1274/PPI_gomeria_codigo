@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/ventas.css">
+    <title>Ventas - Sistema Gomería</title>
+</head>
+
+<body>
+    <div class="contenedor">
+        <aside class="menu-lateral">
+            <div class="menu-encabezado">
+                <img src="../static/image/Icono_app.png" alt="icono-app">
+                <h2>Sistema Gomería</h2>
+            </div>
+            <nav class="menu-navegacion">
+                <a href="#" class="enl-nav">Principal</a>
+                <a href="#" class="enl-nav activo">Ventas</a>
+                <a href="#" class="enl-nav">Compras</a>
+                <a href="#" class="enl-nav">Inventario</a>
+                <a href="#" class="enl-nav">Clientes</a>
+                <a href="#" class="enl-nav">Proveedores</a>
+            </nav>
+        </aside>
+        <main class="contenido-principal">
+            <header class="barra-superior">
+                <div class="titulo-pagina">
+                    <h1>Gestion de Ventas</h1>
+                    <p>Administra y gestiona tus ventas</p>
+                </div>
+                <div class="barra-superior-accion">
+                    <button class="btn btn-primario">Nueva Venta</button>
+                </div>
+            </header>
+            <section class="cuadricula-metricas">
+                <div class="tarjeta-metrica">
+                    <div class="datos-metrica">
+                        <h3>Total Ventas</h3>
+                        <p class="valor-metrica" id="valor-venta">4</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="barra-filtrado">
+                <div class="contenedor-busqueda">
+                    <input type="text" id="input-busqueda" placeholder="Buscar por Cliente...">
+                </div>
+                <div class="acciones-filtros">
+                    <select class="filtro-seleccion">
+                        <option value="todos">Todos: Fecha</option>
+                        <option value="12/05/2026">12/05/2026</option>
+                        <option value="10/04/2026">10/04/2026</option>
+                    </select>
+                </div>
+            </section>
+
+            <section class="contenedor-tabla">
+                <table class="tabla-datos">
+                    <thead>
+                        <tr>
+                            <th>N° Venta</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Total Productos</th>
+                            <th>Precio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>01</td>
+                            <td>12/06/2026</td>
+                            <td>Luciano Gonzalez</td>
+                            <td>12 productos</td>
+                            <td>$200000</td>
+                            <td>
+                                <div class="btn-acciones">
+                                    <button class="btn-accion resumen" title="resumen">Ver resumen</button>
+                                    <button class="btn-accion eliminar" title="eliminar">Eliminar</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>02</td>
+                            <td>10/04/2026</td>
+                            <td>Diego Gatica</td>
+                            <td>13 productos</td>
+                            <td>$100000</td>
+                            <td>
+                                <div class="btn-acciones">
+                                    <button class="btn-accion">Ver resumen
+                                    </button>
+                                    <button class="btn-accion">Eliminar
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+
+        <!--Ventana emergente (ver resumen o editar)-->
+        <!--Ver resumen-->
+        <div class="modal-overlay-resumen">
+            <div class="modal-contenido">
+                <div class="modal-cabecera">
+                    <h2>Resumen Orden de Venta</h2>
+                    <p>Detalles completo de la venta realizada</p>
+                    <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
+                </div>
+                <div class="contenedor-tarjetas">
+                    <div class="tarjeta-metrica">
+                        <div class="datos-metricas">
+                            <p>Fecha:</p>
+                            <p>12/05/2026</p>
+                        </div>
+                    </div>
+                    <div class="tarjeta-metrica">
+                        <div class="datos-metricas">
+                            <p>Cliente:</p>
+                            <p>Luciano Gonzalez</p>
+                        </div>
+                    </div>
+                </div>
+                <table class="modal-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Cubierta 175/06</td>
+                            <td>10 unidades</td>
+                            <td>$120000</td>
+                        </tr>
+                        <tr>
+                            <td>Camara R14</td>
+                            <td>2 unidades</td>
+                            <td>$30000</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">Total</td>
+                            <td>$214254</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="btn-acciones">
+                <button class="btn accion">
+                    <a href="#" class="enl-accion">Descargar PDF</a>
+                </button>
+                <button class="btn accion">
+                    <a href="#" class="enl-accion">Imprimir</a>
+                </button>
+                <button class="btn accion">
+                    <a href="#" class="enl-accion">Modificar</a>
+                </button>
+            </div>
+        </div>
+</body>
+</html>
