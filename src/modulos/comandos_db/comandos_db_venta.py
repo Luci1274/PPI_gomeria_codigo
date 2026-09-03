@@ -1,3 +1,4 @@
+@ -0,0 +1,291 @@
 import pymysql
 from config import Config
 
@@ -12,7 +13,7 @@ class Venta:
         id_cliente,
         id_empleado,
         lista_items,
-        numero_factura=None,
+        numero_factura=1,
         iva=21,
         descuento=0,
         precio_total=0.0,
@@ -55,19 +56,19 @@ class Venta:
                 # 2. Insertar la cabecera de la venta
                 sql_venta = """
                     INSERT INTO venta (
-                        idcliente, idempleado, descuento, iva, cantidad_total_productos, precio_total, numero_factura, fecha_emision_factura, activa
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), 1);
+                        numero_factura, fecha_emision_factura, descuento, iva, cantidad_total_productos, precio_total, idcliente, idempleado, activa
+                    ) VALUES (%s, NOW(), %s, %s, %s, %s, %s, %s, 1);
                 """
                 cursor.execute(
                     sql_venta,
                     (
-                        id_cliente,
-                        id_empleado,
+                        numero_factura,
                         descuento,
                         iva,
                         total_productos,
                         precio_total,
-                        numero_factura,
+                        id_cliente,
+                        id_empleado,
                     ),
                 )
                 id_venta = cursor.lastrowid
