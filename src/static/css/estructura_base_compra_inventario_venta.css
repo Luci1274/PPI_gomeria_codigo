@@ -1,172 +1,169 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
-:root {
-    --color_fondo: #5c6bc0;
-    --color_fondo_cajas: #9fa8da;
-    --color_letras:#e8eaf6;
-    --color_letras_alterno: #000;
-    --color-hover:#7986cb;
-}
-
-.contenedor_header_gestion {
-    background-color: var(--color_fondo);
-    color: var(--color_letras);
-    padding: 20px;
-    text-align: center;
-}
-.contenedor_header_gestion #titulo_pagina {
-    font-size: 24px;
-    font-weight: bold;
-    text-decoration: underline;
-}
-
-
-/*Navegacion*/
-
-.conetenedor_navegacion {
-    background-color: var(--color_fondo);
-    color: var(--color_letras);
-    overflow: hidden;
+/* Overlay Derecho */
+.overlay_derecha {
     position: fixed;
-    left: 0;
-    top: 0;
-    width: 160px;
-    height: 100vh;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s ease;
+    z-index: 240;
 }
 
-.conetenedor_navegacion h2 {
-    text-align: center;
-    padding: 20px 0;
-    color: var(--color_letras);
-    text-decoration: underline;
+.overlay_derecha.activo_derecha {
+    opacity: 1;
+    visibility: visible;
 }
 
-.conetenedor_navegacion ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-}
-
-.conetenedor_navegacion ul li {
-    float: none;
-    display: block;
-    border-bottom: 1px solid;
-}
-
-.conetenedor_navegacion ul li a {
-    display: block;
-    padding: 15px;
-    text-decoration: none;
-    color: var(--color_letras);
-}
-
-.conetenedor_navegacion ul li a:hover {
-    background-color: var(--color-hover);
-}
-
-.conetenedor_navegacion ul li a ion-icon {
-    margin-right: 10px;
-    font-size: 25px;
-}
-
-.conetenedor_navegacion ul li a span {
-    font-size: 18px;
-}
-
-/*Barra de filtrado*/
-#contenedor_barra_filtrado {
-    margin-left: 160px;
-    padding: 20px;
+/* Botón carrito - Mobile */
+.boton_carrito {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    width: 60px;
+    height: 60px;
+    border: none;
+    border-radius: 10px;
     background-color: var(--color_fondo_cajas);
     color: var(--color_letras);
+    font-size: 35px;
+    cursor: pointer;
+    z-index: 300;
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 20px;
+    transition: 0.3s;
 }
 
-#contenedor_barra_filtrado #filtro {
-    padding: 10px;
-    font-size: 20px;
-    border: 1px solid var(--color_fondo);
-    border-radius: 4px;
-}
-
-#contenedor_barra_filtrado ion-icon {
-    font-size: 25px;
-    color: var(--color_letras);
-    cursor: pointer;
-}
-
-#contenedor_barra_filtrado input {
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid var(--color_fondo);
-    border-radius: 4px;
-    cursor: text;
-}
-
-#contenedor_barra_filtrado button {
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: var(--color_fondo);
-    color: var(--color_letras);
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    
-}
-
-#contenedor_barra_filtrado button:hover {
+.boton_carrito:hover {
     background-color: var(--color-hover);
 }
 
-/* barra lateral derecha */
-
-#contenedor_barra_lateral_derecha {
-    position: fixed;
-    overflow-y: auto;
-    right: 0;
-    top: 0;
-    width: 200px;
-    height: 100vh;
-    background-color: var(--color_fondo);
-    color: var(--color_letras);
-    padding: 20px;
+.boton_carrito.oculto_carrito {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
 }
 
-#contenedor_titulo_barra_lateral_derecha p {
+/* Barra lateral derecha - Mobile */
+.contenedor_barra_lateral_derecha {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 220px;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--color_fondo);
+    color: var(--color_letras);
+    padding: 15px;
+    transition: 0.3s ease;
+    z-index: 250;
+    transform: translateX(100%);
+}
+
+.contenedor_barra_lateral_derecha.abierta_derecha {
+    transform: translateX(0);
+}
+
+.contenedor_barra_lateral_derecha.oculta_derecha {
+    transform: translateX(100%);
+}
+
+.contenedor_titulo_barra_lateral_derecha p {
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 20px;
     text-decoration: underline;
 }
 
-#parte_superior_derecha {
-    display: flex;
-    flex-direction: column;
+.parte_superior_derecha {
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 10px;
+    margin-bottom: 15px;
 }
 
-#parte_superior_derecha .restablecer {
-    padding: 5px;
-    font-size: 16px;
+.parte_superior_derecha .restablecer {
+    padding: 8px;
+    font-size: 20px;
     width: 100%;
-    display: inline-block;
     background-color: var(--color_fondo_cajas);
     color: var(--color_letras);
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    transition: 0.3s;
 }
 
-#parte_superior_derecha .restablecer:hover {
+.parte_superior_derecha .restablecer:hover {
     background-color: var(--color-hover);
 }
 
-#parte_superior_derecha #fecha, #parte_superior_derecha span {
+.parte_superior_derecha span {
     font-size: 20px;
+}
+
+.cuerpo_barra_derecha {
+    margin: 15px 0;
+}
+
+.opciones_derecha {
+    margin-top: 15px;
+}
+
+.contenedor_barra_lateral_derecha hr {
+    margin: 15px 0;
+    border: none;
+    border-top: 1px solid var(--color_letras);
+    opacity: 0.5;
+}
+
+/* TABLET: 768px y más */
+@media (min-width: 768px) {
+
+    .contenedor_barra_lateral_derecha {
+        transform: translateX(100%);
+    }
+
+    .contenedor_barra_lateral_derecha.abierta_derecha {
+        transform: translateX(0);
+    }
+}
+
+/* DESKTOP/PC: 1024px y más */
+@media (min-width: 1024px) {
+    .container {
+        grid-template-columns: var(--ancho-nav) 1fr var(--ancho-panel);
+        grid-template-rows: var(--alto-header) auto 1fr auto;
+        grid-template-areas:
+            "nav header main-right"
+            "nav filtrado main-right"
+            "nav main main-right"
+            "nav footer main-right";
+    }
+
+    /* Botón carrito - Desktop */
+    .boton_carrito {
+        display: none;
+    }
+
+    /* Barra derecha - Desktop */
+    .contenedor_barra_lateral_derecha {
+        grid-area: main-right;
+        position: static;
+        width: 100%;
+        height: auto;
+        overflow-y: visible;
+        transform: none;
+        z-index: auto;
+        padding: 15px;
+    }
+
+    .contenedor_barra_lateral_derecha.abierta_derecha {
+        transform: none;
+    }
+
+    .contenedor_barra_lateral_derecha.oculta_derecha {
+        transform: none;
+    }
 }

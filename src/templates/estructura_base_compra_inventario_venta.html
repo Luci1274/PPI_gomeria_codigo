@@ -1,0 +1,69 @@
+<!-- templates/estructura_base_compra_inventario_venta.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estructura_base_compra_inventario_venta.css') }}">
+    <title>{% block title %} Sistema {% endblock %}</title>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container">
+
+        {% include 'componentes/header.html' %}
+
+        {% include 'componentes/navbar.html' %}
+
+        <!-- Botón carrito mobile -->
+        <button class="boton_carrito" id="boton_carrito">
+            {% block ion_icon %}<ion-icon name="cart-outline"></ion-icon>{% endblock %}
+        </button>
+
+        <!-- Overlay barra derecha -->
+        <div class="overlay_derecha" id="overlay_derecha"></div>
+
+        <!-- Sidebar Lateral Derecha -->
+        <div class="contenedor_barra_lateral_derecha" id="barra_derecha">
+            <div class="contenedor_titulo_barra_lateral_derecha">
+                <p>{% block titulo_barra_derecha %} Resumen {% endblock %}</p>
+            </div>
+            <div class="parte_superior_derecha">
+                <button class="restablecer" id="btn_restablecer">
+                    <ion-icon name="refresh-outline"></ion-icon>
+                </button>
+                <span>Fecha: <span id="fecha"></span></span>
+                {% block contenido_adicional_derecha %}{% endblock %}
+            </div>
+            <hr>
+            <div class="cuerpo_barra_derecha">
+                {% block cuerpo_derecha %}{% endblock %}
+            </div>
+            <hr>
+            <div class="opciones_derecha">
+                {% block opciones_derecha %}{% endblock %}
+            </div>
+        </div>
+
+        <!-- Contenido Principal -->
+        <main>
+            {% block contenido_principal %}
+            <!-- Aquí las vistas hijas cargarán el filtro y la grilla de productos -->
+            {% endblock %}
+        </main>
+
+        <footer>
+            {% block footer %}{% endblock %}
+        </footer>
+    </div>
+
+    <!-- Scripts Globales -->
+    <script type="module" src="{{ url_for('static', filename='js/barral_navegacion.js') }}"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script type="module" src="{{ url_for('static', filename='js/estructura_base_compra_inventario_venta.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

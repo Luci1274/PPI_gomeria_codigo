@@ -1,0 +1,12 @@
+   
+    <div class="contenedor_barra_filtrado">
+        <div class="filtro">
+            <ion-icon name="search-outline"></ion-icon>
+            <span> Filtrar por: </span>
+            <input type="text" name="busqueda" placeholder="Buscar por nombre producto" value="{{busqueda_actual}}" onchange="this.form.submit()">
+        </div>
+        <div class="caja_botones_filtrado">
+            {{ opciones_filtrado | safe }}
+            
+        </div>
+    </div>

@@ -1,0 +1,49 @@
+{% extends "plantilla_base_gestion.html" %}
+
+{% block title %} Gestion de Clientes {% endblock %}
+
+{% block tablas %}
+
+<!-- FALTA CSS -->
+
+<form action="/clientes" method="get" id="form_filtros" class="contenedor_filtros">
+    <div class="campo_busqueda">
+        <input type="text" name="busqueda" placeholder="Buscar por nombre o apellido" value="{{ busqueda_actual}}" onchange="this.form.submit()">
+    </div>
+
+    <a href="/clientes/nuevo" class="btn_nuevo_cliente">
+        <span>+</span> Nuevo cliente
+    </a>
+</form>
+
+<div class="contenedor_tabla">
+
+    <div class="tabla">
+        <div class="cabecera_tabla">
+            <div class="fila">Nombre</div>
+            <div class="fila">Apellido</div>
+            <div class="fila">CUIT</div>
+            <div class="fila">Teléfono</div>
+            <div class="fila">Email</div>
+            <div class="fila">Plazo de Pago</div>
+            <div class="fila">Deuda</div>
+            <div class="fila">Acciones</div>
+        </div>
+
+        {% for cliente in clientes %}
+        <div class="cuerpo_tabla">
+            <div class="fila"> {{cliente.nombre}} </div>
+            <div class="fila"> {{cliente.apellido}} </div>
+            <div class="fila"> {{cliente.cuit}} </div>
+            <div class="fila"> {{cliente.numero_tel}} </div>
+            <div class="fila"> {{cliente.mail}} </div>
+            <div class="fila"> {{cliente.plazo_de_pago}} </div>
+            <div class="fila"> {{cliente.deuda}} </div>
+            <div class="fila">
+                <a href="/clientes/modificar/{{cliente.id}}" class="btn_editar">Editar</a>
+                <a href="/clientes/eliminar/{{cliente.id}}" class="btn_eliminar">Eliminar</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
