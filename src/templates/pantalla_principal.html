@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/pantalla_principal.css">
+    <title>Pantalla principal - Sistema Gomería</title>
+</head>
+<body>
+    <div class="contenedor">
+        <aside class="menu-lateral">
+            <div class="menu-encabezado">
+                <img src="../static/image/Icono_app.png" alt="icono-app">
+                <h2>Sistema Gomería</h2>
+            </div>
+            <nav class="menu-navegacion">
+                <a href="#" class="enl-nav activo">Principal</a>
+                <a href="#" class="enl-nav">Ventas</a>
+                <a href="#" class="enl-nav">Compras</a>
+                <a href="#" class="enl-nav">Inventario</a>
+                <a href="#" class="enl-nav">Clientes</a>
+                <a href="#" class="enl-nav">Proveedores</a>
+            </nav>
+        </aside>
+    <main class="contenido-principal">
+        <header class="barra-superior">
+            <div class="titulo-pagina">
+                <h1>Bienvenido <strong id="nombre-usuario">Usuario</strong></h1>
+                <p>Fecha: <strong id="fecha-actual">fecha_actual</strong></p>
+                <h2 class="info-operativo">Resumen operativo del dia</h2>
+            </div>
+        </header>
+        <!--Tarjetas-->
+        <section class="cuadricula-metricas">
+        <div class="tarjeta-metrica">
+            <div class="datos-metrica">
+                <h3>Total Productos</h3>
+                <p class="valor-metrica" id="valor-stock">122</p>
+            </div>
+        </div>
+        <div class="tarjeta-metrica">
+            <div class="datos-metrica">
+                <h3>Total Clientes</h3>
+                <p class="valor-metrica" id="valor-cliente">22</p>
+            </div>
+        </div>
+        <div class="tarjeta-metrica">
+            <div class="datos-metrica">
+                <h3>Ventas del Dia</h3>
+                <p class="valor-metrica" id="valor-venta">2</p>
+            </div>
+        </div>
+        </section>
+        <section class="enl-acciones-rapidas">
+            <h3>Accesos rápidos</h3>
+            <div class="cuadricula-acceso">
+                <div class="accion-rapida"><a href="#">Nueva venta</a></div>
+                <div class="accion-rapida"><a href="#">Nuevo cliente</a></div>
+                <div class="accion-rapida"><a href="#">Cargar stock</a></div>
+                <div class="accion-rapida"><a href="#">Nueva Compra</a></div>
+            </div>
+        </section>
+        <div class="panel-inferior">
+        <section class="contenido-tabla">
+            <h3 class="titulo-tablas">Ultimas Ventas</h3>
+            <table class="tabla-datos">
+                <thead>
+                    <tr>
+                        <th>Clientes</th>
+                        <th>Total</th>
+                        <th>Forma de pago</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Diego Gatica</td>
+                        <td>$20000</td>
+                        <td>Efectivo</td>
+                        <td>Ok</td>
+                    </tr>
+                    <tr>
+                        <td>Michael Zarza</td>
+                        <td>$30000</td>
+                        <td>Cuenta Corriente</td>
+                        <td>Pendiente</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="contenido-tabla">
+            <h3 class="titulo-tablas">Alertas de stock bajo</h3>
+            <table class="tabla-datos">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Parches</td>
+                        <td>3</td>
+                        <td><button class="btn-accion">Reponer</button></td>
+                    </tr>
+                    <tr>
+                        <td>Neumatico Michelin</td>
+                        <td>6</td>
+                        <td><button class="btn-accion">Reponer</button></td>
+                    </tr>
+                    <tr>
+                        <td>Aceite</td>
+                        <td>2</td>
+                        <td><button class="btn-accion" id="btn-accion">Reponer</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        </div>
+    </main>
+    </div>
+</body>
+</html>

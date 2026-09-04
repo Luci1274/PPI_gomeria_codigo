@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/src/static/css/proveedor.css">
+    <title>Proveedor - Sistema Gomería</title>
+</head>
+
+<body>
+      <div class="contenedor">
+        <!--MENÚ LATERAL-->
+        <aside class="menu-lateral">
+            <div class="menu-encabezado">
+                <h2>Sistema Gomería</h2>
+            </div>
+            <nav class="menu-navegacion">
+                <a href="#" class="enlace-nav">Principal</a>
+                <a href="#" class="enlace-nav">Ventas / Compras</a>
+                <a href="#" class="enlace-nav">Inventario</a>
+                <a href="#" class="enlace-nav">Clientes</a>
+                <a href="#" class="enlace-nav activo">Proveedores</a>
+            </nav>
+            <div class="menu-pie">
+                <div class="usuario-info">
+                    <p class="usuario-nombre">Luciano Gonzalez</p>
+                    <p class="usuario-rol">Administrador</p>
+                </div>
+            </div>
+        </aside>
+
+        <!--CONTENIDO PRINCIPAL-->
+        <main class="contenido-principal">
+            
+            <!--Barra Superior de Navegación Externa-->
+            <header class="barra-superior">
+                <div class="titulo-pagina">
+                    <h1>Gestión de Proveedores</h1>
+                    <p>Administra y consulta de proveedores</p>
+                </div>
+                <div class="barra-superior-acciones">
+                    <button class="btn btn-primario" id="btn-nuevo-proveedor">Nuevo Proveedor</button>
+                </div>
+            </header>
+
+            <!--TARJETAS-->
+            <section class="cuadricula-metricas">
+                <div class="tarjeta-metrica">
+                    <div class="datos-metrica">
+                        <h3>Total Proveedores</h3>
+                        <p class="valor-metrica">15</p>
+                    </div>
+                </div>
+            </section>
+
+            <!--BARRA DE FILTROS Y BUSQUEDA-->
+            <section class="barra-filtros">
+                <div class="contenedor-busqueda">
+                    <input type="text" id="input-busqueda" placeholder="Buscar por Nombre o CUIT...">
+                </div>
+                <div class="acciones-filtros">
+                    <select class="filtro-seleccion">
+                        <option value="todos">Rubro: Todos</option>
+                        <option value="neumatico">Neumáticos</option>
+                        <option value="insumo-parches">Insumos</option>
+                        <option value="herramientas">Herramientas</option>
+                    </select>
+                    <select class="filtro-seleccion">
+                        <option value="todos">Estado: Todos</option>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                    <select class="filtro-seleccion">
+                        <option value="todos">Ciudad: Todas</option>
+                        <option value="roldan">Roldan</option>
+                        <option value="rosario">Rosario</option>
+                        <option value="san-jeronimo-sud">San Jeronimo Sud</option>
+                    </select>
+                </div>
+            </section>
+
+            <!--TABLA DE DATOS-->
+            <section class="contenedor-tabla">
+                <table class="tabla-datos">
+                    <thead>
+                        <tr>
+                            <th>COD.</th>
+                            <th>Nombre / Razón Social</th>
+                            <th>CUIT</th>
+                            <th class="texto-derecha">Dirección</th>
+                            <th class="texto-derecha">Teléfono</th>
+                            <th class="texto-centro">Email</th>
+                            <th class="texto-centro">Estado</th>
+                            <th class="texto-centro">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!--Fila 1-->
+                        <tr>
+                            <td>
+                                <div class="etiqueta etiqueta-azul">
+                                    01
+                                </div>
+                            </td>
+                            <td>
+                                <div class="nombre-razon-social">
+                                    Alvarez y Hijos Neumáticos
+                                </div>
+                            </td>
+                            <td><span class="etiqueta etiqueta-azul">20304050607</span></td>
+                            <td><strong>AV. San martin 123</strong></td>
+                            <td class="texto-derecha">01145678901</td>
+                            <td class="texto-derecha-negrita">ventas@alvarezyhijos.com</td>
+                            <td class="texto-centro">
+                                <span class="estado-proveedor">Activo</span>
+                            </td>
+                            <td class="texto-centro">
+                                <div class="botones-accion">
+                                    <button class="btn-accion" title="Editar">Modificar</button>
+                                    <button class="btn-accion borrar" title="Eliminar">Eliminar</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!--Fila 2-->
+                        <tr>
+                            <td>
+                                <div class="etiqueta etiqueta-azul">02</div>
+                            </td>
+                            <td>
+                                <div class="nombre-razon-social">Neumáticos Distribuidora del Sur
+                                </div>
+                            </td>
+                            <td><span class="etiqueta etiqueta-morada">30710080001</span></td>
+                            <td><strong>Calle Falsa 456</strong></td>
+                            <td class="texto-derecha">01134567890</td>
+                            <td class="texto-derecha-negrita">contac@distrisur.com</td>
+                            <td class="texto-centro">
+                                <span class="estado-proveedor">Inactivo</span>
+                            </td>
+                            <td class="texto-centro">
+                                <div class="botones-accion">
+                                    <button class="btn-accion" title="Editar">Modificar</button>
+                                    <button class="btn-accion borrar" title="Eliminar">Eliminar</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <!--Ventana emergente para registro de producto-->
+    <div id="modal-proveedor" class="modal-overlay">
+        <div class="modal-contenido">
+            <div class="modal-cabecera">
+                <h2>Nuevo Proveedor</h2>
+                <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
+            </div>
+            <form class="modal-cuerpo">
+                <div class="grupo-input">
+                    <label for="input-proveedor">Nombre del proveedor/empresa</label>
+                    <input type="text" id="input-proveedor" placeholder="Ej. Alvarez y Hijos Neumativos">
+                </div>
+                <div class="fila-doble">
+                    <div class="grupo-input">
+                        <label for="input-cuit">CUIT</label>
+                        <input type="text" id="input-cuit" placeholder="20463324324">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-telefono">Teléfono</label>
+                        <input type="text" id="input-telefono" placeholder="cod.area:341">
+                        <input type="text" id="input-telefono" placeholder="345223">
+                    </div>
+                </div>
+                <div class="fila-triple">
+                    <div class="grupo-input">
+                        <label for="input-email">Email</label>
+                        <input type="email" id="input-email" placeholder="lucianogonzalez@gmail.com">
+                    </div>
+                </div>
+                <div class="fila-cuadruple">
+                    <div class="grupo-input">
+                        <label for="select-ciudad">Ciudad</label>
+                        <select name="select-ciudad" id="select-ciudad">
+                            <option value="roldan">Roldan</option>
+                            <option value="rosario">Rosario</option>
+                            <option value="sanjeronimosud">San Jeronimo Sud</option>
+                        </select>
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-direccion">Dirección</label>
+                        <input type="text" id="input-direccion" placeholder="San martin 2345">
+                    </div>
+                </div>
+
+                <div class="modal-pie">
+                    <button type="button" class="btn-cancelar" id="btn-cancelar-modal">Cancelar</button>
+                    <button type="submit" class="btn-guardar">Guardar Proveedor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!--Script de JS-->
+    <script src="../static/js/proveedor.js"></script>
+</body>
+</html>
