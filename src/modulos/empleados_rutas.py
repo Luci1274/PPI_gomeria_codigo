@@ -7,6 +7,7 @@ empleados_bp = Blueprint("empleados", __name__)
 # ------------------------------------------
 # Iniciar Sesión                            #
 # ------------------------------------------
+@empleados_bp.route("/registrarse", methods=["GET"])
 @empleados_bp.route("/iniciar_sesion", methods=["GET"])
 def iniciar_sesion():
     return render_template("iniciar_sesion.html")
@@ -21,8 +22,8 @@ def api_iniciar_sesion():
         }), 500
 
     datos = request.get_json(silent=True) or request.form
-    nombre_usuario = datos.get("nombre_usuario")
-    contrasena = datos.get("contrasena")
+    nombre_usuario = datos.get("txt_input_nombre")
+    contrasena = datos.get("password_input")
 
     datos_devueltos = Usuario.verificar_credenciales(nombre_usuario, contrasena)
 
@@ -44,10 +45,6 @@ def api_iniciar_sesion():
 # ------------------------------------------
 # Registro de Usuario                       #
 # ------------------------------------------
-@empleados_bp.route("/registrarse", methods=["GET"])
-def registrarse():
-    return render_template("crear_usuario.html")
-
 
 @empleados_bp.route("/api/registrarse", methods=["POST"])
 def api_registrarse():
@@ -58,10 +55,10 @@ def api_registrarse():
         }), 500
 
     datos = request.get_json(silent=True) or request.form
-    nombre = datos.get("nombre_usuario")
-    correo = datos.get("mail_usuario")
-    telefono = datos.get("telefono_usuario")
-    contrasena = datos.get("contrasena_usuario")
+    nombre = datos.get("input_nombre")
+    correo = datos.get("txt_registro_email")
+    telefono = datos.get("tel_input")
+    contrasena = datos.get("password_registro")
 
     if Usuario.existe_usuario(nombre):
         return jsonify({

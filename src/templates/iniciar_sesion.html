@@ -29,9 +29,9 @@
 
             <!-- FORMULARIO DE LOGIN -->
             <form method="post" action="/login" id="form_login">
-                {% if error %}
-                <p class="error">Usuario y/o contraseña incorrectas</p>
-                {% endif %}
+                <div class="mensaje" id="caja_mensaje">
+                    <p id="parrafo_mensaje"></p>
+                </div>
 
                 <div class="ingresar_datos">
                     <div class="icono_input">
@@ -60,6 +60,11 @@
 
             <!-- FORMULARIO DE REGISTRO -->
             <form method="post" id="form_registro" class="formulario-oculto">
+
+                <div class="mensaje" id="caja_mensaje">
+                    <p id="parrafo_mensaje"></p>
+                </div>
+
                 <div class="ingresar_datos">
                     <div class="icono_input">
                         <i class="fa-solid fa-user"></i>
