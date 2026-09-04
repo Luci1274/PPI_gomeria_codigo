@@ -132,6 +132,18 @@ body {
     color: var(--color_texto);
 }
 
+/*Caja mensaje*/
+.mensaje {
+    display: none;
+    border: 1px solid var(--color_input_borde);
+    background-color: var(--color_tarjeta);
+    padding: 8px 12px;
+    margin-top: 8px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    background-color: black;
+}
+
 /* Mensaje de Error */
 .error {
     color: var(--color_texto_error);
