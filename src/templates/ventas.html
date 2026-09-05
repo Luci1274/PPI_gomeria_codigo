@@ -38,8 +38,16 @@
                 <div class="tarjeta-metrica">
                     <div class="datos-metrica">
                         <h3>Total Ventas</h3>
-                        <p class="valor-metrica" id="valor-venta">4</p>
+                        <p class="valor-metrica" id="valor-venta">2</p>
                     </div>
+                </div>
+                <div class="tarjeta-metrica">
+                    <div class="datos-metrica">
+                        <h3>Total Productos Vendidos</h3>
+                        <p class="valor-metrica">25</p>
+                    </div>
+                    
+
                 </div>
             </section>
 
@@ -47,7 +55,7 @@
                 <div class="contenedor-busqueda">
                     <input type="text" id="input-busqueda" placeholder="Buscar por Cliente...">
                 </div>
-                <div class="acciones-filtros">
+                <div class="accion-filtro">
                     <select class="filtro-seleccion">
                         <option value="todos">Todos: Fecha</option>
                         <option value="12/05/2026">12/05/2026</option>
@@ -77,7 +85,7 @@
                             <td>$200000</td>
                             <td>
                                 <div class="btn-acciones">
-                                    <button class="btn-accion resumen" title="resumen">Ver resumen</button>
+                                    <button class="btn-accion resumen" id="btn-open-modal">Ver resumen</button>
                                     <button class="btn-accion eliminar" title="eliminar">Eliminar</button>
                                 </div>
                             </td>
@@ -90,9 +98,9 @@
                             <td>$100000</td>
                             <td>
                                 <div class="btn-acciones">
-                                    <button class="btn-accion">Ver resumen
+                                    <button class="btn-accion resumen" id="btn-open-modal">Ver resumen
                                     </button>
-                                    <button class="btn-accion">Eliminar
+                                    <button class="btn-accion eliminar">Eliminar
                                     </button>
                                 </div>
                             </td>
@@ -104,7 +112,7 @@
 
         <!--Ventana emergente (ver resumen o editar)-->
         <!--Ver resumen-->
-        <div class="modal-overlay-resumen">
+        <div class="modal-overlay" id="modal-overlay">
             <div class="modal-contenido">
                 <div class="modal-cabecera">
                     <h2>Resumen Orden de Venta</h2>
@@ -115,7 +123,7 @@
                     <div class="tarjeta-metrica">
                         <div class="datos-metricas">
                             <p>Fecha:</p>
-                            <p>12/05/2026</p>
+                            <p>12/06/2026</p>
                         </div>
                     </div>
                     <div class="tarjeta-metrica">
@@ -125,43 +133,40 @@
                         </div>
                     </div>
                 </div>
-                <table class="modal-table">
-                    <thead>
-                        <tr>
-                            <th>Producto</th>
-                            <th>Cantidad</th>
-                            <th>Precio</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Cubierta 175/06</td>
-                            <td>10 unidades</td>
-                            <td>$120000</td>
-                        </tr>
-                        <tr>
-                            <td>Camara R14</td>
-                            <td>2 unidades</td>
-                            <td>$30000</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">Total</td>
-                            <td>$214254</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="btn-acciones">
-                <button class="btn accion">
-                    <a href="#" class="enl-accion">Descargar PDF</a>
-                </button>
-                <button class="btn accion">
-                    <a href="#" class="enl-accion">Imprimir</a>
-                </button>
-                <button class="btn accion">
-                    <a href="#" class="enl-accion">Modificar</a>
-                </button>
+                <div class="modal-contenedor-tabla">
+                    <table class="modal-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Cubierta 175/06</td>
+                                <td>10 unidades</td>
+                                <td>$120000</td>
+                            </tr>
+                            <tr>
+                                <td>Camara R14</td>
+                                <td>2 unidades</td>
+                                <td>$80000</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="total-table">Total</td>
+                                <td class="total-table">$200000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="btn-acciones">
+                    <button class="btn accion">Descargar PDF</button>
+                    <button class="btn accion">Imprimir</button>
+                    <button class="btn accion">Modificar </button>
+                </div>
             </div>
         </div>
+    <script src="../static/js/open_modal.js"></script>
 </body>
 </html>
