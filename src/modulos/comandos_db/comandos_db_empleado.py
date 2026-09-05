@@ -26,7 +26,7 @@ class Usuario:
                 usuario = cursor.fetchone()
 
                 if usuario and check_password_hash(usuario.get("contrasena") or usuario.get("contraseña"), contrasena_ingresada):
-                    return [usuario["idempleado"], usuario["tipo"]]
+                    return [usuario["idempleado"], usuario["tipo"], usuario["nombre_usuario"]]
                 return None
         except pymysql.MySQLError as e:
             print(f"Error al verificar las credenciales: {e}")
