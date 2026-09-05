@@ -206,6 +206,46 @@ td {
     font-weight: bold;
 }
 
+/* Cartel de Error */
+.cartel-error {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 1000;
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+    border-radius: 10px;
+    padding: 14px 20px;
+    box-shadow: 0 10px 15px -3px rgba(11, 34, 64, 0.1), 0 4px 6px -2px rgba(11, 34, 64, 0.05);
+    font-size: 14px;
+    font-weight: 600;
+    animation: deslizarError 0.3s ease forwards;
+}
+
+.contenido-cartel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.icono-error {
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+/* Animación de entrada */
+@keyframes deslizarError {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /*Responsive Desing*/
 
 @media ()

@@ -4,13 +4,37 @@ import modulos.comandos_db.comandos_db_venta as db_ventas
 import modulos.comandos_db.comandos_db_clientes as db_clientes
 from modulos.ventas_rutas import ventas_bp
 from modulos.empleados_rutas import empleados_bp
+from modulos.comandos_db.comandos_db_pantalla_inicial import mostrar
 
 app = Flask(__name__)
 app.secret_key = "una_clave_secreta_y_segura_aqui"
 
+# Ruta principal que sirve la vista
 @app.route("/")
 def inicio():
-    return render_template("index.html")
+    # Le pasamos el usuario guardado en la sesión (o 'Usuario' por defecto)
+    nombre_usuario = session.get('nombre_usuario', 'Usuario')
+    return render_template("pantalla_principal.html", nombre_usuario=nombre_usuario)
+
+# Ruta API que usará JavaScript para consultar la DB periódicamente
+@app.route("/api/datos-dashboard")
+def api_datos_dashboard():
+    total_productos, total_clientes, ventas_dia, ultimas_ventas, productos_bajos, exito = mostrar()
+
+    if not exito:
+        return jsonify({
+            "exito": False,
+            "mensaje": "Error: No se pudo conectar a la base de datos."
+        }), 500
+
+    return jsonify({
+        "exito": True,
+        "total_productos": total_productos,
+        "total_clientes": total_clientes,
+        "ventas_dia": ventas_dia,
+        "ultimas_ventas": ultimas_ventas,
+        "productos_bajos": productos_bajos
+    })
 
 app.register_blueprint(ventas_bp)
 app.register_blueprint(empleados_bp)
