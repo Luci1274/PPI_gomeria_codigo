@@ -14,9 +14,9 @@ def obtener_ultimas_ventas():
     return """
         SELECT c.nombre, c.apellido, v.precio_total, hpc.forma_pago, v.estado 
         FROM venta AS v 
-        JOIN cliente AS c ON v.idcliente = c.idcliente 
+        LEFT JOIN cliente AS c ON v.idcliente = c.idcliente 
         LEFT JOIN historial_pago_cliente AS hpc ON v.idventa = hpc.idventa 
-        WHERE v.activa = 1
+        WHERE v.activa = 1 AND DATE(fecha_emision_factura) = CURDATE()
         ORDER BY v.idventa DESC
         LIMIT 5
     """
