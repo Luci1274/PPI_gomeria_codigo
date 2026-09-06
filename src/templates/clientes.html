@@ -10,18 +10,19 @@
 
 <body>
     <div class="contenedor">
-        <!--MENÚ LATERAL-->
+        <!--Menu Lateral(SIDEBAR)-->
         <aside class="menu-lateral">
-            <img src="../static/image/Icono_app.png" alt="icono-app">
             <div class="menu-encabezado">
-                <h2>Sistema Gomeía</h2>
+                <img src="../static/image/Icono_app.png" alt="logo-app" class="logo-app">
+                <h2>Sistema Gomería</h2>
             </div>
             <nav class="menu-navegacion">
-                <a href="#" class="enlace-nav">Principal</a>
-                <a href="#" class="enlace-nav">Ventas / Compras</a>
-                <a href="#" class="enlace-nav">Inventario</a>
-                <a href="#" class="enlace-nav activo">Clientes</a>
-                <a href="#" class="enlace-nav">Proveedor</a>
+                <a href="#" class="enl-nav">Principal</a>
+                <a href="#" class="enl-nav">Ventas</a>
+                <a href="#" class="enl-nav">Compras</a>
+                <a href="#" class="enl-nav">Inventario</a>
+                <a href="#" class="enl-nav activo">Clientes</a>
+                <a href="#" class="enl-nav">Proveedores</a>
             </nav>
             <div class="menu-pie">
                 <div class="usuario-info">
@@ -30,21 +31,19 @@
                 </div>
             </div>
         </aside>
-
-        <!--CONTENIDO PRINCIPAL-->
+        <!--Contenido Principal-->
         <main class="contenido-principal">
-            <!--Barra Superior de Navegación Externa-->
             <header class="barra-superior">
                 <div class="titulo-pagina">
                     <h1>Gestión de Clientes</h1>
                     <p>Administra y consulta los clientes.</p>
                 </div>
-                <div class="barra-superior-acciones">
+                <div class="barra-superior-accion">
                     <button class="btn btn-primario" id="btn-open-modal">Nuevo Cliente</button>
                 </div>
             </header>
 
-            <!--Tarjetas-->
+            <!--Tarjeta-->
             <section class="cuadricula-metricas">
                 <div class="tarjeta-metrica">
                     <div class="datos-metrica">
@@ -61,7 +60,7 @@
                 </div>
                 <div class="acciones-filtros">
                     <select class="filtro-seleccion">
-                        <option value="todos">Todos: Ciudad</option>
+                        <option value="">Todos: Ciudad</option>
                         <option value="roldan">Roldan</option>
                         <option value="rosario">Rosario</option>
                     </select>
@@ -82,59 +81,33 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!--Fila 1-->
                         <tr>
+                            <td>Diego Gatica</td>
+                            <td>47090234</td>
+                            <td>3414566578</td>
+                            <td>Roldan</td>
+                            <td>San Martín 1245</td>
                             <td>
-                                <div class="nombre-razon-social">
-                                    Diego Gatica
-                                </div>
-                            </td>
-                            <td>
-                                <div class="etiqueta etiqueta-azul">
-                                    47090234
-                                </div>
-                            </td>
-                            <td>
-                                <div class="etiqueta etiqueta-azul">3414566578</div>
-                            </td>
-                            <td>
-                                <div class="etiqueta etiqueta-azul">Roldan</div>
-                            </td>
-                            <td>
-                                <div class="etiqueta etiqueta-azul">San Martín 1245</div>
-                            </td>
-                            <td>
-                                <div class="botones-accion">
-                                    <button class="btn-accion" title="Editar">
+                                <div class="btn-acciones">
+                                    <button class="btn-accion editar" title="Editar">
                                         Modificar
                                     </button>
-                                    <button class="btn-accion" title="Eliminar">
+                                    <button class="btn-accion eliminar" title="Eliminar">
                                         Eliminar
                                     </button>
                                 </div>
                             </td>
                         </tr>
-                        <!--Fila 2-->
                         <tr>
-                            <td>
-                                <div class="nombre-razon-social">Michelin Neumáticos</div>
-                            </td>
-                            <td>
-                                <div class="etiqueta etiqueta-azul">20454634357</div>
-                            </td>
-                            <td>
-                                <div class="etiqueta etiqueta-azul">3413455432</div>
-                            </td>
-                            <td>
-                                <div class="etiqueta etiqueta-azul">Rosario</div>
-                            </td>
-                            <td>
-                                <div class="etiqueta etiqueta-azul">Belgrano 2345</div>
-                            </td>
+                            <td>Michelin Neumáticos</td>
+                            <td>20454634357</td>
+                            <td>3413455432</td>
+                            <td>Rosario</td>
+                            <td>Belgrano 2345</td>
                             <td class="texto-centro">
-                                <div class="botones-accion">
-                                    <button class="btn-accion" title="Editar">Modificar</button>
-                                    <button class="btn-accion" title="Eliminar">eliminar</button>
+                                <div class="btn-acciones">
+                                    <button class="btn-accion editar" title="Editar">Modificar</button>
+                                    <button class="btn-accion eliminar" title="Eliminar">Eliminar</button>
                                 </div>
                             </td>
                         </tr>
@@ -144,14 +117,14 @@
         </main>
     </div>
 
-    <!--Ventana emergente para registro de Cliente-->
-    <div id="modal-overlay" class="modal-overlay">
-        <div class="modal-contenido">
-            <div class="modal-cabecera">
-                <h2>Nuevo Cliente</h2>
-                <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
-            </div>
-
+<!--Ventana emergente (Registro de Cliente)-->
+<div id="modal-overlay" class="modal-overlay">
+    <div class="modal-contenido">
+        <div class="modal-cabecera">
+            <h2>Nuevo Cliente</h2>
+            <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
+        </div>
+<!--Formulario de ingreso de datos-->
         <form action="" class="modal-cuerpo">
             <div class="grupo-input">
                 <label for="input-cliente">Nombre del Cliente</label>
@@ -169,26 +142,26 @@
             </div>
             <div class="fila-doble">
                 <div class="grupo-input">
-                    <label for="select-ciudad">Ciudad
+                    <label for="select-ciudad">Ciudad</label>
                         <select name="select-ciudad" id="select-ciudad">
                             <option value="roldan">Roldan</option>
                             <option value="rosario">Rosario</option>
                             <option value="funes">Funes</option>
                         </select>
-                    </label>
                 </div>
                 <div class="grupo-input">
                     <label for="input-direccion">Dirección</label>
                     <input type="text" id="input-direccion" placeholder="Ej: San Lorenzo 2134">
                 </div>
             </div>
-            <div class="modal pie">
+            <div class="btn-acciones-modal">
                 <button class="btn-cancelar" id="btn-cancelar-modal">Cancelar</button>
                 <button class="btn-guardar">Guardar</button>
             </div>
         </form>
     </div>
-    <!--Script de JS-->
-    <script src="../static/js/open_modal.js"></script>
+</div>
+<!--Script de JS-->
+<script src="../static/js/open_modal.js"></script>
 </body>
 </html>
