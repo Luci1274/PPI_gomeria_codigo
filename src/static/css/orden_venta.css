@@ -1,0 +1,629 @@
+:root {
+    --color-primario: #0b2240;    
+    --primario-claro: #16355d;     
+    --acento-rojo: #e74c3c;       
+    --acento-morado: #9b59b6;     
+    --fondo-principal: #f4f6f9;           
+    --fondo-tarjeta: #ffffff;          
+    --texto-principal: #2c3e50;        
+    --texto-atenuado: #7f8c8d;       
+    --color-borde: #e2e8f0; 
+}
+
+* {
+    box-sizing: border-box;
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #eef2f6;
+    color: var(--texto-principal);
+    overflow-x: hidden;
+}
+.contenedor {
+    display: flex;
+    min-height: 100vh;
+}
+
+.menu-lateral {
+    width: 260px;
+    background-color: var(--color-primario);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    position: fixed;
+    height: 100vh;
+    z-index: 100;
+}
+
+img {
+    width: 80px;
+}
+
+.menu-encabezado {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.menu-encabezado h2 {
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.menu-navegacion {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.enl-nav {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: rgb(255, 255, 255, 0.7);
+    text-decoration: none;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.enl-nav:hover {
+    color: #fff;
+    background-color: var(--color-primario);
+}
+
+.enl-nav.activo {
+    color: #fff;
+    background-color: var(--primario-claro);
+    box-shadow: 0 0 0 0 #444a
+}
+
+/* Layout General POS */
+.contenido-principal {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    padding: 30px;
+    max-width: none;
+    margin-left: 260px;
+    width: 100%;
+}
+
+.seccion-catalogo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--fondo-tarjeta);
+    border: 1px solid var(--color-borde);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgb(0, 0, 0, 0.3);
+}
+
+.barra-superior {
+    margin-bottom: 24px;
+}
+
+.barra-superior h1 {
+    font-size: 26px;
+    font-weight: bold;
+    color: var(--color-primario);
+    margin-bottom: 4px;
+}
+
+.barra-superior p {
+    font-size: 14px;
+    color: var(--texto-atenuado);
+}
+
+/* Buscador y Categorías */
+.barras-pos {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.contenedor-busqueda input {
+    width: 100%;
+    max-width: 450px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--color-borde);    
+    background-color: var(--fondo-tarjeta);
+    font-size: 14px;
+    color: var(--texto-principal);
+    transition: all 0.2s ease;
+}
+
+.contenedor-busqueda input:focus {
+    outline: none;
+    border-color: var(--primario-claro);
+}
+
+.filtros-categoria {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+/* Estilo adaptado para el Select de Categorías */
+.filtros-categoria select {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--color-borde);
+    background-color: var(--fondo-tarjeta);
+    color: var(--texto-principal);
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+/* Efecto al pasar el mouse */
+.filtros-categoria select:hover {
+    border-color: #cbd5e1;
+}
+
+/* Efecto cuando está enfocado/desplegado */
+.filtros-categoria select:focus {
+    border-color: var(--primario-claro);
+}
+
+/* Grilla de Tarjetas de Productos */
+.grilla-productos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.tarjeta-producto {
+    background-color: var(--fondo-tarjeta);
+    border: 1px solid var(--color-borde);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tarjeta-producto:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.tarjeta-producto:active {
+    transform: scale(0.97);
+}
+
+.img-producto {
+    width: 100%;
+    height: 110px;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f1f5f9;
+    margin-bottom: 10px;
+    border: 1px dashed var(--color-borde);
+}
+
+.img-producto img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.info-producto h3 {
+    font-size: 13px;
+    color: var(--texto-principal);
+    margin-bottom: 6px;
+    line-height: 1.3;
+}
+
+.precio-producto {
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--color-primario);
+    display: block;
+}
+
+/* Panel Lateral Derecho: Resumen */
+.panel-resumen-pos {
+    width: 360px;
+    background-color: var(--fondo-tarjeta);
+    border: 1px solid var(--color-borde);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 60px);
+    position: sticky;
+    top: 30px;
+    box-shadow: 0 4px 6px -1px rgb(0, 0, 0, 0.3)
+}
+
+.cabecera-resumen h2 {
+    font-size: 18px;
+    color: var(--color-primario);
+    font-weight: bold;
+    margin-bottom: 16px;
+}
+
+.formulario-resumen {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.campo-pos {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.campo-pos label {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--texto-atenuado);
+}
+
+.fecha-actual {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--texto-principal);
+}
+
+.select-cliente, .select-met-pago {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--color-borde);
+    font-size: 13px;
+    background-color: #f8fafc;
+    color: var(--texto-principal);
+    outline: none;
+}
+
+.divisor {
+    border: 0;
+    border-top: 1px solid var(--color-borde);
+    margin: 16px 0;
+}
+
+/* Lista de Items Agregados */
+.lista-items-pedido {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-right: 4px;
+    overflow: hidden;
+}
+
+.item-pedido {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid var(--color-borde);
+    position: relative;
+    padding-right: 36px;
+}
+
+.img-item {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    background-color: #ffffff;
+    border: 1px solid var(--color-borde);
+}
+
+.detalles-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.detalles-item strong {
+    font-size: 13px;
+    color: var(--texto-principal);
+}
+
+.cant-item {
+    font-size: 12px;
+    color: var(--texto-atenuado);
+    font-weight: bold;
+    margin: 2px;
+}
+
+.precio-item {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--color-primario);
+}
+
+.eliminar-producto {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%); 
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: var(--texto-atenuado);
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.eliminar-producto:hover {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+/* Footer de Resumen */
+.footer-resumen {
+    border-top: 2px solid var(--color-borde);
+    padding-top: 16px;
+    margin-top: 10px;
+}
+
+.monto-total-pos {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.monto-total-pos span {
+    font-size: 15px;
+    color: var(--texto-atenuado);
+    font-weight: bold;
+}
+
+.monto-total-pos strong {
+    font-size: 22px;
+    color: var(--color-primario);
+}
+
+.btn-acciones-pos {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-acciones-pos .btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cerrar {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fca5a5 !important;
+}
+
+.btn-cerrar:hover {
+    background-color: #fee2e2;
+}
+
+.btn-primario {
+    background-color: var(--color-primario);
+    color: #ffffff;
+}
+
+.btn-primario:hover {
+    background-color: var(--primario-claro);
+}
+
+/*Ventana emergente (Ver resumen)*/
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+}
+
+.modal-overlay.activo {
+    display: flex !important;
+}
+
+.modal-contenido {
+    background-color: var(--fondo-tarjeta);
+    width: 90%;
+    max-width: 580px;
+    border-radius: 16px;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: relative;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+/* Cabecera */
+.modal-cabecera {
+    display: flex;
+    flex-direction: column;
+    padding-right: 40px;
+}
+
+.modal-cabecera h2 {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--color-primario);
+    margin: 0;
+}
+
+.modal-cabecera p {
+    font-size: 13px;
+    color: var(--texto-atenuado);
+    margin: 4px 0 0 0;
+}
+
+/* Botón X de Cierre */
+.modal-cabecera .btn-cerrar {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--texto-atenuado);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    outline: none;
+}
+
+.modal-cabecera .btn-cerrar:hover {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+/* Tarjetas de Métricas (Fecha y Cliente) */
+.contenedor-tarjetas {
+    display: flex;
+    gap: 12px;
+}
+
+.modal-contenido .tarjeta-metrica {
+    flex: 1;
+    background-color: #f8fafc;
+    border: 1px solid var(--color-borde);
+    padding: 10px 14px;
+    border-radius: 10px;
+}
+
+.modal-contenido .datos-metricas {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.modal-contenido .datos-metricas p:first-child {
+    font-weight: bold;
+    color: var(--color-primario);
+    margin: 0;
+}
+
+.modal-contenido .datos-metricas p:last-child {
+    color: var(--texto-principal);
+    margin: 0;
+}
+
+.modal-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--color-borde);
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: 13px;
+    text-align: left;
+}
+
+.modal-table th {
+    background-color: #f8fafc;
+    color: var(--color-primario);
+    font-weight: bold;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--color-borde);
+}
+
+.modal-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--color-borde);
+    color: var(--texto-principal);
+}
+
+.modal-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.total-table {
+    font-weight: bold;
+    font-size: 15px;
+    color: var(--color-primario);
+    background-color: #f8fafc;
+}
+
+.modal-contenido .btn-acciones {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    margin-top: 6px;
+}
+
+.modal-contenido .btn-acciones .btn,
+.modal-contenido .btn-acciones button {
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    border: 1px solid var(--color-borde);
+    background-color: #ffffff;
+    color: var(--texto-principal);
+    transition: all 0.2s ease;
+
+}
+
+.modal-contenido .btn-acciones button:hover {
+    background-color: #f1f5f9;
+}
+
+/* Destacamos el botón Guardar/Principal */
+.modal-contenido .btn-acciones button:last-child {
+    background-color: var(--color-primario);
+    color: #ffffff;
+    border-color: var(--color-primario);
+}
+
+.modal-contenido .btn-acciones button:last-child:hover {
+    background-color: var(--primario-claro);
+}
