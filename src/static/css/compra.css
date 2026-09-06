@@ -1,0 +1,401 @@
+:root {
+    --color-primario: #0b2240;    
+    --primario-claro: #16355d;     
+    --acento-rojo: #e74c3c;       
+    --acento-morado: #9b59b6;     
+    --fondo-principal: #f4f6f9;           
+    --fondo-tarjeta: #ffffff;          
+    --texto-principal: #2c3e50;        
+    --texto-atenuado: #7f8c8d;       
+    --color-borde: #e2e8f0; 
+}
+
+* {
+    box-sizing: border-box;
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--fondo-principal);
+    color: var(--texto-principal);
+    overflow-x: hidden;
+}
+
+.contenedor {
+    display: flex;
+    min-height: 100vh;
+}
+
+.menu-lateral {
+    width: 260px;
+    background-color: var(--color-primario);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    position: fixed;
+    height: 100vh;
+    z-index: 100;
+}
+
+img {
+    width: 80px;
+}
+
+.menu-encabezado {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+
+.menu-encabezado h2 {
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.menu-navegacion {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.enl-nav {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: rgb(255, 255, 255, 0.7);
+    text-decoration: none;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.enl-nav:hover {
+    color: #fff;
+    background-color: var(--color-primario);
+}
+
+.enl-nav.activo {
+    color: #fff;
+    background-color: var(--primario-claro);
+    box-shadow: 0 0 0 0 #444a
+}
+
+.contenido-principal {
+    margin-left: 260px;
+    flex-grow: 1;
+    padding: 40px;
+    max-width: 1400px;
+    width: 100%;
+}
+
+.barra-superior {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.barra-superior h1 {
+    font-size: 26px;
+    font-weight: bold;
+    color: var(--color-primario);
+    margin-bottom: 4px;
+}
+
+.barra-superior p {
+    font-size: 14px;
+    color: var(--texto-atenuado);
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primario {
+    background-color: var(--color-primario);
+    color: #fff;
+}
+
+.btn-primario:hover {
+    background-color: var(--primario-claro);
+    transition: translateY(-1px);
+}
+
+.cuadricula-metricas {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    margin-bottom: 32px;
+    gap: 30px;
+}
+
+.tarjeta-metrica {
+    background-color: var(--fondo-tarjeta);
+    border: 1px solid var(--color-borde);
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.datos-metrica h3 {
+    font-size: 15px;
+    color: var(--texto-atenuado);
+    margin-bottom: 8px;
+}
+
+.valor-metrica {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--color-primario);
+}
+
+.barra-filtrado {
+    display: flex;
+    justify-content: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.contenedor-busqueda {
+    position: relative;
+    flex-grow: 1;
+    max-width: 450px;
+}
+
+.contenedor-busqueda input{
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid black;    
+    background-color: var(--fondo-tarjeta);
+    font-size: 14px;
+    color: var(--texto-principal);
+    transition: all 0.2 ease;
+}
+
+.contenedor-busqueda input:focus {
+    outline: none;
+    border-color: var(--primario-claro);
+}
+
+.accion-filtro {
+    display: flex;
+    gap: 12px;
+}
+
+.filtro-seleccion {
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--color-borde);
+    background-color: var(--fondo-tarjeta);
+    font-size: 14px;
+    color: var(--texto-principal);
+    cursor: pointer;
+}
+
+/*Tabla de datos*/
+.contenedor-tabla, .modal-contenedor-tabla {
+    background-color: var(--fondo-tarjeta);
+    border: 1px solid var(--color-borde);
+    border-radius: 12px;
+    overflow: auto;
+}
+
+.tabla-datos, .modal-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    font-size: 15px;
+}
+
+.tabla-datos th, .modal-table th {
+    background-color: #fafbfc;
+    padding: 16px;
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--color-primario);
+    border-bottom: 2px solid var(--color-borde);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tabla-datos td, .modal-table td {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--color-borde);
+    color: var(--texto-principal);
+    gap: 8px;
+}
+
+.btn-acciones {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-accion {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--color-borde);
+    background: transparent;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn-accion.resumen {
+    color: var(--color-primario);
+    border-color: var(--color-primario);
+}
+
+.btn-accion.eliminar {
+    color: #dc2626;
+    border-color: black;
+}
+
+.btn-accion.resumen:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: var(--color-primario);
+}
+
+.btn-accion.eliminar:hover {
+    background-color: #fef2f2;
+    border-color: #fca5a5;
+}
+
+/*Ventana Emergente*/
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgb(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+}
+
+.modal-overlay.activo {
+    display: flex !important;
+}
+
+.modal-contenido {
+    background-color: var(--fondo-tarjeta);
+    width: 90%;
+    max-width: 600px;
+    border-radius: 16px;
+    padding: 18px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+}
+
+.modal-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding-bottom: 10px;
+    margin-bottom: 3px;
+}
+
+.modal-cabecera h2 {
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--color-primario);
+    margin: 0;
+}
+
+.modal-cabecera p {
+    font-size: 14px;
+    color: var(--texto-atenuado);
+    margin: 5px 0 0 0;
+}
+
+.modal-cabecera .btn-cerrar {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 0;
+    color: var(--texto-atenuado);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.modal-cabecera .btn-cerrar:hover {
+    background-color: #dc2626;
+    color: white;
+}
+
+.contenedor-tarjetas {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.modal-contenido .tarjeta-metrica {
+    background-color: #f8fafc;
+    border: 1px solid var(--color-borde);
+    padding: 15px 20px;
+    border-radius: 10px;
+}
+
+.modal-contenido .datos-metricas {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 18px;
+}
+
+.modal-contenido .datos-metricas p:first-child {
+    font-weight: bold;
+    color: var(--color-primario);
+    margin: 0;
+}
+
+.modal-contenido .datos-metricas p:last-child {
+    color: var(--texto-principal);
+    margin: 0;
+}
+
+.modal-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    border: 1px solid var(--color-borde);border-radius: 8px;
+    overflow: hidden;
+}
+
+.modal-contenido .btn-acciones {
+    display: flex;
+    justify-content: space-between;    
+    margin-top: 7px;
+}
+
+.total-table {
+    font-weight: bold;
+}

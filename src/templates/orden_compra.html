@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/orden_compra.css">
+    <title>Orden de compra - Sistema Gomería</title>
+</head>
+<body>
+    <div class="contenedor">
+        <!--MENÚ LATERAL-->
+        <aside class="menu-lateral">
+            <div class="menu-encabezado">
+                <img src="../static/image/Icono_app.png" alt="icono-app" class="logo-app">
+                <h2>Sistema Gomería</h2>
+            </div>
+            <nav class="menu-navegacion">
+                <a href="#" class="enl-nav">Principal</a>
+                <a href="#" class="enl-nav">Ventas</a>
+                <a href="#" class="enl-nav activo">Compras</a>
+                <a href="#" class="enl-nav">Inventario</a>
+                <a href="#" class="enl-nav">Clientes</a>
+                <a href="#" class="enl-nav">Proveedores</a>
+            </nav>
+        </aside>
+
+    <main class="contenido-principal">
+        <section class="seccion-catalogo">
+            <div class="barra-superior">
+                <h1>Orden de Compra</h1>
+                <p>Haz clic en un producto para agregarlo al pedido</p>
+            </div>
+            <div class="barras-pos">
+                <div class="contenedor-busqueda">
+                <input type="text" placeholder="Buscar producto por nombre...">
+                </div>
+                <div class="filtros-categoria">
+                    <select name="select-categoría" id="">
+                        <option value="todos">Todas: Categoría</option>
+                        <option value="picos">Picos</option>
+                        <option value="camara">Camara</option>
+                        <option value="parche">Parches</option>  
+                    </select>
+                </div>
+            </div>
+            <div class="grilla-productos">
+                <div class="tarjeta-producto" onclick="">
+                    <div class="img-producto">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRr8QaWNTc0pAEQXoyLtGzQQj_TzEgTMOB8lh4qnjqbmA&s" alt="">
+                    </div>
+                    <div class="info-producto">
+                        <h3>Cámara G-14 175/185 x 14</h3>
+                    </div>
+                </div>
+                <div class="tarjeta-producto" onclick=""> <!--Presionamos el producto y se agrega en el resumen de pedido con una function-->
+                    <div class="img-producto">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZwUUEapxGCluYQnbAzZCnNJr-G2xhTfa-u_OCHFIxDA&s=10" alt="">
+                    </div>
+                    <div class="info-producto">
+                        <h3>Cubierta 175/65 R14</h3>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!--Resumen de Pedido-->
+        <aside class="panel-resumen-pos">
+            <div class="cabecera-resumen">
+                <h2>Resumen de Pedido</h2>
+            </div>
+            <div class="formulario-resumen">
+                <div class="campo-pos">
+                    <label for="fecha-actual">Fecha:</label>
+                    <span class="fecha-actual" id="fecha-actual">12/04/2026</span>
+                </div>
+                <div class="campo-pos">
+                    <label for="select-cliente">Proveedor</label>
+                    <select name="select-cliente" id="select-cliente" class="select-cliente">
+                        <option value="">Seleccionar Proveedor</option>
+                        <option value="1">Michael zarza</option>
+                        <option value="2">Luciano Gonzalez</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr class="divisor">
+
+            <div class="lista-items-pedido" id="lista-resumen">
+                <div class="item-pedido">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRr8QaWNTc0pAEQXoyLtGzQQj_TzEgTMOB8lh4qnjqbmA&s" alt="" class="img-item">
+                    <div class="detalles-item">
+                        <strong>Cámara G-14</strong>
+                        <span class="cant-item">Cant: 1</span>
+                        <button class="eliminar-producto" onclick="">X</button>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-resumen">
+                <div class="monto-total-pos">
+                    <span>Total productos:</span>
+                    <strong>1</strong>
+                </div>
+                <div class="btn-acciones-pos">
+                    <button class="btn btn-cerrar">Cerrar</button>
+                    <button class="btn btn-primario" id="btn-open-modal">Continuar</button>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+<!--Ventana emergente (Ver resumen)-->
+  <div class="modal-overlay" id="modal-overlay">
+            <div class="modal-contenido">
+                <div class="modal-cabecera">
+                    <h2>Resumen Orden de Compra</h2>
+                    <p>Detalles completo de la orden de compra a realizar</p>
+                    <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
+                </div>
+                <div class="contenedor-tarjetas">
+                    <div class="tarjeta-metrica">
+                        <div class="datos-metricas">
+                            <p>Fecha:</p>
+                            <p>12/06/2026</p>
+                        </div>
+                    </div>
+                    <div class="tarjeta-metrica">
+                        <div class="datos-metricas">
+                            <p>Proveedor:</p>
+                            <p>Luciano Gonzalez</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-contenedor-tabla">
+                    <table class="modal-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Cubierta 175/06</td>
+                                <td>10 unidades</td>
+                            </tr>
+                            <tr>
+                                <td>Camara R14</td>
+                                <td>2 unidades</td>
+                            </tr>
+                            <tr>
+                                <td class="total-table">Total</td>
+                                <td class="total-table">12</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="btn-acciones">
+                    <button class="btn accion">Descargar PDF</button>
+                    <button class="btn accion">Imprimir</button>
+                    <button class="btn accion">Enviar por Email</button>
+                    <button class="btn accion">Enviar por WhatsApp</button>
+                </div>
+            </div>
+        </div>
+    <script src="../static/js/open_modal.js"></script>
+</body>
+</html>
