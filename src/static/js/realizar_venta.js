@@ -1,198 +1,210 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let carrito = [];
-    let filtroTipoActual = 'todos';
+    // ==========================================
+    // 1. INICIALIZACIÓN Y FECHA ACTUAL
+    // ==========================================
+    const selectCliente = document.getElementById('select-cliente');
+    const spanFecha = document.getElementById('fecha-actual');
 
-    // Referencias al DOM
-    const listaCarrito = document.getElementById('lista_carrito');
-    const totalVentaElem = document.getElementById('total_venta');
-    const inputDescuento = document.getElementById('input_descuento');
-    const selectCliente = document.getElementById('select_cliente');
-    const btnConfirmarVenta = document.getElementById('btn_confirmar_venta');
-    const contenedorProductos = document.querySelector('.contenedor_grilla_productos');
-    
-    // Elementos de Filtrado y Búsqueda
-    const inputBusqueda = document.querySelector('input[name="busqueda"]');
-    const botonesTipo = document.querySelectorAll('.btn_tipo');
+    if (selectCliente && !selectCliente.value) {
+        selectCliente.value = "1"; // Consumidor Final por defecto
+    }
 
-    // ----------------------------------------------------
-    // 1. FILTRADO Y BÚSQUEDA EN TIEMPO REAL
-    // ----------------------------------------------------
-    function aplicarFiltros() {
-        const tarjetas = document.querySelectorAll('.tarjeta_producto');
-        const textoBusqueda = inputBusqueda ? inputBusqueda.value.toLowerCase().trim() : '';
+    if (spanFecha) {
+        const hoy = new Date();
+        spanFecha.textContent = hoy.toLocaleDateString('es-AR');
+    }
 
-        tarjetas.forEach(tarjeta => {
-            const nombre = (tarjeta.dataset.nombre || '').toLowerCase();
+    // ==========================================
+    // 2. FILTRADO POR BÚSQUEDA Y CATEGORÍA
+    // ==========================================
+    const inputBuscar = document.getElementById('buscar-producto');
+    const selectCategoria = document.getElementById('select-categoria');
+
+    function filtrarProductos() {
+        const textoBusqueda = inputBuscar ? inputBuscar.value.toLowerCase().trim() : '';
+        const categoriaSeleccionada = selectCategoria ? selectCategoria.value.toLowerCase() : 'todos';
+
+        document.querySelectorAll('.tarjeta-producto').forEach(tarjeta => {
+            const nombre = tarjeta.dataset.nombre.toLowerCase();
             const tipo = (tarjeta.dataset.tipo || '').toLowerCase();
 
             const coincideNombre = nombre.includes(textoBusqueda);
-            const coincideTipo = (filtroTipoActual === 'todos' || tipo === filtroTipoActual.toLowerCase());
+            const coincideCategoria = categoriaSeleccionada === 'todos' || tipo === categoriaSeleccionada;
 
-            if (coincideNombre && coincideTipo) {
-                tarjeta.style.display = '';
+            if (coincideNombre && coincideCategoria) {
+                tarjeta.style.display = 'flex';
             } else {
                 tarjeta.style.display = 'none';
             }
         });
     }
 
-    if (inputBusqueda) {
-        inputBusqueda.addEventListener('input', aplicarFiltros);
-        // Evitar que la tecla Enter recargue la página si está en un form
-        inputBusqueda.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') e.preventDefault();
-        });
-    }
+    if (inputBuscar) inputBuscar.addEventListener('input', filtrarProductos);
+    if (selectCategoria) selectCategoria.addEventListener('change', filtrarProductos);
 
-    if (botonesTipo.length > 0) {
-        botonesTipo.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                botonesTipo.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
+    // ==========================================
+    // 3. LÓGICA DEL CARRITO DE COMPRAS
+    // ==========================================
+    let carrito = [];
 
-                filtroTipoActual = btn.dataset.tipo || 'todos';
-                aplicarFiltros();
-            });
-        });
-    }
-
-    // ----------------------------------------------------
-    // 2. GESTIÓN DE PRODUCTOS Y CARRITO
-    // ----------------------------------------------------
-    if (contenedorProductos) {
-        contenedorProductos.addEventListener('click', (e) => {
-            const tarjeta = e.target.closest('.tarjeta_producto');
-            if (!tarjeta) return;
-
-            const id = tarjeta.dataset.id;
+    document.querySelectorAll('.tarjeta-producto').forEach(tarjeta => {
+        tarjeta.addEventListener('click', () => {
+            const id = parseInt(tarjeta.dataset.id);
             const nombre = tarjeta.dataset.nombre;
             const precio = parseFloat(tarjeta.dataset.precio);
 
-            if (!id) return;
-            agregarAlCarrito({ id, nombre, precio });
+            const productoExistente = carrito.find(item => item.idproducto_servicio === id);
+
+            if (productoExistente) {
+                productoExistente.cantidad += 1;
+            } else {
+                carrito.push({
+                    idproducto_servicio: id,
+                    nombre: nombre,
+                    precio_unitario: precio,
+                    cantidad: 1
+                });
+            }
+
+            actualizarResumen();
+        });
+    });
+
+    function actualizarResumen() {
+        const contenedorLista = document.getElementById('lista-resumen');
+        const totalElemento = document.getElementById('monto-total');
+        
+        if (!contenedorLista) return;
+
+        contenedorLista.innerHTML = '';
+        let total = 0;
+
+        carrito.forEach((item, index) => {
+            const subtotal = item.precio_unitario * item.cantidad;
+            total += subtotal;
+
+            const itemHTML = `
+                <div class="item-pedido">
+                    <div class="detalles-item">
+                        <strong>${item.nombre}</strong>
+                        <span class="cant-item">Cant: ${item.cantidad}</span>
+                        <span class="precio-item">$${subtotal.toFixed(2)}</span>
+                        <button type="button" class="btn-eliminar" data-index="${index}">✕</button>
+                    </div>
+                </div>
+            `;
+            contenedorLista.insertAdjacentHTML('beforeend', itemHTML);
+        });
+
+        if (totalElemento) {
+            totalElemento.textContent = `$${total.toFixed(2)}`;
+        }
+
+        contenedorLista.querySelectorAll('.btn-eliminar').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(btn.dataset.index);
+                eliminarDelCarrito(idx);
+            });
         });
     }
 
-    function agregarAlCarrito(producto) {
-        const itemExistente = carrito.find(item => String(item.idproducto_servicio) === String(producto.id));
-
-        if (itemExistente) {
-            itemExistente.cantidad += 1;
-        } else {
-            carrito.push({
-                idproducto_servicio: producto.id,
-                nombre: producto.nombre,
-                precio_unitario: producto.precio,
-                cantidad: 1
-            });
-        }
-
-        renderizarCarrito();
+    function eliminarDelCarrito(index) {
+        carrito.splice(index, 1);
+        actualizarResumen();
     }
 
-    // ----------------------------------------------------
-    // 3. CÁLCULO DE TOTALES (SUBTOTAL - DESCUENTO)
-    // ----------------------------------------------------
-    function calcularTotales() {
-        const subtotal = carrito.reduce((acc, item) => acc + (item.precio_unitario * item.cantidad), 0);
+    // ==========================================
+    // 4. CONTROL DEL MODAL Y RENDERIZADO DETALLADO
+    // ==========================================
+    const modal = document.getElementById('modal-overlay');
+    const btnOpenModal = document.getElementById('btn-open-modal');
+    const btnCerrarModal = document.getElementById('btn-cerrar-modal');
+    const btnCancelarModal = document.getElementById('btn-cancelar');
 
-        let descuento = 0;
-        if (inputDescuento && inputDescuento.value) {
-            descuento = parseInt(inputDescuento.value, 10) || 0;
-            if (descuento < 0) descuento = 0; // Prevenir números negativos
-        }
-
-        const totalFinal = Math.max(0, subtotal - descuento);
-        return { subtotal, descuento, totalFinal };
-    }
-
-    function renderizarCarrito() {
-        if (!listaCarrito || !totalVentaElem) return;
+    function abrirModal() {
+        const selectPagoEl = document.getElementById('select-met-pago');
 
         if (carrito.length === 0) {
-            listaCarrito.innerHTML = '<p class="carrito_vacio">No hay productos agregados a la venta.</p>';
-            totalVentaElem.textContent = '0.00';
+            alert('El carrito está vacío. Agrega productos antes de continuar.');
             return;
         }
 
-        listaCarrito.innerHTML = '';
+        if (!selectPagoEl || !selectPagoEl.value) {
+            alert('Por favor, selecciona un método de pago antes de continuar.');
+            return;
+        }
 
-        carrito.forEach(item => {
-            const subtotalItem = item.precio_unitario * item.cantidad;
+        // Cargar datos dinámicos en el modal
+        const modalFecha = document.getElementById('modal-fecha');
+        const modalCliente = document.getElementById('modal-cliente');
+        const modalTablaBody = document.getElementById('modal-tabla-body');
 
-            const itemDiv = document.createElement('div');
-            itemDiv.classList.add('item_carrito');
-            itemDiv.innerHTML = `
-                <div class="info_item">
-                    <p class="nombre_item"><strong>${item.nombre}</strong></p>
-                    <p class="subtotal_item">$${item.precio_unitario.toFixed(2)} x ${item.cantidad} = $${subtotalItem.toFixed(2)}</p>
-                </div>
-                <div class="acciones_item">
-                    <button type="button" class="btn_decrementar" data-id="${item.idproducto_servicio}">-</button>
-                    <span>${item.cantidad}</span>
-                    <button type="button" class="btn_incrementar" data-id="${item.idproducto_servicio}">+</button>
-                    <button type="button" class="btn_eliminar" data-id="${item.idproducto_servicio}">&times;</button>
-                </div>
+        if (modalFecha) modalFecha.textContent = new Date().toLocaleDateString('es-AR');
+        if (modalCliente && selectCliente) {
+            modalCliente.textContent = selectCliente.options[selectCliente.selectedIndex].text;
+        }
+
+        if (modalTablaBody) {
+            modalTablaBody.innerHTML = '';
+            let totalModal = 0;
+
+            carrito.forEach(item => {
+                const subtotal = item.precio_unitario * item.cantidad;
+                totalModal += subtotal;
+
+                const fila = `
+                    <tr>
+                        <td>${item.nombre}</td>
+                        <td>${item.cantidad} unidad(es)</td>
+                        <td>$${subtotal.toFixed(2)}</td>
+                    </tr>
+                `;
+                modalTablaBody.insertAdjacentHTML('beforeend', fila);
+            });
+
+            const filaTotal = `
+                <tr>
+                    <td colspan="2" class="total-table"><strong>Total</strong></td>
+                    <td class="total-table"><strong>$${totalModal.toFixed(2)}</strong></td>
+                </tr>
             `;
-            listaCarrito.appendChild(itemDiv);
-        });
+            modalTablaBody.insertAdjacentHTML('beforeend', filaTotal);
+        }
 
-        const { totalFinal } = calcularTotales();
-        totalVentaElem.textContent = totalFinal.toFixed(2);
+        if (modal) modal.style.display = 'flex';
     }
 
-    // Recalcular total cuando se escribe un descuento
-    if (inputDescuento) {
-        inputDescuento.addEventListener('input', () => {
-            const { totalFinal } = calcularTotales();
-            totalVentaElem.textContent = totalFinal.toFixed(2);
-        });
+    function cerrarModal() {
+        if (modal) modal.style.display = 'none';
     }
 
-    // Controles dentro de las tarjetas del carrito (+, -, eliminar)
-    if (listaCarrito) {
-        listaCarrito.addEventListener('click', (e) => {
-            const id = e.target.dataset.id;
-            if (!id) return;
+    if (btnOpenModal) btnOpenModal.addEventListener('click', abrirModal);
+    if (btnCerrarModal) btnCerrarModal.addEventListener('click', cerrarModal);
+    if (btnCancelarModal) btnCancelarModal.addEventListener('click', cerrarModal);
 
-            const item = carrito.find(i => String(i.idproducto_servicio) === String(id));
+    // ==========================================
+    // 5. ENVÍO DE LA VENTA AL BACKEND
+    // ==========================================
+    const btnConfirmarVenta = document.getElementById('btn-confirmar-venta');
 
-            if (e.target.classList.contains('btn_incrementar')) {
-                if (item) item.cantidad += 1;
-            } else if (e.target.classList.contains('btn_decrementar')) {
-                if (item) {
-                    item.cantidad -= 1;
-                    if (item.cantidad <= 0) {
-                        carrito = carrito.filter(i => String(i.idproducto_servicio) !== String(id));
-                    }
-                }
-            } else if (e.target.classList.contains('btn_eliminar')) {
-                carrito = carrito.filter(i => String(i.idproducto_servicio) !== String(id));
-            }
-
-            renderizarCarrito();
-        });
-    }
-
-    // ----------------------------------------------------
-    // 4. CONFIRMAR Y ENVIAR VENTA
-    // ----------------------------------------------------
     if (btnConfirmarVenta) {
         btnConfirmarVenta.addEventListener('click', async () => {
-            if (carrito.length === 0) {
-                alert('Debe agregar al menos un producto para realizar la venta.');
+            const selectPagoEl = document.getElementById('select-met-pago');
+
+            const idCliente = selectCliente && selectCliente.value ? parseInt(selectCliente.value) : 1;
+            const idMetodoPago = selectPagoEl && selectPagoEl.value ? parseInt(selectPagoEl.value) : null;
+
+            if (!idMetodoPago) {
+                alert('Debes seleccionar un método de pago válido.');
                 return;
             }
 
-            const idCliente = selectCliente && selectCliente.value !== "" ? selectCliente.value : null;
-            const { descuento } = calcularTotales();
-
             const payload = {
                 id_cliente: idCliente,
-                carrito: carrito,
-                descuento: descuento,
-                numero_factura: null
+                id_metodo_pago: idMetodoPago,
+                descuento: 0.0,
+                carrito: carrito
             };
 
             try {
@@ -208,21 +220,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const resultado = await respuesta.json();
 
                 if (respuesta.ok && resultado.exito) {
-                    alert(resultado.mensaje || 'Venta realizada con éxito.');
-                    if (resultado.redireccion) {
-                        window.location.href = resultado.redireccion;
-                    } else {
-                        carrito = [];
-                        if (inputDescuento) inputDescuento.value = '';
-                        renderizarCarrito();
-                    }
+                    alert(resultado.mensaje || 'Venta registrada con éxito');
+                    window.location.href = resultado.redireccion || '/ventas';
                 } else {
-                    alert(resultado.mensaje || 'Error al procesar la venta.');
+                    alert(`Error: ${resultado.mensaje || resultado.error || 'No se pudo procesar la venta'}`);
+                    btnConfirmarVenta.disabled = false;
+                    btnConfirmarVenta.textContent = 'Confirmar Venta';
                 }
             } catch (error) {
-                console.error('Error en la petición:', error);
-                alert('Ocurrió un error de red al intentar procesar la venta.');
-            } finally {
+                console.error('Error en la solicitud HTTP:', error);
+                alert('Ocurrió un error de conexión al enviar la venta.');
                 btnConfirmarVenta.disabled = false;
                 btnConfirmarVenta.textContent = 'Confirmar Venta';
             }

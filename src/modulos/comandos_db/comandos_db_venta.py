@@ -14,17 +14,18 @@ class Venta:
         id_cliente,
         id_empleado,
         lista_items,
+        id_metodo_pago=1,  # <-- Recibe el método de pago elegido
         numero_factura=1,
         iva=21.0,
         descuento=0.0,
         precio_total=0.0,
         total_productos=0,
     ):
-        """Registra la Venta, sus Ítems y descuenta Stock solo si hay disponibilidad suficiente."""
+        """Registra la Venta, sus Ítems, descuenta Stock e inserta el registro en el historial de pagos."""
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
-                # Sanitización explícita de tipos de datos en los ítems
+                # Sanitización explícita de ítems
                 items_sanitizados = [
                     {
                         "idproducto_servicio": int(item["idproducto_servicio"]),
@@ -34,7 +35,7 @@ class Venta:
                     for item in lista_items
                 ]
 
-                # 1. Validar stock disponible previo a la inserción
+                # 1. Validar stock disponible
                 ids_productos = [item["idproducto_servicio"] for item in items_sanitizados]
 
                 if ids_productos:
@@ -63,7 +64,7 @@ class Venta:
                                     f"Stock insuficiente para '{prod['nombre']}'. Disponibles: {prod['cantidad_actual']}, Solicitados: {cant_pedida}"
                                 )
 
-                # 2. Insertar la cabecera de la venta (incluye el campo NOT NULL 'estado')
+                # 2. Insertar la cabecera de la venta
                 sql_venta = """
                     INSERT INTO venta (
                         numero_factura, fecha_emision_factura, descuento, iva, 
@@ -113,8 +114,16 @@ class Venta:
                 ]
                 cursor.executemany(sql_stock, valores_stock)
 
+                # 5. Insertar en historial_pago (Coincidiendo con la estructura de la imagen)
+                sql_pago = """
+                    INSERT INTO historial_pago_cliente (
+                        fecha, hora, monto, idmetodos_pago, idventa
+                    ) VALUES (CURDATE(), CURTIME(), %s, %s, %s);
+                """
+                cursor.execute(sql_pago, (precio_total, id_metodo_pago, id_venta))
+
             conexion.commit()
-            print(f"Venta #{id_venta} procesada exitosamente.")
+            print(f"Venta #{id_venta} y su pago fueron registrados exitosamente.")
             return id_venta
 
         except Exception as e:
@@ -387,11 +396,14 @@ class Venta:
                 cursor.execute("SELECT idcliente, nombre, apellido FROM cliente WHERE activo = 1")
                 cliente = cursor.fetchall()
                 
-                return productos, tipos, cliente, True
+                cursor.execute("SELECT idmetodos_pago, nombre FROM metodos_pago WHERE activo = 1")
+                metodos_pago = cursor.fetchall()
+                
+                return productos, tipos, cliente, metodos_pago, True
         except pymysql.MySQLError as e:
                     conexion.rollback()
                     print(f"Error al crear producto/servicio: {e}")
-                    return [], [], [], False
+                    return [], [], [], [], False
                 
         finally:
             conexion.close()

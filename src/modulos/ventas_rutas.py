@@ -104,22 +104,25 @@ def api_anular_venta(id_venta):
 @ventas_bp.route("/ventas/realizar", methods=["GET"])
 def vista_realizar_venta():
     
-    productos, tipos, clientes, estado = Venta.obtener_datos_inicio_venta()
-    
+    productos, tipos, clientes, metodos, estado = Venta.obtener_datos_inicio_venta()
+
+    print(metodos)    
     if not estado:
         return render_template(
-            "realizar_venta.html", 
+            "orden_venta.html", 
             listado_productos=[], 
             listado_tipos=[], 
             listado_clientes=[],
+            metodos_pago=[],
             error_db=True
         ), 500
 
     return render_template(
-        "realizar_venta.html", 
+        "orden_venta.html", 
         listado_productos=productos, 
         listado_tipos=tipos,
         listado_clientes=clientes,
+        metodos_pago= metodos,
         error_db=False
     )
 
@@ -148,17 +151,20 @@ def api_procesar_venta():
                 "redireccion": "/registrarse"
             }), 401
 
-        
+        # 2. Extraer cliente y método de pago
         id_cliente = datos.get("id_cliente", 1)
+        id_metodo_pago = datos.get("id_metodo_pago", 1)  # <-- Extraer el ID enviado por JS
 
         descuento_valor = float(datos.get("descuento", 0.0))
         total_productos = calcular_total_productos(carrito)
         precio_total = calcular_precio_total(carrito, descuento_valor)
 
+        # 3. Guardar venta en DB pasando id_metodo_pago
         id_nueva_venta = Venta.registrar(
             id_cliente=id_cliente,
             id_empleado=int(id_empleado_actual),
             lista_items=carrito,
+            id_metodo_pago=int(id_metodo_pago),  # <-- Pasamos la variable a Venta.registrar
             numero_factura=1,
             descuento=descuento_valor,
             precio_total=precio_total,
@@ -197,13 +203,11 @@ def calcular_precio_total(carrito, descuento=0.0):
     Asegura que el precio nunca sea negativo y lo redondea a 2 decimales 
     para cumplir con tipos de columna DECIMAL(10, 2) en la BD.
     """
-    # 1. Calcular subtotal sumando (precio * cantidad) de cada ítem
     subtotal = sum(
         float(item.get("precio_unitario", 0.0)) * int(item.get("cantidad", 0))
         for item in carrito
     )
 
-    # 2. Validar que el descuento sea un número válido y no sea negativo
     try:
         descuento_valor = float(descuento)
         if descuento_valor < 0:
@@ -211,8 +215,6 @@ def calcular_precio_total(carrito, descuento=0.0):
     except (ValueError, TypeError):
         descuento_valor = 0.0
 
-    # 3. Aplicar descuento y evitar montos negativos (piso en 0.0)
     precio_final = max(0.0, subtotal - descuento_valor)
 
-    # 4. Redondear a 2 decimales para evitar problemas de precisión en SQL
     return round(precio_final, 2)
