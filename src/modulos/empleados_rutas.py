@@ -28,7 +28,7 @@ def api_iniciar_sesion():
     datos_devueltos = Usuario.verificar_credenciales(nombre_usuario, contrasena)
 
     if datos_devueltos:
-        session["idusuario"] = datos_devueltos[0]
+        session["id_usuario"] = datos_devueltos[0]
         session["nombre_usuario"] = datos_devueltos[2]
         session["tipo"] = datos_devueltos[1]
         return jsonify({

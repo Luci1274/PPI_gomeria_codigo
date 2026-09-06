@@ -9,45 +9,44 @@ ventas_bp = Blueprint("ventas", __name__)
 # ------------------------------------------
 # Cargar listado de ventas (Gestion ventas)#
 # ------------------------------------------
-@ventas_bp.route("/ventas", methods=["GET"])
+@ventas_bp.route("/ventas")
 def vista_gestion_ventas():
-    """Carga la vista de gestión de ventas con el listado y alertas de stock bajo."""
-    estado_conexion = probar_conexion()
-    if not estado_conexion:
+    """Carga la vista de gestión de ventas"""
+    return render_template(
+        "ventas.html", 
+    )
+
+# ------------------------------------------
+# Filtrar ventas por fecha y/o búsqueda    #
+# ------------------------------------------
+@ventas_bp.route("/api/ventas", methods=["GET"])
+def api_ventas():
+    """Devuelve JSON con el listado de ventas filtrado por término de búsqueda y/o rango temporal."""
+    
+    busqueda = request.args.get("busqueda", "")
+    filtro_fecha = request.args.get("filtro_fecha", "hoy")
+    fecha_inicio = request.args.get("fecha_inicio", None)
+    fecha_fin = request.args.get("fecha_fin", None)
+    pagina = int(request.args.get("pagina", 1))
+    limite = int(request.args.get("limite", 20))
+
+    data = Venta.obtener_ventas_paginadas(
+        busqueda=busqueda,
+        filtro_fecha=filtro_fecha,
+        fecha_inicio=fecha_inicio,
+        fecha_fin=fecha_fin,
+        pagina=pagina,
+        limite=limite,
+    )
+    
+    if not data["Exito"]:
         return jsonify({
             "exito": False,
             "mensaje": "Error: No se pudo conectar a la base de datos.",
             "redireccion": "/index"
         }), 500
 
-    listado_productos_bajos = sql_alertar_stock_bajo()
-    listado_ventas = Venta.obtener_todas()
-    
-    return render_template(
-        "gestion_ventas.html", 
-        listado_ventas=listado_ventas, 
-        listado_productos_bajos=listado_productos_bajos
-    )
-
-
-# ------------------------------------------
-# Filtrar ventas por fecha y/o búsqueda    #
-# ------------------------------------------
-@ventas_bp.route("/api/ventas", methods=["POST"])
-def api_filtrar_ventas():
-    """Devuelve JSON con el listado de ventas filtrado por término de búsqueda y/o rango temporal."""
-    try:
-        datos = request.get_json() or {}
-        busqueda = datos.get("busqueda", "")
-        filtro_fecha = datos.get("fecha", "hoy")
-
-        listado_ventas_filtrado = Venta.obtener_todas(busqueda=busqueda, filtro_fecha=filtro_fecha)
-        return jsonify({
-            "exito": True,
-            "listado_ventas": listado_ventas_filtrado
-        }), 200
-    except Exception as e:
-        return jsonify({"exito": False, "error": str(e)}), 500
+    return jsonify(data)
 
 
 # ------------------------------------------
@@ -140,7 +139,7 @@ def api_procesar_venta():
                 "mensaje": "El carrito de compra no puede estar vacío."
             }), 400
 
-        id_empleado_actual = 1
+        id_empleado_actual = session["id_usuario"]
         if not id_empleado_actual:
             return jsonify({
                 "exito": False,
@@ -183,16 +182,33 @@ def api_procesar_venta():
 # Funciones Auxiliares                     #
 # ------------------------------------------
 
-def calcular_total_productos(lista_items):
-    try:
-        return sum(int(item['cantidad']) for item in lista_items)
-    except Exception:
-        return 0
+def calcular_total_productos(carrito):
+    """Calcula la cantidad total de unidades dentro del carrito."""
+    return sum(int(item.get("cantidad", 0)) for item in carrito)
 
 
-def calcular_precio_total(lista_items, descuento):
+def calcular_precio_total(carrito, descuento=0.0):
+    """
+    Calcula el precio subtotal del carrito, restando el descuento enviado.
+    Asegura que el precio nunca sea negativo y lo redondea a 2 decimales 
+    para cumplir con tipos de columna DECIMAL(10, 2) en la BD.
+    """
+    # 1. Calcular subtotal sumando (precio * cantidad) de cada ítem
+    subtotal = sum(
+        float(item.get("precio_unitario", 0.0)) * int(item.get("cantidad", 0))
+        for item in carrito
+    )
+
+    # 2. Validar que el descuento sea un número válido y no sea negativo
     try:
-        total = sum(float(item['precio_unitario']) * int(item['cantidad']) for item in lista_items)
-        return total - (total * descuento)
-    except Exception:
-        return 0.0
+        descuento_valor = float(descuento)
+        if descuento_valor < 0:
+            descuento_valor = 0.0
+    except (ValueError, TypeError):
+        descuento_valor = 0.0
+
+    # 3. Aplicar descuento y evitar montos negativos (piso en 0.0)
+    precio_final = max(0.0, subtotal - descuento_valor)
+
+    # 4. Redondear a 2 decimales para evitar problemas de precisión en SQL
+    return round(precio_final, 2)

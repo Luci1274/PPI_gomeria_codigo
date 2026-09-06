@@ -1,3 +1,5 @@
+from datetime import datetime, date
+import math
 import pymysql
 from config import Config
 
@@ -114,54 +116,148 @@ class Venta:
             conexion.close()
 
     @staticmethod
-    def obtener_todas(busqueda=None, filtro_fecha="hoy"):
-        """Lee el listado general de ventas aplicando filtros opcionales de búsqueda y fecha."""
+    def obtener_ventas_paginadas(
+        busqueda=None,
+        filtro_fecha="hoy",
+        fecha_inicio=None,
+        fecha_fin=None,
+        pagina=1,
+        limite=20,
+    ):
+        """Lee el listado de ventas aplicando filtros dinámicos, paginación
+
+        y devuelve métricas acordes a la búsqueda realizada.
+        """
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
-                sql = """
+
+                # 1. Construcción dinámica de la cláusula WHERE y parámetros
+                condiciones = ["v.activa = 1"]
+                parametros = []
+
+                # Filtro por texto (Buscador)
+                if busqueda and busqueda.strip():
+                    condiciones.append("""( 
+                        c.nombre LIKE %s 
+                        OR c.apellido LIKE %s
+                        OR CONCAT(c.nombre, ' ', c.apellido) LIKE %s
+                    )""")
+                    patron = f"%{busqueda.strip()}%"
+                    parametros.extend([patron] * 5)
+
+                # Filtro por rango específico o predefinido
+                if fecha_inicio and fecha_fin:
+                    condiciones.append(
+                        "v.fecha_emision_factura BETWEEN %s AND %s"
+                    )
+                    parametros.extend(
+                        [f"{fecha_inicio} 00:00:00", f"{fecha_fin} 23:59:59"]
+                    )
+                elif filtro_fecha == "hoy":
+                    condiciones.append("v.fecha_emision_factura >= CURDATE()")
+                elif filtro_fecha == "semana":
+                    condiciones.append(
+                        "v.fecha_emision_factura >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)"
+                    )
+                elif filtro_fecha == "mes":
+                    condiciones.append(
+                        "v.fecha_emision_factura >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)"
+                    )
+                elif filtro_fecha == "anio":
+                    condiciones.append(
+                        "v.fecha_emision_factura >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
+                    )
+
+                where_clause = " WHERE " + " AND ".join(condiciones)
+
+                # 2. Obtener métricas agregadas (sincronizadas con los filtros)
+                sql_totales = f"""
+                    SELECT 
+                        COUNT(v.idventa) AS total_ventas,
+                        IFNULL(SUM(v.cantidad_total_productos), 0) AS total_productos,
+                        IFNULL(SUM(v.precio_total), 0) AS total_monto
+                    FROM venta AS v
+                    LEFT JOIN cliente AS c ON v.idcliente = c.idcliente
+                    {where_clause}
+                """
+                cursor.execute(sql_totales, parametros)
+                res_totales = cursor.fetchone() or {}
+
+                total_ventas = res_totales.get("total_ventas", 0)
+                total_productos = int(res_totales.get("total_productos", 0))
+                total_monto = float(res_totales.get("total_monto", 0.0))
+
+                # Cálculo de paginación
+                pagina = max(1, int(pagina))
+                limite = max(1, int(limite))
+                total_paginas = (
+                    math.ceil(total_ventas / limite) if total_ventas > 0 else 1
+                )
+                offset = (pagina - 1) * limite
+
+                # 3. Consulta de las ventas paginadas
+                sql_ventas = f"""
                     SELECT 
                         v.idventa,
                         v.numero_factura,
-                        v.fecha_emision_factura,
+                        v.fecha_emision_factura AS fecha,
                         CONCAT(IFNULL(c.nombre, 'Consumidor'), ' ', IFNULL(c.apellido, 'Final')) AS cliente,
                         v.cantidad_total_productos,
                         v.precio_total
                     FROM venta AS v
                     LEFT JOIN cliente AS c ON v.idcliente = c.idcliente
-                    WHERE v.activa = 1
+                    {where_clause}
+                    ORDER BY v.fecha_emision_factura DESC, v.idventa DESC
+                    LIMIT %s OFFSET %s;
                 """
-                parametros = []
 
-                if busqueda and busqueda.strip():
-                    sql += """ AND (
-                        v.idventa LIKE %s 
-                        OR v.numero_factura LIKE %s 
-                        OR c.nombre LIKE %s 
-                        OR c.apellido LIKE %s
-                        OR CONCAT(c.nombre, ' ', c.apellido) LIKE %s
-                    )"""
-                    patron = f"%{busqueda.strip()}%"
-                    parametros.extend([patron, patron, patron, patron, patron])
+                # Duplicamos la lista de parámetros para agregar LIMIT y OFFSET
+                parametros_ventas = parametros.copy()
+                parametros_ventas.extend([limite, offset])
 
-                if filtro_fecha == "hoy":
-                    sql += " AND DATE(v.fecha_emision_factura) = CURDATE()"
-                elif filtro_fecha == "semana":
-                    sql += " AND v.fecha_emision_factura >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)"
-                elif filtro_fecha == "mes":
-                    sql += " AND v.fecha_emision_factura >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)"
-                elif filtro_fecha == "anio":
-                    sql += " AND v.fecha_emision_factura >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
+                cursor.execute(sql_ventas, parametros_ventas)
+                ventas = cursor.fetchall()
 
-                sql += " ORDER BY v.fecha_emision_factura DESC;"
+                # Formatear objetos tipo date/datetime a string para evitar fallos de JSON
+                for v in ventas:
+                    if isinstance(v.get("fecha"), (datetime, date)):
+                        v["fecha"] = v["fecha"].strftime("%d/%m/%Y %H:%M")
+                    v["precio_total"] = float(v.get("precio_total", 0))
 
-                cursor.execute(sql, parametros)
-                return cursor.fetchall()
+                return {
+                    "ventas": ventas,
+                    "paginacion": {
+                        "pagina_actual": pagina,
+                        "limite": limite,
+                        "total_registros": total_ventas,
+                        "total_paginas": total_paginas,
+                    },
+                    "resumen": {
+                        "total_ventas": total_ventas,
+                        "total_productos": total_productos,
+                        "total_monto": total_monto,
+                    },
+                    "Exito": True,
+                }
 
         except pymysql.MySQLError as e:
             print(f"Error al consultar las ventas: {e}")
-            return []
-
+            return {
+                "ventas": [],
+                "paginacion": {
+                    "pagina_actual": 1,
+                    "limite": limite,
+                    "total_registros": 0,
+                    "total_paginas": 0,
+                },
+                "resumen": {
+                    "total_ventas": 0,
+                    "total_productos": 0,
+                    "total_monto": 0.0,
+                },
+                "Exito": False
+            }
         finally:
             conexion.close()
 
@@ -212,7 +308,7 @@ class Venta:
             return None
         finally:
             conexion.close()
-
+        
     @staticmethod
     def anular(id_venta):
         """Anula de forma lógica una venta y reintegra las cantidades al stock de productos."""

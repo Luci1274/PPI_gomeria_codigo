@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../static/css/ventas.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ventas.css') }}">
     <title>Ventas - Sistema Gomería</title>
 </head>
 
@@ -12,12 +12,12 @@
     <div class="contenedor">
         <aside class="menu-lateral">
             <div class="menu-encabezado">
-                <img src="../static/image/Icono_app.png" alt="icono-app">
+                <img src="{{ url_for('static', filename='image/Icono_app.png') }}" alt="icono-app">
                 <h2>Sistema Gomería</h2>
             </div>
             <nav class="menu-navegacion">
-                <a href="#" class="enl-nav">Principal</a>
-                <a href="#" class="enl-nav activo">Ventas</a>
+                <a href="/" class="enl-nav">Principal</a>
+                <a href="/ventas" class="enl-nav activo">Ventas</a>
                 <a href="#" class="enl-nav">Compras</a>
                 <a href="#" class="enl-nav">Inventario</a>
                 <a href="#" class="enl-nav">Clientes</a>
@@ -27,27 +27,26 @@
         <main class="contenido-principal">
             <header class="barra-superior">
                 <div class="titulo-pagina">
-                    <h1>Gestion de Ventas</h1>
+                    <h1>Gestión de Ventas</h1>
                     <p>Administra y gestiona tus ventas</p>
                 </div>
                 <div class="barra-superior-accion">
-                    <button class="btn btn-primario">Nueva Venta</button>
+                    <a href="/ventas/realizar" class="btn btn-primario">Nueva Venta</a>
                 </div>
             </header>
+
             <section class="cuadricula-metricas">
                 <div class="tarjeta-metrica">
                     <div class="datos-metrica">
                         <h3>Total Ventas</h3>
-                        <p class="valor-metrica" id="valor-venta">2</p>
+                        <p class="valor-metrica" id="metrica-total-ventas">0</p>
                     </div>
                 </div>
                 <div class="tarjeta-metrica">
                     <div class="datos-metrica">
                         <h3>Total Productos Vendidos</h3>
-                        <p class="valor-metrica">25</p>
+                        <p class="valor-metrica" id="metrica-total-productos">0</p>
                     </div>
-                    
-
                 </div>
             </section>
 
@@ -56,10 +55,12 @@
                     <input type="text" id="input-busqueda" placeholder="Buscar por Cliente...">
                 </div>
                 <div class="accion-filtro">
-                    <select class="filtro-seleccion">
-                        <option value="todos">Todos: Fecha</option>
-                        <option value="12/05/2026">12/05/2026</option>
-                        <option value="10/04/2026">10/04/2026</option>
+                    <select class="filtro-seleccion" id="select-filtro-fecha">
+                        <option value="hoy">Hoy</option>
+                        <option value="semana">Últimos 7 días</option>
+                        <option value="mes">Este mes</option>
+                        <option value="anio">Este año</option>
+                        <option value="todos">Todas las fechas</option>
                     </select>
                 </div>
             </section>
@@ -76,60 +77,30 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>01</td>
-                            <td>12/06/2026</td>
-                            <td>Luciano Gonzalez</td>
-                            <td>12 productos</td>
-                            <td>$200000</td>
-                            <td>
-                                <div class="btn-acciones">
-                                    <button class="btn-accion resumen" id="btn-open-modal">Ver resumen</button>
-                                    <button class="btn-accion eliminar" title="eliminar">Eliminar</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>02</td>
-                            <td>10/04/2026</td>
-                            <td>Diego Gatica</td>
-                            <td>13 productos</td>
-                            <td>$100000</td>
-                            <td>
-                                <div class="btn-acciones">
-                                    <button class="btn-accion resumen" id="btn-open-modal">Ver resumen
-                                    </button>
-                                    <button class="btn-accion eliminar">Eliminar
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
+                    <tbody id="tabla-ventas-body">
+                        </tbody>
                 </table>
             </section>
         </main>
 
-        <!--Ventana emergente (ver resumen o editar)-->
-        <!--Ver resumen-->
         <div class="modal-overlay" id="modal-overlay">
             <div class="modal-contenido">
                 <div class="modal-cabecera">
-                    <h2>Resumen Orden de Venta</h2>
-                    <p>Detalles completo de la venta realizada</p>
+                    <h2>Resumen Orden de Venta #<span id="modal-num-venta"></span></h2>
+                    <p>Detalles completos de la venta realizada</p>
                     <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
                 </div>
                 <div class="contenedor-tarjetas">
                     <div class="tarjeta-metrica">
                         <div class="datos-metricas">
                             <p>Fecha:</p>
-                            <p>12/06/2026</p>
+                            <p id="modal-fecha">-</p>
                         </div>
                     </div>
                     <div class="tarjeta-metrica">
                         <div class="datos-metricas">
                             <p>Cliente:</p>
-                            <p>Luciano Gonzalez</p>
+                            <p id="modal-cliente">-</p>
                         </div>
                     </div>
                 </div>
@@ -139,34 +110,27 @@
                             <tr>
                                 <th>Producto</th>
                                 <th>Cantidad</th>
-                                <th>Precio</th>
+                                <th>Precio Unitario</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>Cubierta 175/06</td>
-                                <td>10 unidades</td>
-                                <td>$120000</td>
-                            </tr>
-                            <tr>
-                                <td>Camara R14</td>
-                                <td>2 unidades</td>
-                                <td>$80000</td>
-                            </tr>
+                        <tbody id="modal-tabla-body">
+                            </tbody>
+                        <tfoot>
                             <tr>
                                 <td colspan="2" class="total-table">Total</td>
-                                <td class="total-table">$200000</td>
+                                <td class="total-table" id="modal-total-monto">$0</td>
                             </tr>
-                        </tbody>
+                        </tfoot>
                     </table>
                 </div>
                 <div class="btn-acciones">
                     <button class="btn accion">Descargar PDF</button>
                     <button class="btn accion">Imprimir</button>
-                    <button class="btn accion">Modificar </button>
+                    <button class="btn accion" id="btn-cerrar-modal-alt">Cerrar</button>
                 </div>
             </div>
         </div>
-    <script src="../static/js/open_modal.js"></script>
+    </div>
+    <script src="{{ url_for('static', filename='js/ventas.js') }}"></script>
 </body>
 </html>
