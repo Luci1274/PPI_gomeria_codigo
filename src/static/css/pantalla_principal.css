@@ -1,10 +1,11 @@
 :root {
-    --color-primario: #0b2240;
-    --primario-claro: #16355d;
-    --fondo-principal: #f4f6f9;
-    --fondo-tarjeta: #fff;
-    --texto-principal: #2c3e50;
-    
+    --color-primario: #0b2240;    
+    --primario-claro: #16355d;             
+    --fondo-principal: #f4f6f9;           
+    --fondo-tarjeta: #ffffff;          
+    --texto-principal: #2c3e50;        
+    --texto-atenuado: #7f8c8d;       
+    --color-borde: #e2e8f0;   
 }
 
 * {
@@ -17,8 +18,10 @@
 body {
     background-color: var(--fondo-principal);
     color: var(--texto-principal);
+    overflow-x: hidden;
 }
 
+/*Menu Lateral (SIDEBAR)*/
 .contenedor {
     display: flex;
     min-height: 100vh;
@@ -28,6 +31,7 @@ body {
     width: 260px;
     height: 100vh;
     background-color: var(--color-primario);
+    color: #fff;
     position: fixed;
     display: flex;
     flex-direction: column;
@@ -35,7 +39,7 @@ body {
     z-index: 100;
 }
 
-img {
+.logo-app {
     width: 80px;
 }
 
@@ -43,38 +47,38 @@ img {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
 }
 
 .menu-encabezado h2 {
     font-size: 20px;
     font-weight: bold;
     letter-spacing: 0.5px;
-    color: #fffd;
 }
 
 .menu-navegacion {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    flex-grow: 1;
 }
 
 .enl-nav {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     color: rgb(255, 255, 255, 0.7);
     text-decoration: none;
     padding: 12px 16px;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 15px;
-    font-weight: 700;
+    font-weight: bold;
     transition: all 0.2s ease;
 }
 
 .enl-nav:hover {
     color: #fff;
-    background-color: rgb(255, 255, 255, 0.1);
+    background-color: rgb(255, 255, 255, 0.05);
 }
 
 .enl-nav.activo {
@@ -82,10 +86,31 @@ img {
     background-color: var(--primario-claro);
 }
 
+.menu-pie {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+}
+
+.usuario-nombre {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.usuario-rol {
+    font-size: 12px;
+    color: var(--texto-atenuado);
+}
+
+/*Contenido Principal*/
 .contenido-principal {
     margin-left: 260px;
     width: 100%;
     padding: 40px;
+    flex-grow: 1;
+    max-width: 1400px;
 }
 
 .titulo-pagina {
@@ -99,6 +124,7 @@ img {
     margin-top: 40px;
 }
 
+/*Tarjetas métricas*/
 .cuadricula-metricas {
     display: grid;
     grid-template-columns: repeat(3,1fr);
@@ -124,6 +150,7 @@ h3 {
     color: var(--color-primario);
 }
 
+/*Botones de Acciones Rápidas*/
 .enl-acciones-rapidas {
     margin-bottom: 30px;
 }
@@ -144,18 +171,18 @@ h3 {
     border: 2px solid black;
     text-decoration: none;
     border-radius: 10px;
-    padding: 10px;
+    padding: 12px;
     text-align: center;
     color: var(--color-primario);
     font-weight: bold;
-    width: 330px;
+    width: 100%;
+    transition: all 0.2s ease;
 }
 
 .accion-rapida a:hover {
     background-color: var(--color-primario);
     color: #fff;
     transform: translateY(-2px);
-    transition: all 0.2s ease;
 }
 
 .panel-inferior {
@@ -164,16 +191,18 @@ h3 {
     gap: 30px;
 }
 
+/*Tablas de datos*/
 .contenido-tabla {
     background-color: var(--fondo-tarjeta);
     border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid #fffa;
+    overflow: auto;
+    border: 1px solid var(--color-borde);
     width: 100%;
 }
 
 .titulo-tablas {
     padding: 15px;
+    border-bottom: 1px solid var(--color-borde);
 }
 
 .tabla-datos {
@@ -187,13 +216,14 @@ th {
     font-size: 12px;
     color: var(--color-primario);
     text-align: left;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 2px solid var(--color-borde);
+    text-transform: uppercase;
 }
 
 td {
     padding: 12px 16px;
     font-size: 14px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--color-borde);
 }
 
 .btn-accion {
@@ -204,6 +234,11 @@ td {
     border: none;
     cursor: pointer;
     font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+.btn-accion:hover {
+    background-color: #fca5a5;
 }
 
 /* Cartel de Error */
@@ -246,6 +281,70 @@ td {
     }
 }
 
-/*Responsive Desing*/
+/*Responsive Desing (Tablets y celulares)*/
+/*Menu hamburguesa oculto*/
+.btn-hamburguesa {
+    display: none;
+}
 
-@media ()
+@media (max-width: 768px) {
+    /* Botón Hamburguesa Flotante */
+    .btn-hamburguesa {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        width: 32px;
+        height: 28px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        z-index: 1001;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+    }
+
+    .btn-hamburguesa .linea {
+        width: 100%;
+        height: 3px;
+        background-color: var(--color-primario);
+        border-radius: 2px;
+        transition: all 0.3s ease;
+    }
+
+    .menu-lateral {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 260px;
+        height: 100vh;
+        transition: left 0.3s ease;
+        z-index: 1000;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .menu-lateral.menu-abierto {
+        left: 0;
+    }
+
+    .contenido-principal {
+        margin-left: 0;
+        width: 100%;
+        padding-top: 70px;
+    }
+
+    .btn-hamburguesa.activo .linea:nth-child(1) {
+        transform: rotate(45deg) translate(6px, 6px);
+        background-color: #ffffff;
+    }
+
+    .btn-hamburguesa.activo .linea:nth-child(2) {
+        opacity: 0;
+    }
+
+    .btn-hamburguesa.activo .linea:nth-child(3) {
+        transform: rotate(-45deg) translate(6px, -6px);
+        background-color: #ffffff;
+    }
+}

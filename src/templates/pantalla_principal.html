@@ -17,9 +17,16 @@
     </div>
 
     <div class="contenedor">
+        <!--Botón Hamburguesa Móvil-->
+        <button class="btn-hamburguesa" id="btn-hamburguesa">
+            <span class="linea"></span>
+            <span class="linea"></span>
+            <span class="linea"></span>
+        </button>
+        <!--Menu Lateral (SIDEBAR)-->
         <aside class="menu-lateral">
             <div class="menu-encabezado">
-                <img src="../static/image/Icono_app.png" alt="icono-app">
+                <img src="../static/image/Icono_app.png" alt="icono-app" class="logo-app">
                 <h2>Sistema Gomería</h2>
             </div>
             <nav class="menu-navegacion">
@@ -30,8 +37,14 @@
                 <a href="#" class="enl-nav">Clientes</a>
                 <a href="#" class="enl-nav">Proveedores</a>
             </nav>
+            <div class="menu-pie">
+                <div class="usuario-info">
+                    <p class="usuario nombre" id="">Luciano Gonzalez</p>
+                    <p class="usuario-rol" id="usuario-rol">Administrador</p>
+                </div>
+            </div>
         </aside>
-
+        <!--Contenido principal-->
         <main class="contenido-principal">
             <header class="barra-superior">
                 <div class="titulo-pagina">
@@ -62,7 +75,7 @@
                     </div>
                 </div>
             </section>
-
+            <!--Botones de acciones rápidos-->
             <section class="enl-acciones-rapidas">
                 <h3>Accesos rápidos</h3>
                 <div class="cuadricula-acceso">
