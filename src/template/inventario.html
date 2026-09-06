@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../static/css/inventario.css">
-    <title>Inventario</title>
+    <title>Inventario - Sistema Gomería</title>
 </head>
 <body>
       <div class="contenedor">
@@ -12,34 +12,34 @@
         <!--MENÚ LATERAL-->
         <aside class="menu-lateral">
             <div class="menu-encabezado">
+                <img src="../static/image/Icono_app.png" alt="logo-app" class="logo-app">
                 <h2>Sistema Gomeria</h2>
             </div>
             <nav class="menu-navegacion">
-                <a href="#" class="enlace-nav">Principal</a>
-                <a href="#" class="enlace-nav">Ventas / Compras</a>
-                <a href="#" class="enlace-nav activo">Inventario</a>
-                <a href="#" class="enlace-nav">Clientes</a>
-                <a href="#" class="enlace-nav">Proveedores</a>
+                <a href="#" class="enl-nav">Principal</a>
+                <a href="#" class="enl-nav">Ventas</a>
+                <a href="#" class="enl-nav">Compras</a>
+                <a href="#" class="enl-nav activo">Inventario</a>
+                <a href="#" class="enl-nav">Clientes</a>
+                <a href="#" class="enl-nav">Proveedores</a>
             </nav>
             <div class="menu-pie">
                 <div class="usuario-info">
-                    <p class="usuario-nombre">Luciano Gonzalez</p>
-                    <p class="usuario-rol">Administrador</p>
+                    <p class="usuario-nombre" id="usuario-name">Luciano Gonzalez</p>
+                    <p class="usuario-rol" id="usuario-rol">Administrador</p>
                 </div>
             </div>
         </aside>
 
         <!--CONTENIDO PRINCIPAL-->
         <main class="contenido-principal">
-            
-            <!--Barra Superior de Navegación Externa-->
             <header class="barra-superior">
                 <div class="titulo-pagina">
                     <h1>Gestión de Inventario</h1>
                     <p>Control de stock y precios de productos</p>
                 </div>
                 <div class="barra-superior-acciones">
-                    <button class="btn btn-primario" id="btn-nuevo-producto">Nuevo Producto</button>
+                    <button class="btn btn-primario" id="btn-open-modal">Nuevo Producto</button>
                 </div>
             </header>
 
@@ -63,8 +63,6 @@
                         <p class="valor-metrica tarjeta-valor">12</p>
                         <span class="tarjeta-subtitulo">3 sin stock / 9 stock bajo</span>
                     </div>
-                    
-
                 </div>
             </section>
 
@@ -76,23 +74,23 @@
                 </div>
                 <div class="acciones-filtros">
                     <select class="filtro-seleccion">
-                        <option value="todos">Todos los Tipos</option>
+                        <option value="">Todos: Tipos</option>
                         <option value="neumaticos">Neumáticos</option>
                         <option value="insumos">Insumos Taller</option>
                         <option value="camaras">Cámaras</option>
                     </select>
                     <select class="filtro-seleccion">
-                        <option value="todos">Todas las Marcas</option>
+                        <option value="">Todas: Marcas</option>
                         <option value="fate">Fate</option>
                         <option value="pirelli">Pirelli</option>
                         <option value="michelin">Michelin</option>
                     </select>
                     <select class="filtro-seleccion">
-                        <option value="todos">Todos los Estados</option>
+                        <option value="todos">Todos: Estados</option>
                         <option value="bajo">Stock Bajo</option>
                         <option value="agotado">Sin Stock</option>
                         <option value="normal">Stock Normal</option>
-    </select>
+                    </select>
                 </div>
             </section>
 
@@ -104,52 +102,40 @@
                             <th>Producto</th>
                             <th>Tipo</th>
                             <th>Marca</th>
-                            <th class="texto-derecha">Costo Unitario</th>
-                            <th class="texto-derecha">Precio Venta (Total)</th>
-                            <th class="texto-centro">Stock</th>
-                            <th class="texto-centro">Acciones</th>
+                            <th>Costo Unitario</th>
+                            <th>Precio Venta (Total)</th>
+                            <th>Stock</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!--Fila 1-->
                         <tr>
                             <td>
-                                <div class="informacion-producto">
-                                    <span class="nombre-producto">Fate Cargo 295/80 R22.5</span>
-                                </div>
+                                Fate Cargo 295/80
                             </td>
-                            <td><span class="etiqueta etiqueta-azul">Neumático</span></td>
-                            <td><strong>Fate</strong></td>
-                            <td class="texto-derecha">$120,000.00</td>
-                            <td class="texto-derecha-negrita">$162,000.00</td>
-                            <td class="texto-centro">
-                                <span class="estado-stock stock-ok">45 u.</span>
-                            </td>
-                            <td class="texto-centro">
-                                <div class="botones-accion">
-                                    <button class="btn-accion" title="Editar">Modificar</button>
-                                    <button class="btn-accion borrar" title="Eliminar">Eliminar</button>
+                            <td>Neumático</td>
+                            <td>Fate</td>
+                            <td>$120,000.00</td>
+                            <td>$162,000.00</td>
+                            <td>45 u.</td>
+                            <td>
+                                <div class="btn-acciones">
+                                    <button class="btn-accion editar" title="Editar">Modificar</button>
+                                    <button class="btn-accion eliminar" title="Eliminar">Eliminar</button>
                                 </div>
                             </td>
                         </tr>
-                        <!--Fila 2-->
-                        <tr class="fila-alerta">
+                        <tr>
+                            <td>Parches para Camión</td>
+                            <td>Insumos Taller</td>
+                            <td>Generico</td>
+                            <td>$850.00</td>
+                            <td>$1,190.00</td>
+                            <td>3 u.</td>
                             <td>
-                                <div class="informacion-producto">
-                                    <span class="nombre-producto">Parches para Camión</span>
-                                </div>
-                            </td>
-                            <td><span class="etiqueta etiqueta-morada">Insumos Taller</span></td>
-                            <td><strong>Generico</strong></td>
-                            <td class="texto-derecha">$850.00</td>
-                            <td class="texto-derecha-negrita">$1,190.00</td>
-                            <td class="texto-centro">
-                                <span class="estado-stock stock-bajo" title="¡Alerta! Stock por debajo del mínimo">3 u.</span>
-                            </td>
-                            <td class="texto-centro">
-                                <div class="botones-accion">
-                                    <button class="btn-accion" title="Editar">Modificar</button>
-                                    <button class="btn-accion borrar" title="Eliminar">Eliminar</button>
+                                <div class="btn-acciones">
+                                    <button class="btn-accion editar" title="Editar">Modificar</button>
+                                    <button class="btn-accion eliminar" title="Eliminar">Eliminar</button>
                                 </div>
                             </td>
                         </tr>
@@ -158,8 +144,8 @@
             </section>
         </main>
     </div>
-    <!--Ventana emergente para registro de producto-->
-    <div id="modal-producto" class="modal-overlay">
+    <!--Ventana emergente (Nuevo Producto)-->
+    <div id="modal-overlay" class="modal-overlay">
         <div class="modal-contenido">
             <div class="modal-cabecera">
                 <h2>Nuevo Producto</h2>
@@ -196,11 +182,11 @@
                     </div>
                     <div class="grupo-input">
                         <label for="input-precio-venta">Precio Venta ($)</label>
-                        <input type="number" placeholder="162000">
+                        <input type="number" id="input-precio-venta" placeholder="162000">
                     </div>
                 </div>
 
-                <div class="modal-pie">
+                <div class="btn-acciones-modal">
                     <button type="button" class="btn-cancelar" id="btn-cancelar-modal">Cancelar</button>
                     <button type="submit" class="btn-guardar">Guardar Producto</button>
                 </div>
@@ -208,6 +194,6 @@
         </div>
     </div>
     <!--Script de JS-->
-    <script src="../static/js/inventario.js"></script>
+    <script src="../static/js/open_modal.js"></script>
 </body>
 </html>
