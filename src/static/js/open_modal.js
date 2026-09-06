@@ -1,4 +1,3 @@
-// Captura de elementos
 const modal = document.getElementById('modal-overlay');
 const btnNuevo = document.getElementById('btn-open-modal');
 const btnCerrar = document.getElementById('btn-cerrar-modal');
