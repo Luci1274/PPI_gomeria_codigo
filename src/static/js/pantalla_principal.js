@@ -59,12 +59,26 @@ function actualizarTablaVentas(ventas) {
     }
 
     ventas.forEach(venta => {
+        // Validar nombre completo del cliente
+        let clienteNombre = "Cliente no registrado";
+        if (venta.nombre && venta.apellido) {
+            clienteNombre = `${venta.nombre} ${venta.apellido}`;
+        } else if (venta.nombre) {
+            clienteNombre = venta.nombre;
+        }
+
+        // Validar total (soporta 'total' o 'precio_total')
+        const totalVenta = venta.total ?? venta.precio_total ?? 0;
+
+        // Validar forma de pago
+        const formaPago = venta.forma_pago || "No registrado";
+
         const fila = document.createElement("tr");
         fila.innerHTML = `
-            <td>${venta.nombre} ${venta.apellido}</td>
-            <td>$${venta.total}</td>
-            <td>${venta.forma_pago}</td>
-            <td>${venta.estado}</td>
+            <td>${clienteNombre}</td>
+            <td>$${totalVenta}</td>
+            <td>${formaPago}</td>
+            <td>${venta.estado || 'completa'}</td>
         `;
         tbody.appendChild(fila);
     });

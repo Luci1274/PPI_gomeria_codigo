@@ -15,8 +15,8 @@ class Venta:
         id_empleado,
         lista_items,
         numero_factura=1,
-        iva=21,
-        descuento=0,
+        iva=21.0,
+        descuento=0.0,
         precio_total=0.0,
         total_productos=0,
     ):
@@ -24,8 +24,18 @@ class Venta:
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
+                # Sanitización explícita de tipos de datos en los ítems
+                items_sanitizados = [
+                    {
+                        "idproducto_servicio": int(item["idproducto_servicio"]),
+                        "precio_unitario": float(item["precio_unitario"]),
+                        "cantidad": int(item["cantidad"])
+                    }
+                    for item in lista_items
+                ]
+
                 # 1. Validar stock disponible previo a la inserción
-                ids_productos = [item["idproducto_servicio"] for item in lista_items]
+                ids_productos = [item["idproducto_servicio"] for item in items_sanitizados]
 
                 if ids_productos:
                     format_strings = ",".join(["%s"] * len(ids_productos))
@@ -39,10 +49,9 @@ class Venta:
                         p["idproducto_servicio"]: p for p in cursor.fetchall()
                     }
 
-                    # Verificar stock ítem por ítem
-                    for item in lista_items:
+                    for item in items_sanitizados:
                         prod_id = item["idproducto_servicio"]
-                        cant_pedida = int(item["cantidad"])
+                        cant_pedida = item["cantidad"]
 
                         if prod_id in productos_db:
                             prod = productos_db[prod_id]
@@ -54,11 +63,12 @@ class Venta:
                                     f"Stock insuficiente para '{prod['nombre']}'. Disponibles: {prod['cantidad_actual']}, Solicitados: {cant_pedida}"
                                 )
 
-                # 2. Insertar la cabecera de la venta
+                # 2. Insertar la cabecera de la venta (incluye el campo NOT NULL 'estado')
                 sql_venta = """
                     INSERT INTO venta (
-                        numero_factura, fecha_emision_factura, descuento, iva, cantidad_total_productos, precio_total, idcliente, idempleado, activa
-                    ) VALUES (%s, NOW(), %s, %s, %s, %s, %s, %s, 1);
+                        numero_factura, fecha_emision_factura, descuento, iva, 
+                        cantidad_total_productos, precio_total, idcliente, idempleado, activa, estado
+                    ) VALUES (%s, NOW(), %s, %s, %s, %s, %s, %s, 1, 'completa');
                 """
                 cursor.execute(
                     sql_venta,
@@ -87,7 +97,7 @@ class Venta:
                         item["precio_unitario"],
                         item["cantidad"],
                     )
-                    for item in lista_items
+                    for item in items_sanitizados
                 ]
                 cursor.executemany(sql_items, valores_items)
 
@@ -99,7 +109,7 @@ class Venta:
                 """
                 valores_stock = [
                     (item["cantidad"], item["idproducto_servicio"])
-                    for item in lista_items
+                    for item in items_sanitizados
                 ]
                 cursor.executemany(sql_stock, valores_stock)
 

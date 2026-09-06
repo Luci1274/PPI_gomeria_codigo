@@ -34,7 +34,7 @@ def api_iniciar_sesion():
         return jsonify({
             "exito": True,
             "mensaje": "Inicio de sesión exitoso",
-            "redireccion": "/index"
+            "redireccion": "/"
         }), 200
     
     return jsonify({

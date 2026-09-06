@@ -12,11 +12,16 @@ def contar_ventas_dia():
 
 def obtener_ultimas_ventas():
     return """
-        SELECT c.nombre, c.apellido, v.precio_total, hpc.forma_pago, v.estado 
+        SELECT 
+            IFNULL(c.nombre, 'Cliente') AS nombre, 
+            IFNULL(c.apellido, 'General') AS apellido, 
+            v.precio_total AS total, 
+            IFNULL(hpc.forma_pago, 'No registrado') AS forma_pago, 
+            v.estado 
         FROM venta AS v 
         LEFT JOIN cliente AS c ON v.idcliente = c.idcliente 
         LEFT JOIN historial_pago_cliente AS hpc ON v.idventa = hpc.idventa 
-        WHERE v.activa = 1 AND DATE(fecha_emision_factura) = CURDATE()
+        WHERE v.activa = 1 AND DATE(v.fecha_emision_factura) = CURDATE()
         ORDER BY v.idventa DESC
         LIMIT 5
     """

@@ -43,7 +43,7 @@ def api_ventas():
         return jsonify({
             "exito": False,
             "mensaje": "Error: No se pudo conectar a la base de datos.",
-            "redireccion": "/index"
+            "redireccion": "/"
         }), 500
 
     return jsonify(data)
@@ -139,21 +139,25 @@ def api_procesar_venta():
                 "mensaje": "El carrito de compra no puede estar vacío."
             }), 400
 
-        id_empleado_actual = session["id_usuario"]
+        # 1. Obtener id_empleado de forma segura evitando KeyError
+        id_empleado_actual = session.get("id_usuario")
         if not id_empleado_actual:
             return jsonify({
                 "exito": False,
                 "mensaje": "Sesión inválida o expirada.",
-                "redireccion": "/login"
+                "redireccion": "/registrarse"
             }), 401
+
+        
+        id_cliente = datos.get("id_cliente", 1)
 
         descuento_valor = float(datos.get("descuento", 0.0))
         total_productos = calcular_total_productos(carrito)
         precio_total = calcular_precio_total(carrito, descuento_valor)
 
         id_nueva_venta = Venta.registrar(
-            id_cliente=datos.get("id_cliente"),
-            id_empleado=id_empleado_actual,
+            id_cliente=id_cliente,
+            id_empleado=int(id_empleado_actual),
             lista_items=carrito,
             numero_factura=1,
             descuento=descuento_valor,

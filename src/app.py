@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, session, flash, jsonify
+from config import Config
 import modulos.comandos_db.comandos_db_productos as db_productos
 import modulos.comandos_db.comandos_db_venta as db_ventas
 import modulos.comandos_db.comandos_db_clientes as db_clientes
@@ -7,7 +8,37 @@ from modulos.empleados_rutas import empleados_bp
 from modulos.comandos_db.comandos_db_pantalla_inicial import mostrar
 
 app = Flask(__name__)
-app.secret_key = "una_clave_secreta_y_segura_aqui"
+
+
+app.config.from_object(Config)
+
+# ---------------------------------------------------------------------------------------------
+# 🛡️ GUARDIA DE SEGURIDAD (Control de Sesiones y Roles)
+# ---------------------------------------------------------------------------------------------
+@app.before_request
+def proteger_rutas():
+    # 1. Ignorar archivos estáticos y rutas inexistentes
+    if not request.endpoint or request.endpoint == 'static' or request.endpoint.endswith('.static'):
+        return
+
+    rutas_publicas = app.config.get("RUTAS_PUBLICAS", [])
+    endpoint_actual = request.endpoint.split(".")[-1]
+
+    # 2. Permitir si el nombre del endpoint o la URL están en la lista pública
+    if endpoint_actual in rutas_publicas or request.path in rutas_publicas:
+        return
+
+    # 3. Validar si existe la sesión
+    if "id_usuario" not in session:
+        # Si la petición viene de un fetch/AJAX (como las APIs), respondemos JSON 401 en lugar de redirigir
+        if request.path.startswith("/api/"):
+            return jsonify({
+                "exito": False,
+                "mensaje": "Sesión expirada o no autorizada"
+            }), 401
+
+        flash("Debes iniciar sesión para acceder al sistema", "warning")
+        return redirect("/iniciar_sesion")
 
 # Ruta principal que sirve la vista
 @app.route("/")
