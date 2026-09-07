@@ -177,6 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function cerrarModal() {
         if (modal) modal.style.display = 'none';
+        window.location.href = '/ventas';
     }
 
     if (btnOpenModal) btnOpenModal.addEventListener('click', abrirModal);

@@ -5,25 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ventas.css') }}">
+    <link rel="stylesheet" href="../static/css/navbar.css">
     <title>Ventas - Sistema Gomería</title>
 </head>
 
 <body>
     <div class="contenedor">
-        <aside class="menu-lateral">
-            <div class="menu-encabezado">
-                <img src="{{ url_for('static', filename='image/Icono_app.png') }}" alt="icono-app">
-                <h2>Sistema Gomería</h2>
-            </div>
-            <nav class="menu-navegacion">
-                <a href="/" class="enl-nav">Principal</a>
-                <a href="/ventas" class="enl-nav activo">Ventas</a>
-                <a href="#" class="enl-nav">Compras</a>
-                <a href="#" class="enl-nav">Inventario</a>
-                <a href="#" class="enl-nav">Clientes</a>
-                <a href="#" class="enl-nav">Proveedores</a>
-            </nav>
-        </aside>
+        {% include "componentes/navbar.html" %}
+
         <main class="contenido-principal">
             <header class="barra-superior">
                 <div class="titulo-pagina">
@@ -132,5 +121,6 @@
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/ventas.js') }}"></script>
+    <script src="../static/js/navbar.js"></script>
 </body>
 </html>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../static/css/pantalla_principal.css">
+    <link rel="stylesheet" href="../static/css/navbar.css">
     <title>Pantalla principal - Sistema Gomería</title>
 </head>
 <body>
@@ -17,33 +18,8 @@
     </div>
 
     <div class="contenedor">
-        <!--Botón Hamburguesa Móvil-->
-        <button class="btn-hamburguesa" id="btn-hamburguesa">
-            <span class="linea"></span>
-            <span class="linea"></span>
-            <span class="linea"></span>
-        </button>
-        <!--Menu Lateral (SIDEBAR)-->
-        <aside class="menu-lateral">
-            <div class="menu-encabezado">
-                <img src="../static/image/Icono_app.png" alt="icono-app" class="logo-app">
-                <h2>Sistema Gomería</h2>
-            </div>
-            <nav class="menu-navegacion">
-                <a href="/" class="enl-nav activo">Principal</a>
-                <a href="/ventas" class="enl-nav">Ventas</a>
-                <a href="#" class="enl-nav">Compras</a>
-                <a href="#" class="enl-nav">Inventario</a>
-                <a href="#" class="enl-nav">Clientes</a>
-                <a href="#" class="enl-nav">Proveedores</a>
-            </nav>
-            <div class="menu-pie">
-                <div class="usuario-info">
-                    <p class="usuario nombre" id="">Luciano Gonzalez</p>
-                    <p class="usuario-rol" id="usuario-rol">Administrador</p>
-                </div>
-            </div>
-        </aside>
+        {% include "componentes/navbar.html" %}
+        
         <!--Contenido principal-->
         <main class="contenido-principal">
             <header class="barra-superior">
@@ -126,5 +102,6 @@
 
     <!-- Enlazamos el archivo de JavaScript -->
     <script src="../static/js/pantalla_principal.js"></script>
+    <script src="../static/js/navbar.js"></script>
 </body>
 </html>

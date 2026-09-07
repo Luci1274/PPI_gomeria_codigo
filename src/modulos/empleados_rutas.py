@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, session
+from flask import Blueprint, render_template, request, jsonify, session, redirect
 from modulos.comandos_db.conexion import probar_conexion
 from modulos.comandos_db.comandos_db_empleado import Usuario
 
@@ -187,3 +187,8 @@ def api_eliminar_usuario(id):
         "exito": False,
         "mensaje": "No se pudo dar de baja al empleado indicado."
     }), 400
+    
+@empleados_bp.route("/cerrar_sesion")
+def cerrar_sesion():
+    session.clear() # Borra todo lo que haya en la sesión (id, nombre, rol)
+    return redirect ("/iniciar_sesion")

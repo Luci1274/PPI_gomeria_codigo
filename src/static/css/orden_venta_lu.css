@@ -1,81 +1,52 @@
 :root {
     --color-primario: #0b2240;    
-    --primario-claro: #16355d;     
-    --acento-rojo: #e74c3c;       
-    --acento-morado: #9b59b6;     
+    --primario-claro: #16355d;             
     --fondo-principal: #f4f6f9;           
     --fondo-tarjeta: #ffffff;          
     --texto-principal: #2c3e50;        
     --texto-atenuado: #7f8c8d;       
-    --color-borde: #e2e8f0; 
+    --color-borde: #e2e8f0;   
 }
 
 * {
-    box-sizing: border-box;
-    font-family: sans-serif;
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+    font-family: sans-serif;
 }
 
 body {
-    background-color: #eef2f6;
+    background-color: var(--fondo-principal);
     color: var(--texto-principal);
     overflow-x: hidden;
 }
+
+/* Layout General */
 .contenedor {
     display: flex;
     min-height: 100vh;
 }
 
-.menu-lateral {
-    width: 260px;
-    background-color: var(--color-primario);
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    padding: 24px;
-    position: fixed;
-    height: 100vh;
-    z-index: 100;
-}
-
-img {
-    width: 80px;
-}
-
-.menu-encabezado {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.menu-encabezado h2 {
-    font-size: 20px;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-}
-
-/* Layout General POS */
+/* Layout POS */
 .contenido-principal {
     display: flex;
     gap: 24px;
     align-items: flex-start;
-    padding: 30px;
-    max-width: none;
+    padding: 40px;
     margin-left: 260px;
     width: 100%;
 }
 
+/* Sección Catálogo */
 .seccion-catalogo {
     flex: 1;
     display: flex;
     flex-direction: column;
     background-color: var(--fondo-tarjeta);
     border: 1px solid var(--color-borde);
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 4px 6px -1px rgb(0, 0, 0, 0.3);
+    box-shadow: 0 4px 6px -2px rgba(11, 34, 64, 0.05);
 }
 
 .barra-superior {
@@ -83,7 +54,7 @@ img {
 }
 
 .barra-superior h1 {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: bold;
     color: var(--color-primario);
     margin-bottom: 4px;
@@ -94,7 +65,7 @@ img {
     color: var(--texto-atenuado);
 }
 
-/* Buscador y Categorías */
+/* Buscador y Filtros Categorías */
 .barras-pos {
     display: flex;
     flex-direction: column;
@@ -105,13 +76,13 @@ img {
 .contenedor-busqueda input {
     width: 100%;
     max-width: 450px;
-    padding: 12px 16px;
+    padding: 10px 14px;
     border-radius: 8px;
     border: 1px solid var(--color-borde);    
     background-color: var(--fondo-tarjeta);
     font-size: 14px;
     color: var(--texto-principal);
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease;
 }
 
 .contenedor-busqueda input:focus {
@@ -126,7 +97,6 @@ img {
     padding-bottom: 4px;
 }
 
-/* Estilo adaptado para el Select de Categorías */
 .filtros-categoria select {
     padding: 10px 16px;
     border-radius: 8px;
@@ -137,20 +107,15 @@ img {
     font-weight: bold;
     cursor: pointer;
     outline: none;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease;
 }
 
-/* Efecto al pasar el mouse */
-.filtros-categoria select:hover {
-    border-color: #cbd5e1;
-}
-
-/* Efecto cuando está enfocado/desplegado */
+.filtros-categoria select:hover,
 .filtros-categoria select:focus {
     border-color: var(--primario-claro);
 }
 
-/* Grilla de Tarjetas de Productos */
+/* Grilla de Productos */
 .grilla-productos {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -161,22 +126,23 @@ img {
     background-color: var(--fondo-tarjeta);
     border: 1px solid var(--color-borde);
     border-radius: 12px;
-    padding: 14px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     cursor: pointer;
     user-select: none;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .tarjeta-producto:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(11, 34, 64, 0.05);
 }
 
 .tarjeta-producto:active {
-    transform: scale(0.97);
+    transform: scale(0.98);
 }
 
 .img-producto {
@@ -187,9 +153,9 @@ img {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f1f5f9;
-    margin-bottom: 10px;
-    border: 1px dashed var(--color-borde);
+    background-color: #fafbfc;
+    margin-bottom: 12px;
+    border: 1px solid var(--color-borde);
 }
 
 .img-producto img {
@@ -203,6 +169,7 @@ img {
     color: var(--texto-principal);
     margin-bottom: 6px;
     line-height: 1.3;
+    font-weight: bold;
 }
 
 .precio-producto {
@@ -212,19 +179,19 @@ img {
     display: block;
 }
 
-/* Panel Lateral Derecho: Resumen */
+/* Panel Resumen Lateral Derecho */
 .panel-resumen-pos {
     width: 360px;
     background-color: var(--fondo-tarjeta);
     border: 1px solid var(--color-borde);
-    border-radius: 16px;
-    padding: 20px;
+    border-radius: 12px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 80px);
     position: sticky;
-    top: 30px;
-    box-shadow: 0 4px 6px -1px rgb(0, 0, 0, 0.3)
+    top: 40px;
+    box-shadow: 0 4px 6px -2px rgba(11, 34, 64, 0.05);
 }
 
 .cabecera-resumen h2 {
@@ -258,14 +225,21 @@ img {
     color: var(--texto-principal);
 }
 
-.select-cliente, .select-met-pago {
+.select-cliente, 
+.select-met-pago {
     padding: 8px 12px;
     border-radius: 8px;
     border: 1px solid var(--color-borde);
     font-size: 13px;
-    background-color: #f8fafc;
+    background-color: #fafbfc;
     color: var(--texto-principal);
     outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.select-cliente:focus, 
+.select-met-pago:focus {
+    border-color: var(--primario-claro);
 }
 
 .divisor {
@@ -274,7 +248,7 @@ img {
     margin: 16px 0;
 }
 
-/* Lista de Items Agregados */
+/* Lista de Ítems Agregados */
 .lista-items-pedido {
     flex: 1;
     overflow-y: auto;
@@ -282,7 +256,6 @@ img {
     flex-direction: column;
     gap: 10px;
     padding-right: 4px;
-    overflow: hidden;
 }
 
 .item-pedido {
@@ -290,7 +263,7 @@ img {
     align-items: center;
     gap: 12px;
     padding: 10px;
-    background-color: #f8fafc;
+    background-color: #fafbfc;
     border-radius: 8px;
     border: 1px solid var(--color-borde);
     position: relative;
@@ -322,7 +295,6 @@ img {
     font-size: 12px;
     color: var(--texto-atenuado);
     font-weight: bold;
-    margin: 2px;
 }
 
 .precio-item {
@@ -333,7 +305,7 @@ img {
 
 .eliminar-producto {
     position: absolute;
-    right: 10px;
+    right: 8px;
     top: 50%;
     transform: translateY(-50%); 
     width: 24px;
@@ -343,7 +315,7 @@ img {
     color: var(--texto-atenuado);
     font-size: 14px;
     font-weight: bold;
-    border-radius: 50%;
+    border-radius: 6px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -353,7 +325,7 @@ img {
 
 .eliminar-producto:hover {
     background-color: #fee2e2;
-    color: #dc2626;
+    color: #b91c1c;
 }
 
 /* Footer de Resumen */
@@ -371,9 +343,10 @@ img {
 }
 
 .monto-total-pos span {
-    font-size: 15px;
+    font-size: 14px;
     color: var(--texto-atenuado);
     font-weight: bold;
+    text-transform: uppercase;
 }
 
 .monto-total-pos strong {
@@ -398,13 +371,13 @@ img {
 }
 
 .btn-cerrar {
-    background-color: #fef2f2;
-    color: #dc2626;
-    border: 1px solid #fca5a5 !important;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: none;
 }
 
 .btn-cerrar:hover {
-    background-color: #fee2e2;
+    background-color: #fca5a5;
 }
 
 .btn-primario {
@@ -414,21 +387,22 @@ img {
 
 .btn-primario:hover {
     background-color: var(--primario-claro);
+    transform: translateY(-1px);
 }
 
-/*Ventana emergente (Ver resumen)*/
+/* Ventana Emergente (Modal Resumen) */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(15, 23, 42, 0.65);
+    background-color: rgba(11, 34, 64, 0.4);
     backdrop-filter: blur(4px);
     display: none;
     justify-content: center;
     align-items: center;
-    z-index: 200;
+    z-index: 1000;
 }
 
 .modal-overlay.activo {
@@ -439,16 +413,16 @@ img {
     background-color: var(--fondo-tarjeta);
     width: 90%;
     max-width: 580px;
-    border-radius: 16px;
-    padding: 24px 28px;
+    border-radius: 12px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 18px;
     position: relative;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--color-borde);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-/* Cabecera */
 .modal-cabecera {
     display: flex;
     flex-direction: column;
@@ -465,24 +439,23 @@ img {
 .modal-cabecera p {
     font-size: 13px;
     color: var(--texto-atenuado);
-    margin: 4px 0 0 0;
+    margin-top: 4px;
 }
 
-/* Botón X de Cierre */
 .modal-cabecera .btn-cerrar {
     background: transparent;
     border: none;
-    font-size: 16px;
+    font-size: 18px;
     cursor: pointer;
     font-weight: bold;
     color: var(--texto-atenuado);
     width: 32px;
     height: 32px;
-    border-radius: 50%;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s, color 0.2s;
     position: absolute;
     top: 20px;
     right: 20px;
@@ -491,10 +464,9 @@ img {
 
 .modal-cabecera .btn-cerrar:hover {
     background-color: #fee2e2;
-    color: #dc2626;
+    color: #b91c1c;
 }
 
-/* Tarjetas de Métricas (Fecha y Cliente) */
 .contenedor-tarjetas {
     display: flex;
     gap: 12px;
@@ -502,9 +474,9 @@ img {
 
 .modal-contenido .tarjeta-metrica {
     flex: 1;
-    background-color: #f8fafc;
+    background-color: #fafbfc;
     border: 1px solid var(--color-borde);
-    padding: 10px 14px;
+    padding: 12px 16px;
     border-radius: 10px;
 }
 
@@ -518,30 +490,30 @@ img {
 .modal-contenido .datos-metricas p:first-child {
     font-weight: bold;
     color: var(--color-primario);
-    margin: 0;
 }
 
 .modal-contenido .datos-metricas p:last-child {
     color: var(--texto-principal);
-    margin: 0;
 }
 
 .modal-table {
     width: 100%;
     border-collapse: collapse;
     border: 1px solid var(--color-borde);
-    border-radius: 10px;
+    border-radius: 8px;
     overflow: hidden;
     font-size: 13px;
     text-align: left;
 }
 
 .modal-table th {
-    background-color: #f8fafc;
+    background-color: #fafbfc;
     color: var(--color-primario);
     font-weight: bold;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--color-borde);
+    padding: 12px 14px;
+    border-bottom: 2px solid var(--color-borde);
+    text-transform: uppercase;
+    font-size: 12px;
 }
 
 .modal-table td {
@@ -556,21 +528,21 @@ img {
 
 .total-table {
     font-weight: bold;
-    font-size: 15px;
+    font-size: 14px;
     color: var(--color-primario);
-    background-color: #f8fafc;
+    background-color: #fafbfc;
 }
 
 .modal-contenido .btn-acciones {
     display: flex;
     gap: 10px;
-    justify-content: space-between;
+    justify-content: flex-end;
     margin-top: 6px;
 }
 
 .modal-contenido .btn-acciones .btn,
 .modal-contenido .btn-acciones button {
-    padding: 9px 16px;
+    padding: 10px 18px;
     border-radius: 8px;
     font-size: 13px;
     font-weight: bold;
@@ -579,14 +551,12 @@ img {
     background-color: #ffffff;
     color: var(--texto-principal);
     transition: all 0.2s ease;
-
 }
 
 .modal-contenido .btn-acciones button:hover {
-    background-color: #f1f5f9;
+    background-color: #fafbfc;
 }
 
-/* Destacamos el botón Guardar/Principal */
 .modal-contenido .btn-acciones button:last-child {
     background-color: var(--color-primario);
     color: #ffffff;
@@ -595,4 +565,20 @@ img {
 
 .modal-contenido .btn-acciones button:last-child:hover {
     background-color: var(--primario-claro);
+}
+
+/* Responsivo */
+@media (max-width: 1024px) {
+    .contenido-principal {
+        flex-direction: column;
+        padding: 20px;
+        margin-left: 0;
+        padding-top: 70px;
+    }
+
+    .panel-resumen-pos {
+        width: 100%;
+        height: auto;
+        position: static;
+    }
 }

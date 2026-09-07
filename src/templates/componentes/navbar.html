@@ -1,63 +1,32 @@
-    <nav>
-        <!-- Botón hamburguesa -->
-        <button class="boton_menu" id="boton_menu">
-            <ion-icon name="menu-outline"></ion-icon>
-        </button>
+<!-- Fondo oscuro (Overlay) para cerrar el menú en móviles -->
+<div class="overlay-nav" id="overlay_nav"></div>
 
-        <!-- Fondo oscuro mobile
-            °el usuario toca afuera del menú
-            °el menú se cierra 
-        -->
-        <div class="overlay_nav" id="overlay_nav"></div>
+<!-- Botón Hamburguesa Móvil -->
+<button class="btn-hamburguesa" id="btn-hamburguesa" aria-label="Abrir menú">
+    <span class="linea"></span>
+    <span class="linea"></span>
+    <span class="linea"></span>
+</button>
 
-        <!-- Barra lateral -->
-        <div class="contenedor_navegacion" id="barra_navegacion">
-            <h2 id="titulo_nav">Sistema Gomería</h2>
-            <ul>
-                {% if rol == "operario" %}
-                    <li>
-                        <a href="">
-                            <ion-icon name="cash-outline"></ion-icon>
-                            <span> Ventas</span>
-                        </a>
-                    </li>
-                {% else %}
-                    <li>
-                        <a href="">
-                            <ion-icon name="cart-outline"></ion-icon>
-                            <span> Compras</span>
-                        </a>
-                    </li>
-                        
-                    <li>
-                        <a href="">
-                            <ion-icon name="cash-outline"></ion-icon>
-                            <span> Ventas</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="">
-                            <ion-icon name="cube-outline"></ion-icon>
-                            <span> Inventario</span>
-                        </a>
-                    </li>
-                        
-                    <li>
-                        <a href="">
-                            <ion-icon name="person-outline"></ion-icon>
-                            <span> Clientes</span>
-                        </a>
-                    </li>
-                        
-                    <li>
-                        <a href="">
-                            <ion-icon name="people-outline"></ion-icon>
-                            <span> Proveedores</span>
-                        </a>
-                    </li>
-                {% endif %}
-            </ul>
-        </div>
+<!-- Menú Lateral (SIDEBAR) -->
+<aside class="menu-lateral" id="menu-lateral">
+    <div class="menu-encabezado">
+        <img src="{{ url_for('static', filename='image/Icono_app.png') }}" alt="icono-app" class="logo-app">
+        <h2>Sistema Gomería</h2>
+    </div>
+    <nav class="menu-navegacion">
+        <a href="/" class="enl-nav activo">Principal</a>
+        <a href="/ventas" class="enl-nav">Ventas</a>
+        <a href="#" class="enl-nav">Compras</a>
+        <a href="#" class="enl-nav">Inventario</a>
+        <a href="#" class="enl-nav">Clientes</a>
+        <a href="#" class="enl-nav">Proveedores</a>
+        <a href="/cerrar_sesion" class="enl-nav">Cerrar Sesion</a>
     </nav>
-        
+    <div class="menu-pie">
+        <div class="usuario-info">
+            <p class="usuario-nombre" id="nombre-usuario">{{ session.get('nombre_usuario', 'Invitado') }}</p>
+            <p class="usuario-rol" id="usuario-rol">{{ session.get('tipo', 'Sin Rol') }}</p>
+        </div>
+    </div>
+</aside>
