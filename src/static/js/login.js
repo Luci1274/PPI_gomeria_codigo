@@ -5,10 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const formLogin = document.getElementById('form_login');
     const formRegistro = document.getElementById('form_registro');
     const tituloDinamico = document.getElementById('titulo_dinamico');
-    const cajaMensaje = document.getElementById("caja_mensaje");
-    const parrafoMensaje = document.getElementById("parrafo_mensaje");
 
-    // --- Control de pestañas UI ---
+    // Comportamiento al hacer clic en "Crear usuario"
     btnRegistro.addEventListener('click', (e) => {
         e.preventDefault();
         btnRegistro.classList.add('pestana-activa');
@@ -18,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tituloDinamico.textContent = 'Nuevo Usuario';
     });
 
+    // Comportamiento al hacer clic en "Iniciar sesión"
     btnLogin.addEventListener('click', (e) => {
         e.preventDefault();
         btnLogin.classList.add('pestana-activa');
