@@ -10,3 +10,4 @@ src/modulos/comandos_db/__pycache__/comandos_db_clientes.cpython-313.pyc
 src/modulos/comandos_db/__pycache__/comandos_db_productos.cpython-313.pyc
 src/modulos/comandos_db/__pycache__/conexion.cpython-313.pyc
 src/modulos/comandos_db/__pycache__/comandos_db_venta.cpython-313.pyc
+src/__pycache__/config.cpython-313.pyc

@@ -10,12 +10,27 @@ load_dotenv(dotenv_path=Base_dir / ".env")
 class Config:
     SECRET_KEY = os.getenv("CLAVE_SECRETA", "clave_por_defecto_dev")
 
-    RUTAS_PUBLICAS = [
-        ruta.strip() for ruta in os.getenv("RUTAS_PUBLICAS", "").split(",") if ruta.strip()
-    ]
-    ROLES = [
-        role.strip() for role in os.getenv("ROLES", "").split(",") if role.strip()
-    ]
+    # Si os.getenv devuelve None o "", usamos una lista de respaldo predeterminada
+    _rutas_env = os.getenv("RUTAS_PUBLICAS")
+    if _rutas_env:
+        RUTAS_PUBLICAS = [r.strip() for r in _rutas_env.split(",") if r.strip()]
+    else:
+        RUTAS_PUBLICAS = [
+            "iniciar_sesion", 
+            "registrarse", 
+            "api_iniciar_sesion", 
+            "api_registrarse", 
+            "/iniciar_sesion", 
+            "/registrarse", 
+            "/api/iniciar_sesion", 
+            "/api/registrarse"
+        ]
+
+    _roles_env = os.getenv("ROLES")
+    if _roles_env:
+        ROLES = [r.strip() for r in _roles_env.split(",") if r.strip()]
+    else:
+        ROLES = ["DEV", "AD", "EM"]
 
     # 2. Métodos de conexión
     @staticmethod

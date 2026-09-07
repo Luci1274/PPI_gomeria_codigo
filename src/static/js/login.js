@@ -103,4 +103,5 @@ document.addEventListener('DOMContentLoaded', () => {
             parrafoMensaje.innerText = "Error al conectar con el servidor";
         }
     });
+    
 });
