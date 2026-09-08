@@ -1,10 +1,9 @@
-// Captura de elementos
-const modal = document.getElementById('modal-proveedor');
-const btnNuevo = document.getElementById('btn-nuevo-proveedor');
+const modal = document.getElementById('modal-overlay');
+const btnNuevo = document.getElementById('btn-open-modal');
 const btnCerrar = document.getElementById('btn-cerrar-modal');
 const btnCancelar = document.getElementById('btn-cancelar-modal');
 
-// Abrir modal al hacer clic en "Nuevo Proveedor"
+// Abrir modal al hacer clic en "Nuevo ..."
 btnNuevo.addEventListener('click', () => {
 modal.classList.add('activo');
 });

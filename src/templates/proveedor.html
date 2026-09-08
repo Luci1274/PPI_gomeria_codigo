@@ -10,17 +10,18 @@
 
 <body>
       <div class="contenedor">
-        <!--MENÚ LATERAL-->
+        <!--Menu Lateral (SIDEBAR)-->
         <aside class="menu-lateral">
             <div class="menu-encabezado">
+                <img src="../static/image/Icono_app.png" alt="logo-app" class="logo-app">
                 <h2>Sistema Gomería</h2>
             </div>
             <nav class="menu-navegacion">
-                <a href="#" class="enlace-nav">Principal</a>
-                <a href="#" class="enlace-nav">Ventas / Compras</a>
-                <a href="#" class="enlace-nav">Inventario</a>
-                <a href="#" class="enlace-nav">Clientes</a>
-                <a href="#" class="enlace-nav activo">Proveedores</a>
+                <a href="#" class="enl-nav">Principal</a>
+                <a href="#" class="enl-nav">Ventas / Compras</a>
+                <a href="#" class="enl-nav">Inventario</a>
+                <a href="#" class="enl-nav">Clientes</a>
+                <a href="#" class="enl-nav activo">Proveedores</a>
             </nav>
             <div class="menu-pie">
                 <div class="usuario-info">
@@ -32,15 +33,13 @@
 
         <!--CONTENIDO PRINCIPAL-->
         <main class="contenido-principal">
-            
-            <!--Barra Superior de Navegación Externa-->
             <header class="barra-superior">
                 <div class="titulo-pagina">
                     <h1>Gestión de Proveedores</h1>
                     <p>Administra y consulta de proveedores</p>
                 </div>
                 <div class="barra-superior-acciones">
-                    <button class="btn btn-primario" id="btn-nuevo-proveedor">Nuevo Proveedor</button>
+                    <button class="btn btn-primario" id="btn-open-modal">Nuevo Proveedor</button>
                 </div>
             </header>
 
@@ -88,60 +87,41 @@
                             <th>COD.</th>
                             <th>Nombre / Razón Social</th>
                             <th>CUIT</th>
-                            <th class="texto-derecha">Dirección</th>
-                            <th class="texto-derecha">Teléfono</th>
-                            <th class="texto-centro">Email</th>
-                            <th class="texto-centro">Estado</th>
-                            <th class="texto-centro">Acciones</th>
+                            <th>Dirección</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!--Fila 1-->
                         <tr>
+                            <td>01</td>
+                            <td>Alvarez y Hijos Neumáticos</td>
+                            <td>20304050607</td>
+                            <td>AV. San martin 123</td>
+                            <td>01145678901</td>
+                            <td>ventas@alvarezyhijos.com</td>
+                            <td>Activo</td>
                             <td>
-                                <div class="etiqueta etiqueta-azul">
-                                    01
-                                </div>
-                            </td>
-                            <td>
-                                <div class="nombre-razon-social">
-                                    Alvarez y Hijos Neumáticos
-                                </div>
-                            </td>
-                            <td><span class="etiqueta etiqueta-azul">20304050607</span></td>
-                            <td><strong>AV. San martin 123</strong></td>
-                            <td class="texto-derecha">01145678901</td>
-                            <td class="texto-derecha-negrita">ventas@alvarezyhijos.com</td>
-                            <td class="texto-centro">
-                                <span class="estado-proveedor">Activo</span>
-                            </td>
-                            <td class="texto-centro">
-                                <div class="botones-accion">
-                                    <button class="btn-accion" title="Editar">Modificar</button>
-                                    <button class="btn-accion borrar" title="Eliminar">Eliminar</button>
+                                <div class="btn-acciones">
+                                    <button class="btn-accion editar" title="Editar">Modificar</button>
+                                    <button class="btn-accion eliminar" title="Eliminar">Eliminar</button>
                                 </div>
                             </td>
                         </tr>
-                        <!--Fila 2-->
                         <tr>
+                            <td>02</td>
+                            <td>Neumáticos Distribuidora del Sur</td>
+                            <td>30710080001</td>
+                            <td>Calle Falsa 456</td>
+                            <td>01134567890</td>
+                            <td>contac@distrisur.com</td>
+                            <td>Inactivo</td>
                             <td>
-                                <div class="etiqueta etiqueta-azul">02</div>
-                            </td>
-                            <td>
-                                <div class="nombre-razon-social">Neumáticos Distribuidora del Sur
-                                </div>
-                            </td>
-                            <td><span class="etiqueta etiqueta-morada">30710080001</span></td>
-                            <td><strong>Calle Falsa 456</strong></td>
-                            <td class="texto-derecha">01134567890</td>
-                            <td class="texto-derecha-negrita">contac@distrisur.com</td>
-                            <td class="texto-centro">
-                                <span class="estado-proveedor">Inactivo</span>
-                            </td>
-                            <td class="texto-centro">
-                                <div class="botones-accion">
-                                    <button class="btn-accion" title="Editar">Modificar</button>
-                                    <button class="btn-accion borrar" title="Eliminar">Eliminar</button>
+                                <div class="btn-acciones">
+                                    <button class="btn-accion editar"  title="Editar">Modificar</button>
+                                    <button class="btn-accion eliminar" title="Eliminar">Eliminar</button>
                                 </div>
                             </td>
                         </tr>
@@ -152,7 +132,7 @@
     </div>
 
     <!--Ventana emergente para registro de producto-->
-    <div id="modal-proveedor" class="modal-overlay">
+    <div id="modal-overlay" class="modal-overlay">
         <div class="modal-contenido">
             <div class="modal-cabecera">
                 <h2>Nuevo Proveedor</h2>
@@ -195,7 +175,7 @@
                     </div>
                 </div>
 
-                <div class="modal-pie">
+                <div class="btn-acciones-modal">
                     <button type="button" class="btn-cancelar" id="btn-cancelar-modal">Cancelar</button>
                     <button type="submit" class="btn-guardar">Guardar Proveedor</button>
                 </div>
@@ -203,6 +183,6 @@
         </div>
     </div>
     <!--Script de JS-->
-    <script src="../static/js/proveedor.js"></script>
+    <script src="../static/js/open_modal.js"></script>
 </body>
 </html>
