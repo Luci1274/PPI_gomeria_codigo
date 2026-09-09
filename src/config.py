@@ -35,14 +35,25 @@ class Config:
     # 2. Métodos de conexión
     @staticmethod
     def conectar_db():
-        return pymysql.connect(
-            host=os.environ.get("DB_HOST"),
-            user=os.environ.get("DB_USER"),
-            password=os.environ.get("DB_PASSWORD"),
-            database=os.environ.get("DB_NAME"),
-            port=int(os.environ.get("DB_PORT", 3306)),
-            cursorclass=pymysql.cursors.DictCursor
-        )
+        try:
+            return pymysql.connect(
+                host=os.environ.get("DB_HOST"),
+                user=os.environ.get("DB_USER"),
+                password=os.environ.get("DB_PASSWORD"),
+                database=os.environ.get("DB_NAME"),
+                port=int(os.environ.get("DB_PORT", 3306)),
+                connect_timeout=3,
+                cursorclass=pymysql.cursors.DictCursor
+            )
+        except:
+            return pymysql.connect(
+                host="localhost",
+                user="luci",
+                password="1274",
+                database="gomeria",
+                port=3306,
+                cursorclass=pymysql.cursors.DictCursor
+            )
 
     @staticmethod
     def conectar_cloudinary():
