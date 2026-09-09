@@ -106,7 +106,7 @@ class Venta:
                 sql_stock = """
                     UPDATE producto_servicio 
                     SET cantidad_actual = cantidad_actual - %s 
-                    WHERE idproducto_servicio = %s AND tipo = 'producto';
+                    WHERE idproducto_servicio = %s AND tipo != 'servicio';
                 """
                 valores_stock = [
                     (item["cantidad"], item["idproducto_servicio"])
