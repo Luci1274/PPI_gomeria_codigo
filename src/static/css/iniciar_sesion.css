@@ -31,8 +31,8 @@ body {
 /* CONTENEDOR GENERAL */
 .contenedor_iniciar_sesion {
     width: 100%;       
-    max-width: 1200px;    
-    min-height: 700px;   
+    max-width: 100px;    
+    min-height: 600px;   
     display: flex;
     border-radius: 20px;
     overflow: hidden;
