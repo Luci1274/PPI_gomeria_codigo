@@ -32,7 +32,7 @@ body {
 .contenedor_iniciar_sesion {
     width: 100%;       
     max-width: 1000px;    
-    min-height: 700px;   
+    min-height: 600px;   
     display: flex;
     border-radius: 20px;
     overflow: hidden;
@@ -58,12 +58,39 @@ body {
 }
 
 /* Título */
+#caja_titulo {
+    margin-bottom: 50px;
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
 #caja_titulo h1 {
     text-align: center;
     font-size: 40px;
     color: var(--color_texto);
-    margin-bottom: 80px;
     font-weight: 700;
+    margin: 0;
+}
+
+.marco-contenedor {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-app {
+    width: 60px;
+    margin: auto;
+}
+
+#caja_titulo p {
+    text-align: center;
+    font-size: 30px;
+    font-weight: bold;
+    margin: 0;
 }
 
 /* Opciones de pestañas */

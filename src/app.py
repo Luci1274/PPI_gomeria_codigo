@@ -9,7 +9,6 @@ from modulos.comandos_db.comandos_db_pantalla_inicial import mostrar
 
 app = Flask(__name__)
 
-
 app.config.from_object(Config)
 
 # ---------------------------------------------------------------------------------------------
@@ -207,4 +206,3 @@ def eliminar_cliente(id):
 
 if __name__ == "__main__":
     app.run(debug=True)
-    
