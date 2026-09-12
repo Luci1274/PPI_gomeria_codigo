@@ -55,24 +55,22 @@ def api_ventas():
 @ventas_bp.route("/venta/<int:id>/detalle", methods=["GET"])
 def vista_detalle_venta(id):
     """Carga la vista de detalle de una venta específica y sus productos."""
-    estado_conexion = probar_conexion()
-    if not estado_conexion:
+    venta_obtenida, items_venta, estado = Venta.obtener_por_id(id)
+    if not estado:
         return jsonify({
             "exito": False,
             "mensaje": "Error: No se pudo conectar a la base de datos.",
             "redireccion": "/ventas"
         }), 500
 
-    venta = Venta.obtener_por_id(id)
-
-    if not venta:
+    if not venta_obtenida:
         return jsonify({
             "exito": False,
             "mensaje": f"Error: No se encontró la venta con ID {id}.",
             "redireccion": "/ventas"
         }), 404
 
-    return render_template("detalle_venta.html", venta=venta)
+    return render_template("resumen_orden_venta.html", venta=venta_obtenida, items=items_venta)
 
 
 # ------------------------------------------

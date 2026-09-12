@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumen de orden de venta</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/resumen_orden_compra_venta.css') }}">
+</head>
+
+<body>
+    <!-- NAVEGACION -->
+    {% include "componentes/navbar.html" %}
+
+    <!-- CONTENIDO CENTRAL -->
+    <div class="contenido-resumen">
+
+        <!-- TITULO -->
+        <div class="titulo-resumen">
+            <div>
+              <header>
+                <h1>Resumen de Orden de Venta</h1>
+              </header>
+              <p>Detalle completo de la orden realizada</p>
+            </div>
+
+            <div class="numero-orden">
+                <span>N° Orden: {{ venta.idventa }}</span>
+            </div>
+        </div>
+
+        <!-- INFO -->
+        <div class="info-superior">
+            <div class="info-card">
+              <div>
+                <h4>Fecha: {{ venta.fecha }}</h4>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <div>
+                <h4>Cliente: {{ venta.nombre_cliente }}</h4>
+              </div>
+            </div>
+        </div>
+
+        <!-- TABLA -->
+        <div class="tabla-container">
+            <h3>Productos y servicios ofrecidos</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Cantidad</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {% for item in items %}
+                <tr>
+                  <td class="producto-info">
+                    <img src="{{ item.imagen_producto }}" alt="{{ item.producto_nombre }}">
+                    <span>{{ item.producto_nombre }}</span>
+                  </td>
+                  <td>{{ item.cantidad }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+
+              <tfoot>
+                <tr>
+                  <td>TOTAL PRODUCTOS</td>
+                  <td>{{ venta.cantidad_total_productos }}</td>
+                  <td>PRECIO TOTAL</td>
+                  <td>${{ venta.precio_total }}</td>
+                </tr>
+              </tfoot>
+            </table>
+        </div>
+
+        <!-- BOTONES -->
+        <div class="acciones">
+            <button class="btn pdf">
+              Descargar PDF
+            </button>
+
+            <button class="btn imprimir">
+              Imprimir
+            </button>
+
+            <button class="btn email">
+              <a href="mailto:{{ venta.mail }}" target="_blank">Enviar por Email</a>
+            </button>
+
+            <button class="btn whatsapp">
+              <a href="https://wa.me/{{ venta.numero_tel }}" target="_blank">Enviar por WhatsApp</a>
+            </button>
+        </div>
+
+        <!-- PIE DE PAGINA -->
+        <footer>
+            <p>&copy; 2026 Neumáticos Gatica. Todos los derechos reservados.</p>
+        </footer>
+    </div>
+
+    <script type="module" src="{{ url_for('static', filename='js/barral_navegacion.js') }}"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</body>
+</html>

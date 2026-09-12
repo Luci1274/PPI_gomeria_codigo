@@ -86,40 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 4. Ver Resumen (Obtiene datos de /venta/<id>/detalle)
-    async function verResumenVenta(idVenta) {
-        try {
-            const response = await fetch(`/venta/${idVenta}/detalle`);
-            const respuesta = await response.json();
-
-            if (!response.ok || !respuesta.exito) {
-                alert(respuesta.mensaje || "Error al obtener el detalle de la venta");
-                return;
-            }
-
-            const detalle = respuesta.data;
-            
-            // Poblar Modal
-            modalNumVenta.textContent = detalle.idventa;
-            modalFecha.textContent = detalle.fecha;
-            modalCliente.textContent = detalle.cliente;
-            modalTotalMonto.textContent = `$${Number(detalle.precio_total).toLocaleString()}`;
-
-            modalTablaBody.innerHTML = '';
-            detalle.productos.forEach(prod => {
-                modalTablaBody.innerHTML += `
-                    <tr>
-                        <td>${prod.nombre}</td>
-                        <td>${prod.cantidad} unidades</td>
-                        <td>$${Number(prod.precio_unitario).toLocaleString()}</td>
-                    </tr>
-                `;
-            });
-
-            abrirModal();
-        } catch (error) {
-            console.error("Error al obtener detalle:", error);
-            alert("Ocurrió un error al conectar con el servidor.");
-        }
+    function verResumenVenta(idVenta) {
+    // Redirige directamente a la página formateada por Flask
+    window.location.href = `/venta/${idVenta}/detalle`;
     }
 
     // 5. Anular / Eliminar Venta

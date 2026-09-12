@@ -290,11 +290,13 @@ class Venta:
                     SELECT 
                         v.idventa,
                         v.numero_factura,
-                        v.fecha_emision_factura,
+                        DATE(v.fecha_emision_factura) AS fecha,
                         v.descuento,
                         v.cantidad_total_productos,
                         v.precio_total,
-                        CONCAT(IFNULL(c.nombre, 'Consumidor'), ' ', IFNULL(c.apellido, 'Final')) AS nombre_cliente
+                        CONCAT (c.nombre, ' ', c.apellido) AS nombre_cliente,
+                        c.numero_tel,
+                        c.mail
                     FROM venta AS v
                     LEFT JOIN cliente AS c ON v.idcliente = c.idcliente
                     WHERE v.idventa = %s;
@@ -303,14 +305,12 @@ class Venta:
                 venta = cursor.fetchone()
 
                 if not venta:
-                    return None
+                    return [], [], False
 
                 sql_items = """
                     SELECT 
                         iv.id_item_venta,
                         iv.cantidad,
-                        iv.precio_unitario,
-                        (iv.cantidad * iv.precio_unitario) AS subtotal,
                         ps.nombre AS producto_nombre,
                         ps.imagen_producto
                     FROM item_venta AS iv
@@ -318,13 +318,13 @@ class Venta:
                     WHERE iv.idventa = %s;
                 """
                 cursor.execute(sql_items, (id_venta,))
-                venta["items"] = cursor.fetchall()
+                items = cursor.fetchall()
 
-                return venta
+                return venta, items, True
 
         except Exception as e:
             print(f"Error al obtener el detalle de la venta #{id_venta}: {e}")
-            return None
+            return [], [], False
         finally:
             conexion.close()
         
