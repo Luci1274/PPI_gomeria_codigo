@@ -85,10 +85,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 4. Ver Resumen (Obtiene datos de /venta/<id>/detalle)
-    function verResumenVenta(idVenta) {
-    // Redirige directamente a la página formateada por Flask
-    window.location.href = `/venta/${idVenta}/detalle`;
+    // 4. Ver Resumen (Obtiene datos de /ventas/<id>/detalle)
+    async function verResumenVenta(idVenta) {
+        try {
+            const response = await fetch(`/venta/${idVenta}/detalle`);
+            const data = await response.json();
+
+            if (!response.ok || !data.exito) {
+                alert(data.mensaje || "Ocurrió un error al obtener el detalle de la venta.");
+                return;
+            }
+
+            const venta = data.venta;
+            const items = data.items || [];
+
+            // Llenar datos de la cabecera del modal
+            modalNumVenta.textContent = venta.idventa;
+            modalFecha.textContent = venta.fecha || '-';
+            modalCliente.textContent = venta.nombre_cliente?.trim() || 'Cliente General';
+            modalTotalMonto.textContent = `$${Number(venta.precio_total || 0).toLocaleString()}`;
+
+            // Llenar la tabla de productos
+            modalTablaBody.innerHTML = '';
+
+            if (items.length === 0) {
+                modalTablaBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No hay ítems registrados</td></tr>`;
+            } else {
+                items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    
+                    // Si tu consulta devuelve precio_unitario, lo formateas aquí
+                    const precioUnitario = item.precio_unitario 
+                        ? `$${Number(item.precio_unitario).toLocaleString()}` 
+                        : '-';
+
+                    tr.innerHTML = `
+                        <td> <img src="${item.imagen_producto}" alt="${item.producto_nombre}" style="width: 60px; height: 60px;"> - ${item.producto_nombre}</td>
+                        <td>${item.cantidad}</td>
+                        <td>${precioUnitario}</td>
+                    `;
+                    modalTablaBody.appendChild(tr);
+                });
+            }
+
+            // Mostrar el modal
+            abrirModal();
+
+        } catch (error) {
+            console.error("Error al cargar detalle de venta:", error);
+            alert("No se pudo cargar la información de la venta.");
+        }
     }
 
     // 5. Anular / Eliminar Venta

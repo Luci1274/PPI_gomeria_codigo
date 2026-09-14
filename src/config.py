@@ -3,14 +3,28 @@ import pymysql
 import cloudinary
 from pathlib import Path
 from dotenv import load_dotenv
+from dbutils.pooled_db import PooledDB
 
 Base_dir = Path(__file__).resolve().parent
 load_dotenv(dotenv_path=Base_dir / ".env")
 
+# Pool de conexiones activo desde el arranque de la app
+db_pool = PooledDB(
+    creator=pymysql,
+    mincached=2,        # Mantiene al menos 2 conexiones vivas y autenticadas con Aiven
+    maxconnections=10,  # Límite máximo de conexiones según el tráfico
+    blocking=True,      # Espera si todas las conexiones están ocupadas
+    host=os.environ.get("DB_HOST"),
+    user=os.environ.get("DB_USER"),
+    password=os.environ.get("DB_PASSWORD"),
+    database=os.environ.get("DB_NAME"),
+    port=int(os.environ.get("DB_PORT", 3306)),
+    cursorclass=pymysql.cursors.DictCursor
+)
+
 class Config:
     SECRET_KEY = os.getenv("CLAVE_SECRETA", "clave_por_defecto_dev")
 
-    # Si os.getenv devuelve None o "", usamos una lista de respaldo predeterminada
     _rutas_env = os.getenv("RUTAS_PUBLICAS")
     if _rutas_env:
         RUTAS_PUBLICAS = [r.strip() for r in _rutas_env.split(",") if r.strip()]
@@ -35,14 +49,8 @@ class Config:
     # 2. Métodos de conexión
     @staticmethod
     def conectar_db():
-        return pymysql.connect(
-            host=os.environ.get("DB_HOST"),
-            user=os.environ.get("DB_USER"),
-            password=os.environ.get("DB_PASSWORD"),
-            database=os.environ.get("DB_NAME"),
-            port=int(os.environ.get("DB_PORT", 3306)),
-            cursorclass=pymysql.cursors.DictCursor
-        )
+        # Entrega una conexión lista del pool
+        return db_pool.connection()
 
     @staticmethod
     def conectar_cloudinary():

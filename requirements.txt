@@ -3,3 +3,5 @@ PyMySQL
 python-dotenv
 gunicorn
 cloudinary
+DBUtils
+PooledDB

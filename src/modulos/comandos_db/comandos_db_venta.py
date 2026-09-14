@@ -311,6 +311,7 @@ class Venta:
                     SELECT 
                         iv.id_item_venta,
                         iv.cantidad,
+                        iv.precio_unitario,
                         ps.nombre AS producto_nombre,
                         ps.imagen_producto
                     FROM item_venta AS iv

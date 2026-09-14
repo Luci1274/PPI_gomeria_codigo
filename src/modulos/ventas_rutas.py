@@ -70,7 +70,11 @@ def vista_detalle_venta(id):
             "redireccion": "/ventas"
         }), 404
 
-    return render_template("resumen_orden_venta.html", venta=venta_obtenida, items=items_venta)
+    return jsonify({
+        "exito": True,
+        "venta": venta_obtenida,
+        "items": items_venta
+    }), 200
 
 
 # ------------------------------------------
