@@ -46,6 +46,7 @@ def inicio():
     nombre_usuario = session.get('nombre_usuario', 'Usuario')
     return render_template("pantalla_principal.html", nombre_usuario=nombre_usuario)
 
+
 # Ruta API que usará JavaScript para consultar la DB periódicamente
 @app.route("/api/datos-dashboard")
 def api_datos_dashboard():
@@ -76,6 +77,9 @@ def resumen_orden_compra():
 def gestion():
     return render_template("plantiilla_base_gestion.html")
 
+@app.route("/proveedor")
+def clientes():
+    return render_template("proveedor.html")
 ########################################################################
 # Me gusta la decoración jajaja por ahora voy a colocar acá las rutas  #
 ########################################################################

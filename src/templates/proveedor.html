@@ -5,30 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/src/static/css/proveedor.css">
+    <link rel="stylesheet" href="../static/css/navbar.css">
     <title>Proveedor - Sistema Gomería</title>
 </head>
 
 <body>
       <div class="contenedor">
-        <!--MENÚ LATERAL-->
-        <aside class="menu-lateral">
-            <div class="menu-encabezado">
-                <h2>Sistema Gomería</h2>
-            </div>
-            <nav class="menu-navegacion">
-                <a href="#" class="enlace-nav">Principal</a>
-                <a href="#" class="enlace-nav">Ventas / Compras</a>
-                <a href="#" class="enlace-nav">Inventario</a>
-                <a href="#" class="enlace-nav">Clientes</a>
-                <a href="#" class="enlace-nav activo">Proveedores</a>
-            </nav>
-            <div class="menu-pie">
-                <div class="usuario-info">
-                    <p class="usuario-nombre">Luciano Gonzalez</p>
-                    <p class="usuario-rol">Administrador</p>
-                </div>
-            </div>
-        </aside>
+        {% include "componentes/navbar.html" %}
 
         <!--CONTENIDO PRINCIPAL-->
         <main class="contenido-principal">
@@ -204,5 +187,6 @@
     </div>
     <!--Script de JS-->
     <script src="../static/js/proveedor.js"></script>
+    <script src="../static/js/navbar.js"></script>
 </body>
 </html>
