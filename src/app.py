@@ -77,9 +77,9 @@ def resumen_orden_compra():
 def gestion():
     return render_template("plantiilla_base_gestion.html")
 
-@app.route("/proveedor")
+@app.route("/clientes")
 def clientes():
-    return render_template("proveedor.html")
+    return render_template("clientes.html")
 ########################################################################
 # Me gusta la decoración jajaja por ahora voy a colocar acá las rutas  #
 ########################################################################
