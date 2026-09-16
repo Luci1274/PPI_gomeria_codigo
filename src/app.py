@@ -44,6 +44,7 @@ def inicio():
     nombre_usuario = session.get('nombre_usuario', 'Usuario')
     return render_template("pantalla_principal.html", nombre_usuario=nombre_usuario)
 
+
 # Ruta API que usará JavaScript para consultar la DB periódicamente
 @app.route("/api/datos-dashboard")
 def api_datos_dashboard():

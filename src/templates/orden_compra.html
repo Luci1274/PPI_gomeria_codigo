@@ -4,25 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../static/css/orden_compra.css">
+    <link rel="stylesheet" href="../static/css/navbar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <title>Orden de compra - Sistema Gomería</title>
 </head>
 <body>
     <div class="contenedor">
-        <!--MENÚ LATERAL-->
-        <aside class="menu-lateral">
-            <div class="menu-encabezado">
-                <img src="../static/image/Icono_app.png" alt="icono-app" class="logo-app">
-                <h2>Sistema Gomería</h2>
-            </div>
-            <nav class="menu-navegacion">
-                <a href="#" class="enl-nav">Principal</a>
-                <a href="#" class="enl-nav">Ventas</a>
-                <a href="#" class="enl-nav activo">Compras</a>
-                <a href="#" class="enl-nav">Inventario</a>
-                <a href="#" class="enl-nav">Clientes</a>
-                <a href="#" class="enl-nav">Proveedores</a>
-            </nav>
-        </aside>
+        {% include "componentes/navbar.html" %}
 
     <main class="contenido-principal">
         <section class="seccion-catalogo">
@@ -162,5 +150,6 @@
             </div>
         </div>
     <script src="../static/js/open_modal.js"></script>
+    <script src="../static/js/navbar.js"></script>
 </body>
 </html>
