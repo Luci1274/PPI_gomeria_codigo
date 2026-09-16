@@ -356,12 +356,84 @@ body {
 
 .texto-derecha { text-align: center; }
 .texto-centro { text-align: center; }
+.botones-accion {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-direction: column;
+} 
+
+.botones-accion .btn-editar {
+    background-color: var(--color-primario);
+    border-radius: var(--radio-medio);
+    color: #ffffff;
+    margin: 5px;
+    cursor: pointer;
+    padding: 10px 10px;
+}
+
+.botones-accion .btn-editar:hover {
+    background-color: var(--primario-claro);
+}
+
+.botones-accion .btn-eliminar {
+    background-color: var(--acento-rojo);
+    border-radius: var(--radio-medio);
+    color: #ffffff;
+    margin: 5px;
+    cursor: pointer;
+    padding: 10px 10px;
+}
 
 .estado-stock {
     display: inline-block;
     border-radius: var(--radio-medio);
     font-weight: 700;
     font-size: 14px;
+}
+
+.cartel-emergente {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #0d1b5e;
+    color: #ffffff;
+    padding: 16px 24px;
+    border-radius: var(--radio-medio);
+    box-shadow: var(--sombra-media);
+    z-index: 1001; 
+    display: none; 
+}
+
+.cartel-emergente #cartel-titulo {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.cartel-emergente #cartel-mensaje {
+    font-size: 14px;
+    color: #ffffff;
+}
+
+#btn-confirmar-cartel {
+    background-color: #ffffff;
+    color: #0d1b5e;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--radio-medio);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#btn-cancelar-cartel {
+    background-color: #e2e8f0;
+    color: #475569;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--radio-medio);
+    font-weight: 600;
+    cursor: pointer;
 }
 
 /*Ventana emergente (Nuevo Proveedor)*/

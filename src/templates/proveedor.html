@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/src/static/css/proveedor.css">
+    <link rel="stylesheet" href="../static/css/proveedor.css">
     <link rel="stylesheet" href="../static/css/navbar.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <title>Proveedor - Sistema Gomería</title>
@@ -33,7 +33,7 @@
                 <div class="tarjeta-metrica">
                     <div class="datos-metrica">
                         <h3>Total Proveedores</h3>
-                        <p class="valor-metrica">15</p>
+                        <p class="valor-metrica" id="valor_metrica"></p>
                     </div>
                 </div>
             </section>
@@ -44,22 +44,17 @@
                     <input type="text" id="input-busqueda" placeholder="Buscar por Nombre o CUIT...">
                 </div>
                 <div class="acciones-filtros">
-                    <select class="filtro-seleccion">
-                        <option value="todos">Rubro: Todos</option>
-                        <option value="neumatico">Neumáticos</option>
-                        <option value="insumo-parches">Insumos</option>
-                        <option value="herramientas">Herramientas</option>
+                    <select class="filtro-seleccion" id="filtro-rubro">
+                        <option value="todos" selected>Rubro: Todos</option>
+                        
                     </select>
-                    <select class="filtro-seleccion">
+                    <select class="filtro-seleccion" id="filtro-estado">
                         <option value="todos">Estado: Todos</option>
-                        <option value="activo">Activo</option>
+                        <option value="activo" selected>Activo</option>
                         <option value="inactivo">Inactivo</option>
                     </select>
-                    <select class="filtro-seleccion">
-                        <option value="todos">Ciudad: Todas</option>
-                        <option value="roldan">Roldan</option>
-                        <option value="rosario">Rosario</option>
-                        <option value="san-jeronimo-sud">San Jeronimo Sud</option>
+                    <select class="filtro-seleccion" id="filtro-ciudad">
+                        <option value="todos" selected>Ciudad: Todas</option>
                     </select>
                 </div>
             </section>
@@ -79,64 +74,21 @@
                             <th class="texto-centro">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!--Fila 1-->
-                        <tr>
-                            <td>
-                                <div class="etiqueta etiqueta-azul">
-                                    01
-                                </div>
-                            </td>
-                            <td>
-                                <div class="nombre-razon-social">
-                                    Alvarez y Hijos Neumáticos
-                                </div>
-                            </td>
-                            <td><span class="etiqueta etiqueta-azul">20304050607</span></td>
-                            <td><strong>AV. San martin 123</strong></td>
-                            <td class="texto-derecha">01145678901</td>
-                            <td class="texto-derecha-negrita">ventas@alvarezyhijos.com</td>
-                            <td class="texto-centro">
-                                <span class="estado-proveedor">Activo</span>
-                            </td>
-                            <td class="texto-centro">
-                                <div class="botones-accion">
-                                    <button class="btn-accion" title="Editar">Modificar</button>
-                                    <button class="btn-accion borrar" title="Eliminar">Eliminar</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <!--Fila 2-->
-                        <tr>
-                            <td>
-                                <div class="etiqueta etiqueta-azul">02</div>
-                            </td>
-                            <td>
-                                <div class="nombre-razon-social">Neumáticos Distribuidora del Sur
-                                </div>
-                            </td>
-                            <td><span class="etiqueta etiqueta-morada">30710080001</span></td>
-                            <td><strong>Calle Falsa 456</strong></td>
-                            <td class="texto-derecha">01134567890</td>
-                            <td class="texto-derecha-negrita">contac@distrisur.com</td>
-                            <td class="texto-centro">
-                                <span class="estado-proveedor">Inactivo</span>
-                            </td>
-                            <td class="texto-centro">
-                                <div class="botones-accion">
-                                    <button class="btn-accion" title="Editar">Modificar</button>
-                                    <button class="btn-accion borrar" title="Eliminar">Eliminar</button>
-                                </div>
-                            </td>
-                        </tr>
+                    <tbody id="tabla-proveedor-body">
                     </tbody>
                 </table>
             </section>
         </main>
     </div>
 
-    <!--Ventana emergente para registro de producto-->
-    <div id="modal-proveedor" class="modal-overlay">
+    <!-- Cartel emergente de avisos -->
+    <div class="cartel-emergente" id="cartel-emergente">
+        <h2 id="cartel-titulo"></h2>
+        <p id="cartel-mensaje""></p>
+    </div>
+
+    <!--Ventana emergente para registro de proveedor-->
+    <div id="modal-nuevo-proveedor" class="modal-overlay">
         <div class="modal-contenido">
             <div class="modal-cabecera">
                 <h2>Nuevo Proveedor</h2>
@@ -144,18 +96,17 @@
             </div>
             <form class="modal-cuerpo">
                 <div class="grupo-input">
-                    <label for="input-proveedor">Nombre del proveedor/empresa</label>
-                    <input type="text" id="input-proveedor" placeholder="Ej. Alvarez y Hijos Neumativos">
+                    <label for="inputproveedor">Nombre del proveedor/empresa</label>
+                    <input type="text" id="input-proveedor" placeholder="Ej. Alvarez y Hijos Neumativos" required>
                 </div>
                 <div class="fila-doble">
                     <div class="grupo-input">
                         <label for="input-cuit">CUIT</label>
-                        <input type="text" id="input-cuit" placeholder="20463324324">
+                        <input type="text" id="input-cuit" placeholder="20463324324" required>
                     </div>
                     <div class="grupo-input">
                         <label for="input-telefono">Teléfono</label>
-                        <input type="text" id="input-telefono" placeholder="cod.area:341">
-                        <input type="text" id="input-telefono" placeholder="345223">
+                        <input type="text" id="input-telefono" placeholder="3416896778">
                     </div>
                 </div>
                 <div class="fila-triple">
@@ -166,12 +117,14 @@
                 </div>
                 <div class="fila-cuadruple">
                     <div class="grupo-input">
-                        <label for="select-ciudad">Ciudad</label>
-                        <select name="select-ciudad" id="select-ciudad">
-                            <option value="roldan">Roldan</option>
-                            <option value="rosario">Rosario</option>
-                            <option value="sanjeronimosud">San Jeronimo Sud</option>
-                        </select>
+                        <label for="input-rubro">Rubro</label>
+                        <input type="text" id="input-rubro" placeholder="General" required>
+                    </div>
+                </div>
+                <div class="fila-cuadruple">
+                    <div class="grupo-input">
+                        <label for="input-ciudad">Ciudad</label>
+                        <input type="text" name="input-ciudad" id="input-ciudad" placeholder="Rosario">
                     </div>
                     <div class="grupo-input">
                         <label for="input-direccion">Dirección</label>
@@ -186,8 +139,61 @@
             </form>
         </div>
     </div>
+
+    <!--Ventana emergente para modificar un proveedor-->
+    <div id="modal-editar-proveedor" class="modal-overlay">
+        <div class="modal-contenido">
+            <div class="modal-cabecera" id="cabecera-editar">
+                <h2>Modificar Proveedor</h2>
+                <button class="btn-cerrar" id="btn-cerrar-modal-editar">X</button>
+            </div>
+            <form class="modal-cuerpo" id="form-editar-proveedor">
+                <div class="grupo-input">
+                    <label for="input-editar-proveedor">Nombre del proveedor/empresa</label>
+                    <input type="text" id="input-editar-proveedor" placeholder="Ej. Alvarez y Hijos Neumativos" required>
+                </div>
+                <div class="fila-doble">
+                    <div class="grupo-input">
+                        <label for="input-editar-cuit">CUIT</label>
+                        <input type="text" id="input-editar-cuit" placeholder="20463324324" required>
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-editar-telefono">Teléfono</label>
+                        <input type="text" id="input-editar-telefono" placeholder="3416896778">
+                    </div>
+                </div>
+                <div class="fila-triple">
+                    <div class="grupo-input">
+                        <label for="input-editar-email">Email</label>
+                        <input type="email" id="input-editar-email" placeholder="lucianogonzalez@gmail.com">
+                    </div>
+                </div>
+                <div class="fila-cuadruple">
+                    <div class="grupo-input">
+                        <label for="input-editar-rubro">Rubro</label>
+                        <input type="text" id="input-editar-rubro" placeholder="General" required>
+                    </div>
+                </div>
+                <div class="fila-cuadruple">
+                    <div class="grupo-input">
+                        <label for="input-editar-ciudad">Ciudad</label>
+                        <input type="text" name="input-editar-ciudad" id="input-editar-ciudad" placeholder="Rosario">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-editar-direccion">Dirección</label>
+                        <input type="text" id="input-editar-direccion" placeholder="San martin 2345">
+                    </div>
+                </div>
+
+                <div class="modal-pie">
+                    <button type="button" class="btn-cancelar" id="btn-cancelar-modal-editar">Cancelar</button>
+                    <button type="submit" class="btn-guardar">Guardar Proveedor</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <!--Script de JS-->
-    <script src="../static/js/proveedor.js"></script>
+    <script src="../static/js/proveedores.js"></script>
     <script src="../static/js/navbar.js"></script>
 </body>
 </html>
