@@ -1,5 +1,7 @@
 // Esperar a que el HTML termine de cargar en el navegador
 document.addEventListener('DOMContentLoaded', () => {
+    let timerNotificacion;
+
     const btnLogin = document.getElementById('btn_pestaña_login');
     const btnRegistro = document.getElementById('btn_pestaña_registro');
     const formLogin = document.getElementById('form_login');
@@ -9,6 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnOjo = document.querySelector('.boton-ojo');
     let ojoCerrado = document.querySelector('.eye');
     const passInput = document.getElementById('password_input');
+    // Mensaje de avisos
+    const cajaMensaje = document.getElementById('caja-mensaje');
+    const parrafoMensaje = document.getElementById('parrafo-mensaje');
+    const tituloMensaje = document.getElementById('titulo-mensaje');
 
     // Comportamiento al hacer clic en "Crear usuario"
     btnRegistro.addEventListener('click', (e) => {
@@ -44,6 +50,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    function mostrarNotificacion(titulo, mensaje, tiempo = 1000) {
+        clearTimeout(timerNotificacion);
+
+        tituloMensaje.textContent = titulo;
+        parrafoMensaje.textContent = mensaje;
+        cajaMensaje.style.display = 'block';
+
+        if (tiempo > 0) {
+            timerNotificacion = setTimeout(() => {
+                ocultarNotificacion();
+            }, tiempo);
+        }
+    };
+
+    function ocultarNotificacion() {
+        cajaMensaje.style.display = 'none';
+    }
+
     
 
     // Comportamiento para ver la contraseña
@@ -72,15 +96,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (datos.exito) {
                 window.location.href = datos.redireccion;
+                mostrarNotificacion('inicio exitoso', 'ingresando', 1000)
             } else {
-                cajaMensaje.style.display = "block";
-                cajaMensaje.style.color = "red";
-                parrafoMensaje.innerText = datos.mensaje;
+                mostrarNotificacion('Intente nuevamente', datos.mensaje, 2000);
             }
         } catch (error) {
-            cajaMensaje.style.display = "block";
-                cajaMensaje.style.color = "red";
-                parrafoMensaje.innerText = "Error al conectar con el servidor";
+            mostrarNotificacion('Error', 'Error al conectar con el servidor', 2000);
         }
     });
 
@@ -92,9 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const confirmacion = formRegistro.querySelector('[name="password_registro-confirmacion"]').value;
 
         if (password !== confirmacion) {
-        cajaMensaje.style.display = "block";
-            cajaMensaje.style.color = "red";
-            parrafoMensaje.innerText = "Las constraseñas no coinciden";
+            mostrarNotificacion('Error', 'Las contraseñas no coinciden', 2000);
             return;
         }
 
@@ -118,14 +137,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(datos.mensaje);
                 window.location.href = datos.redireccion;
             } else {
-                cajaMensaje.style.display = "block";
-                cajaMensaje.style.color = "red";
-                parrafoMensaje.innerText = datos.mensaje;
+                mostrarNotificacion('Error', datos.mensaje, 1000);
             }
         } catch (error) {
-            cajaMensaje.style.display = "block";
-            cajaMensaje.style.color = "red";
-            parrafoMensaje.innerText = "Error al conectar con el servidor";
+            mostrarNotificacion('Error', 'Error al conectar con el servidor', 1000);
         }
     });
     

@@ -245,6 +245,31 @@ button:active {
     width: 10px;
 }
 
+#caja-mensaje {
+    margin-top: 10px;
+    font-size: 14px;
+    color: white;
+    background-color: black;
+    padding: 10px;
+    border-radius: 5px;
+    display: none;
+    z-index: 1000;
+}
+
+#caja-mensaje p {
+    margin: 0;
+    text-align: center;
+    font-size: 18px;
+}
+
+#caja-mensaje h2 {
+    margin: 0;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+
 /* ==========================================================================
    MEDIA QUERIES (RESPONSIVE)
    ========================================================================== */
