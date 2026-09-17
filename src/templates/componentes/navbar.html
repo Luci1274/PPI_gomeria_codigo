@@ -16,7 +16,7 @@
     </div>
     <nav class="menu-navegacion">
         {% if session.get("tipo") == "AD" %}
-        <a href="/" class="enl-nav activo">
+        <a href="/" class="enl-nav">
             <i class="fa-solid fa-house"></i> Principal</a>
         <a href="/ventas" class="enl-nav">
             <i class="fa-solid fa-cart-shopping"></i> Ventas</a>
@@ -29,12 +29,15 @@
         <a href="/proveedores" class="enl-nav">
             <i class="fa-solid fa-address-book"></i> Proveedores</a>
         <a href="/cerrar_sesion" class="enl-nav"> 
-            <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesion</a>
+            <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
 
         {% else %}
-        <a href="/" class="enl-nav activo">Principal</a>
-        <a href="/ventas" class="enl-nav">Ventas</a>
-        <a href="/cerrar_sesion" class="enl-nav">Cerrar Sesion</a>
+        <a href="/" class="enl-nav">
+            <i class="fa-solid fa-house"></i> Principal</a>
+        <a href="/ventas" class="enl-nav">
+            <i class="fa-solid fa-cart-shopping"></i> Ventas</a>
+        <a href="/cerrar_sesion" class="enl-nav">
+            <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
 
         {% endif %}
 

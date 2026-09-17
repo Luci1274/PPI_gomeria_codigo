@@ -15,3 +15,18 @@ overlay.addEventListener("click", () => {
     overlay.classList.remove("activo");
     botonMenu.classList.remove("oculto");
 });
+
+// Agregar enlace activo a la pantalla en la que nos encontramos
+document.addEventListener("DOMContentLoaded", () => {
+    const rutaActual = window.location.pathname; 
+    const enlaces = document.querySelectorAll(".menu-navegacion .enl-nav");
+
+enlaces.forEach(enlace => {
+        enlace.classList.remove("activo");
+        const href = enlace.getAttribute("href");
+
+        if(href && href !== "#" && (rutaActual === href || (href !== "/" && rutaActual.startsWith(href)))) {
+        enlace.classList.add("activo");
+        }
+    });
+});
