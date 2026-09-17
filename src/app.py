@@ -74,11 +74,12 @@ def resumen_orden_compra():
     return render_template("resumen_orden_compra.html")
 @app.route("/gestion")
 def gestion():
-    return render_template("plantiilla_base_gestion.html")
+    return render_template("plantilla_base_gestion.html")
 
-@app.route("/clientes")
-def clientes():
-    return render_template("clientes.html")
+#Prueba Micha (Pantalla empleados)
+@app.route("/empleados")
+def empleado():
+    return render_template("empleados.html")
 ########################################################################
 # Me gusta la decoración jajaja por ahora voy a colocar acá las rutas  #
 ########################################################################
