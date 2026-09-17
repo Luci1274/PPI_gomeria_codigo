@@ -25,7 +25,7 @@ class Usuario:
                 cursor.execute(sql, (nombre_ingresado,))
                 usuario = cursor.fetchone()
 
-                if usuario and check_password_hash(usuario.get("contrasena") or usuario.get("contraseña"), contrasena_ingresada):
+                if usuario and check_password_hash(usuario.get("contrasena"), contrasena_ingresada):
                     return [usuario["idempleado"], usuario["tipo"], usuario["nombre_usuario"]]
                 return None
         except pymysql.MySQLError as e:

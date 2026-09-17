@@ -5,6 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const formLogin = document.getElementById('form_login');
     const formRegistro = document.getElementById('form_registro');
     const tituloDinamico = document.getElementById('titulo_dinamico');
+    // Manipulacion de botón ojo
+    const btnOjo = document.querySelector('.boton-ojo');
+    let ojoCerrado = document.querySelector('.eye');
+    const passInput = document.getElementById('password_input');
 
     // Comportamiento al hacer clic en "Crear usuario"
     btnRegistro.addEventListener('click', (e) => {
@@ -26,9 +30,31 @@ document.addEventListener('DOMContentLoaded', () => {
         tituloDinamico.textContent = '¡Bienvenido!';
     });
 
+    // Mostrar y ocultar la contraseña en le Iniciar sesión
+    btnOjo.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        ojoCerrado.classList.toggle('fa-eye');
+        ojoCerrado.classList.toggle('fa-eye-slash');
+
+        if (passInput.type === 'password') {
+            passInput.type = 'text';
+        } else {
+            passInput.type = "password";
+        }
+    });
+
+    
+
+    // Comportamiento para ver la contraseña
+
     // --- Petición de Iniciar Sesión ---
     formLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        if (passInput.type === 'text'){
+            passInput.type = 'password';
+        }
 
         const payload = {
             txt_input_nombre: document.getElementById('txt_input_nombre').value,
