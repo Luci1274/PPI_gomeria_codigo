@@ -3,6 +3,7 @@ from config import Config
 from modulos.ventas_rutas import ventas_bp
 from modulos.empleados_rutas import empleados_bp
 from modulos.proveedores_rutas import proveedores_bp
+from modulos.inventario_rutas import inventario_bp
 from modulos.comandos_db.comandos_db_pantalla_inicial import mostrar
 
 app = Flask(__name__)
@@ -68,6 +69,7 @@ def api_datos_dashboard():
 app.register_blueprint(ventas_bp)
 app.register_blueprint(empleados_bp)
 app.register_blueprint(proveedores_bp)
+app.register_blueprint(inventario_bp)
     
 @app.route("/resumen_orden_compra")
 def resumen_orden_compra():

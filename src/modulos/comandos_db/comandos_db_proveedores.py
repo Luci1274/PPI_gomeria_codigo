@@ -32,7 +32,7 @@ class Proveedor:
     @staticmethod
     def leer_proveedores(pagina=1, por_pagina=10, buscar=None, rubro=None, activo=None, ciudad=None):
         """ 
-        
+        Buscar los proveedores utilizando unos parametros de busqueda, en caso de que los parametros sean None devuelve todos, limitados cada 10
         """
         conexion = Config.conectar_db()
         condiciones = []
@@ -55,19 +55,13 @@ class Proveedor:
         
         if condiciones:
             where_sql += " WHERE " + " AND " .join(condiciones)
-        
-        print(
-           "where_sql:", where_sql,
-           "condiciones:", condiciones,
-           "parametros:", parametros 
-        )
             
         try:
             with conexion.cursor() as cursor:
                 """contar total de filas"""
                 cursor.execute(f"SELECT COUNT(idproveedor) AS total from proveedor{where_sql}", parametros)
                 total_items = cursor.fetchone()["total"]
-                print("items totales: " ,total_items)
+                
                 
                 """consulta final aplicando filtros + limit/offset"""
                 offset = (pagina - 1) * por_pagina

@@ -456,3 +456,47 @@ body {
 .btn-guardar:hover {
     background-color: var(--primario-claro);
 }
+
+.cartel-emergente {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #0d1b5e;
+    color: #ffffff;
+    padding: 16px 24px;
+    border-radius: var(--radio-medio);
+    box-shadow: var(--sombra-media);
+    z-index: 1001; 
+    display: none; 
+}
+
+.cartel-emergente #cartel-titulo {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.cartel-emergente #cartel-mensaje {
+    font-size: 14px;
+    color: #ffffff;
+}
+
+#btn-confirmar-cartel {
+    background-color: #ffffff;
+    color: #0d1b5e;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--radio-medio);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#btn-cancelar-cartel {
+    background-color: #e2e8f0;
+    color: #475569;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--radio-medio);
+    font-weight: 600;
+    cursor: pointer;
+}

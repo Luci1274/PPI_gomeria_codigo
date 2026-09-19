@@ -82,7 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const payload = {
             txt_input_nombre: document.getElementById('txt_input_nombre').value,
-            password_input: document.getElementById('password_input').value
+            password_input: document.getElementById('password_input').value,
+            checkbox_recordar: document.getElementById('checkbox_recordar').value
         };
 
         try {
