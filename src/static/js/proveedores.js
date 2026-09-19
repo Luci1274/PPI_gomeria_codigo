@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- ESTADO DE LA APLICACIÓN ---
     let paginaActual = 1;
+    let totalPaginas = 1; // 👈 AGREGADO: Guardamos el total de páginas
     let debounceTimer;
     let timerNotificacion;
 
@@ -8,6 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const tablaBody = document.getElementById('tabla-proveedor-body');
     const valorMetrica = document.getElementById('valor_metrica');
     
+    // Paginación 👈 AGREGADO
+    const btnAnterior = document.getElementById('btn-pag-anterior');
+    const btnSiguiente = document.getElementById('btn-pag-siguiente');
+    const infoPaginacion = document.getElementById('info-paginacion');
+
     // Filtros
     const inputBusqueda = document.getElementById('input-busqueda');
     const filtroRubro = document.getElementById('filtro-rubro');
@@ -43,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function mostrarNotificacion(titulo, mensaje, tiempo = 3000) {
         clearTimeout(timerNotificacion);
-        limpiarBotonesCartel(); // Limpiar botones por si venía de un popup de confirmación
+        limpiarBotonesCartel();
 
         cartelTitulo.textContent = titulo;
         cartelMensaje.textContent = mensaje;
@@ -61,9 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
         limpiarBotonesCartel();
     }
 
-    /**
-     * Muestra el cartel con botones para Aceptar/Cancelar y retorna una Promesa (true/false)
-     */
     function pedirConfirmacion(titulo, mensaje) {
         return new Promise((resolve) => {
             clearTimeout(timerNotificacion);
@@ -72,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
             cartelTitulo.textContent = titulo;
             cartelMensaje.textContent = mensaje;
 
-            // Crear contenedor de botones dinámicamente
             const contenedorBotones = document.createElement('div');
             contenedorBotones.className = 'cartel-acciones';
             contenedorBotones.style.marginTop = '15px';
@@ -103,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- FUNCIONES PRINCIPALES ---
+    // --- FUNCIONES PRINCIPALES Y PAGINACIÓN ---
 
     async function cargarProveedores() {
         try {
@@ -133,9 +135,26 @@ document.addEventListener('DOMContentLoaded', () => {
             renderizarTabla(data.proveedores);
             poblarSelectsFiltro(data.rubros, data.ciudades);
 
+            // 👈 CALCULAR Y ACTUALIZAR PAGINACIÓN
+            totalPaginas = data.total_paginas || Math.ceil((data.total_items || 0) / (data.limite || 10)) || 1;
+            actualizarPaginacionUI();
+
         } catch (error) {
             console.error('Error al cargar proveedores:', error);
             tablaBody.innerHTML = `<tr><td colspan="8" class="texto-centro">Error de conexión al cargar datos.</td></tr>`;
+        }
+    }
+
+    // 👈 FUNCIÓN PARA ACTUALIZAR ESTADO DE BOTONES Y TEXTO
+    function actualizarPaginacionUI() {
+        if (infoPaginacion) {
+            infoPaginacion.textContent = `Página ${paginaActual} de ${totalPaginas}`;
+        }
+        if (btnAnterior) {
+            btnAnterior.disabled = (paginaActual <= 1);
+        }
+        if (btnSiguiente) {
+            btnSiguiente.disabled = (paginaActual >= totalPaginas);
         }
     }
 
@@ -159,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${prov.idproveedor}</td>
                 <td><strong>${prov.nombre || '-'} - ${prov.rubro || '-'}</strong></td>
                 <td>${prov.cuit || '-'}</td>
-                <td class="texto-derecha"> ${prov.ciudad} - ${prov.direccion || '-'}</td>
+                <td class="texto-derecha"> ${prov.ciudad || '-'} - ${prov.direccion || '-'}</td>
                 <td class="texto-derecha"> <a href="https://wa.me/${prov.telefono || '-'}" target="_blank">${prov.telefono || '-'}</a></td>
                 <td class="texto-centro"> <a href="mailto:${prov.mail || '-'}" target="_blank">${prov.mail || '-'}</a></td>
                 <td class="texto-centro">${estadoHTML}</td>
@@ -192,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Delegación de eventos en la tabla (Sincronizado con async/await para la confirmación)
+    // Delegación de eventos en la tabla
     tablaBody.addEventListener('click', async (e) => {
         const btnEliminar = e.target.closest('.btn-eliminar');
         const btnEditar = e.target.closest('.btn-editar');
@@ -241,6 +260,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
+    }
+
+    // --- EVENTOS DE PAGINACIÓN 👈 AGREGADO ---
+
+    if (btnAnterior) {
+        btnAnterior.addEventListener('click', () => {
+            if (paginaActual > 1) {
+                paginaActual--;
+                cargarProveedores();
+            }
+        });
+    }
+
+    if (btnSiguiente) {
+        btnSiguiente.addEventListener('click', () => {
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                cargarProveedores();
+            }
+        });
     }
 
     // --- EVENTOS DE FILTROS Y BÚSQUEDA ---
@@ -292,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const respuesta = await fetch('/api/proveedores', {
+            const respuesta = await fetch('/api/proveedores/crear', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(nuevoProveedor)
@@ -312,9 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
             mostrarNotificacion('Error de red', 'Ocurrió un error en la red al intentar guardar el proveedor.');
         }
     });
-
-    // Carga inicial
-    cargarProveedores();
 
     // --- MANEJO DEL MODAL EDITAR PROVEEDOR ---
 
@@ -410,4 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
             mostrarNotificacion('Error de red', 'Ocurrió un error de red al actualizar el proveedor.');
         }
     });
+
+    // Carga inicial
+    cargarProveedores();
 });

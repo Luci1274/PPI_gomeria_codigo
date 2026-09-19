@@ -24,6 +24,7 @@ def api_iniciar_sesion():
     datos = request.get_json(silent=True) or request.form
     nombre_usuario = datos.get("txt_input_nombre")
     contrasena = datos.get("password_input")
+    recordar = datos.get("checkbox_recordar")
 
     datos_devueltos = Usuario.verificar_credenciales(nombre_usuario, contrasena)
 
@@ -31,6 +32,10 @@ def api_iniciar_sesion():
         session["id_usuario"] = datos_devueltos[0]
         session["nombre_usuario"] = datos_devueltos[2]
         session["tipo"] = datos_devueltos[1]
+        if recordar:
+            session.permanent = True
+        else:
+            session.permanent = False
         return jsonify({
             "exito": True,
             "mensaje": "Inicio de sesión exitoso",
