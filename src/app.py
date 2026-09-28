@@ -76,7 +76,7 @@ def resumen_orden_compra():
     return render_template("resumen_orden_compra.html")
 @app.route("/gestion")
 def gestion():
-    return render_template("plantiilla_base_gestion.html")
+    return render_template("plantilla_base_gestion.html")
 
 @app.route("/clientes")
 def clientes():

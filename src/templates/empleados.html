@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/clientes.css">
+    <link rel="stylesheet" href="../static/css/navbar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Empleados - Sistema Gomería</title>
+</head>
+<body>
+    <div class="contenedor">
+        {% include "componentes/navbar.html" %}
+
+        <main class="contenido-principal">
+            <header class="barra-superior">
+                <div class="titulo-pagina">
+                    <h1>Gestion de Empleados</h1>
+                    <p>Administra y consulta los empleados</p>
+                </div>
+                <div class="barra-superior-accion">
+                    <button class="btn btn-primario" id="btn-open-modal">Nuevo Empleado</button>
+                </div>
+            </header>
+
+            <section class="cuadricula-metricas">
+                <div class="tarjeta-metrica">
+                    <div class="datos-metrica">
+                        <h3>Total Empleados</h3>
+                        <p class="valor-metrica">4</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="barra-filtros">
+                <div class="contenedor-busqueda">
+                    <input type="text" id="input-busqueda" placeholder="Buscar por Nombre...">
+                </div>
+            </section>
+
+            <section class="contenedor-tabla">
+                <tabla class="tabla-datos">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Michael Zarza</td>
+                            <td>michaelzarza12@gmail.com</td>
+                            <td>3413456754</td>
+                            <td>
+                                <div class="btn-acciones">
+                                    <button class="btn-accion editar">Modificar</button>
+                                    <button class="btn-accion eliminar">Eliminar</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </tabla>
+            </section>
+        </main>
+    </div>
+
+<!--Ventana emergente (Registro de empleado)-->
+<div id="modal-overlay" class="modal-overaly">
+    <div class="modal-contenido">
+        <div class="modal-cabecera">
+            <h2>Nuevo Empleado</h2>
+            <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
+        </div>
+    </div>
+    <form action="" class="modal cuerpo">
+        <div class="grupo-input">
+            <label for="input-cliente">Nombre del empleado</label>
+            <input type="text" id="input-cliente" placeholder="Ej: Michael Zarza">
+        </div>
+        <div class="grupo-input">
+            <label for="input-email">Email</label>
+            <input type="text" id="input-email" placeholder="Ej: michaelzarza12@gmail.com">
+        </div>
+        <div class="grupo-input">
+            <label for="input-telefono">Teléfono</label>
+            <input type="text" id="input-telefono" placeholder="Ej: 3415463421">
+        </div>
+        <div class="btn-acciones-modal">
+            <button class="btn-cancelar" id="btn-cancelar-modal">Cancelar</button>
+            <button class="btn-guardar" id="btn-guardar-empleado">Guardar</button>
+        </div>
+    </form>
+</div>
+<!--Script JS-->
+<script src="../static/js/open_modal.js"></script>
+<script src="../static/js/navbar.js"></script>
+</body>
+</html>
