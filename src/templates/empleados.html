@@ -15,11 +15,11 @@
         <main class="contenido-principal">
             <header class="barra-superior">
                 <div class="titulo-pagina">
-                    <h1>Gestion de Empleados</h1>
+                    <h1>Gestión de Empleados</h1>
                     <p>Administra y consulta los empleados</p>
                 </div>
                 <div class="barra-superior-accion">
-                    <button class="btn btn-primario" id="btn-open-modal">Nuevo Empleado</button>
+                    <button class="btn btn-primario" id="btn-nuevo-empleado">Nuevo Empleado</button>
                 </div>
             </header>
 
@@ -27,7 +27,7 @@
                 <div class="tarjeta-metrica">
                     <div class="datos-metrica">
                         <h3>Total Empleados</h3>
-                        <p class="valor-metrica">4</p>
+                        <p class="valor-metrica" id="valor_metrica">0</p>
                     </div>
                 </div>
             </section>
@@ -39,62 +39,103 @@
             </section>
 
             <section class="contenedor-tabla">
-                <tabla class="tabla-datos">
+                <table class="tabla-datos">
                     <thead>
                         <tr>
                             <th>Nombre</th>
                             <th>Email</th>
                             <th>Teléfono</th>
+                            <th>Rol</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>Michael Zarza</td>
-                            <td>michaelzarza12@gmail.com</td>
-                            <td>3413456754</td>
-                            <td>
-                                <div class="btn-acciones">
-                                    <button class="btn-accion editar">Modificar</button>
-                                    <button class="btn-accion eliminar">Eliminar</button>
-                                </div>
-                            </td>
-                        </tr>
+                    <tbody id="tabla-empleados-body">
+                        <!-- Se llena dinámicamente con JS -->
                     </tbody>
-                </tabla>
+                </table>
+
+                <!-- Controles de Paginación -->
+                <div class="paginacion-contenedor">
+                    <button id="btn-pag-anterior" class="btn-paginacion" disabled>&laquo; Anterior</button>
+                    <span id="info-paginacion" class="info-paginacion">Página 1 de 1</span>
+                    <button id="btn-pag-siguiente" class="btn-paginacion" disabled>Siguiente &raquo;</button>
+                </div>
             </section>
         </main>
     </div>
 
-<!--Ventana emergente (Registro de empleado)-->
-<div id="modal-overlay" class="modal-overaly">
-    <div class="modal-contenido">
-        <div class="modal-cabecera">
-            <h2>Nuevo Empleado</h2>
-            <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
+    <!-- Cartel emergente de avisos / confirmación -->
+    <div class="cartel-emergente" id="cartel-emergente">
+        <h2 id="cartel-titulo"></h2>
+        <p id="cartel-mensaje"></p>
+    </div>
+
+    <!-- Modal 1: Nuevo Empleado -->
+    <div id="modal-nuevo-empleado" class="modal-overlay">
+        <div class="modal-contenido">
+            <div class="modal-cabecera">
+                <h2>Nuevo Empleado</h2>
+                <button class="btn-cerrar" id="btn-cerrar-modal-nuevo">X</button>
+            </div>
+            <form id="form-nuevo-empleado" class="modal-cuerpo">
+                <div class="grupo-input">
+                    <label for="input-nombre">Nombre del empleado</label>
+                    <input type="text" id="input-nombre" placeholder="Ej: Michael Zarza" required>
+                </div>
+                <div class="grupo-input">
+                    <label for="input-email">Email</label>
+                    <input type="email" id="input-email" placeholder="Ej: michaelzarza12@gmail.com" required>
+                </div>
+                <div class="grupo-input">
+                    <label for="input-telefono">Teléfono</label>
+                    <input type="text" id="input-telefono" placeholder="Ej: 3415463421">
+                </div>
+                <div class="grupo-input">
+                    <label for="input-rol">Rol / Puesto</label>
+                    <input type="text" id="input-rol" placeholder="Ej: Mecánico, Vendedor, Administrador">
+                </div>
+                <div class="btn-acciones-modal">
+                    <button type="button" class="btn-cancelar" id="btn-cancelar-modal-nuevo">Cancelar</button>
+                    <button type="submit" class="btn-guardar" id="btn-guardar-empleado">Guardar</button>
+                </div>
+            </form>
         </div>
     </div>
-    <form action="" class="modal cuerpo">
-        <div class="grupo-input">
-            <label for="input-cliente">Nombre del empleado</label>
-            <input type="text" id="input-cliente" placeholder="Ej: Michael Zarza">
+
+    <!-- Modal 2: Editar Empleado -->
+    <div id="modal-editar-empleado" class="modal-overlay">
+        <div class="modal-contenido">
+            <div class="modal-cabecera">
+                <h2>Editar Empleado</h2>
+                <button class="btn-cerrar" id="btn-cerrar-modal-editar">X</button>
+            </div>
+            <form id="form-editar-empleado" class="modal-cuerpo">
+                <div class="grupo-input">
+                    <label for="input-editar-nombre">Nombre del empleado</label>
+                    <input type="text" id="input-editar-nombre" required>
+                </div>
+                <div class="grupo-input">
+                    <label for="input-editar-email">Email</label>
+                    <input type="email" id="input-editar-email" required>
+                </div>
+                <div class="grupo-input">
+                    <label for="input-editar-telefono">Teléfono</label>
+                    <input type="text" id="input-editar-telefono">
+                </div>
+                <div class="grupo-input">
+                    <label for="input-editar-rol">Rol / Puesto</label>
+                    <input type="text" id="input-editar-rol">
+                </div>
+                <div class="btn-acciones-modal">
+                    <button type="button" class="btn-cancelar" id="btn-cancelar-modal-editar">Cancelar</button>
+                    <button type="submit" class="btn-guardar">Actualizar</button>
+                </div>
+            </form>
         </div>
-        <div class="grupo-input">
-            <label for="input-email">Email</label>
-            <input type="text" id="input-email" placeholder="Ej: michaelzarza12@gmail.com">
-        </div>
-        <div class="grupo-input">
-            <label for="input-telefono">Teléfono</label>
-            <input type="text" id="input-telefono" placeholder="Ej: 3415463421">
-        </div>
-        <div class="btn-acciones-modal">
-            <button class="btn-cancelar" id="btn-cancelar-modal">Cancelar</button>
-            <button class="btn-guardar" id="btn-guardar-empleado">Guardar</button>
-        </div>
-    </form>
-</div>
-<!--Script JS-->
-<script src="../static/js/open_modal.js"></script>
-<script src="../static/js/navbar.js"></script>
+    </div>
+
+    <!-- Scripts JS -->
+    <script src="../static/js/navbar.js"></script>
+    <script src="../static/js/empleados.js"></script>
 </body>
 </html>

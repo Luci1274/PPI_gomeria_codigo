@@ -11,6 +11,7 @@ class Usuario:
         self.__contrasena = contrasena
         self.__tipo = tipo
 
+# LOGIN
     @staticmethod
     def hash_contraseña(contraseña):
         return generate_password_hash(contraseña)
@@ -67,9 +68,7 @@ class Usuario:
         finally:
             conexion.close()
 
-    # Alias por compatibilidad
-    no_repetir = existe_usuario
-
+# Gestion empleados
     @staticmethod
     def leer_usuarios():
         """Devuelve todos los usuarios activos de la base de datos."""
