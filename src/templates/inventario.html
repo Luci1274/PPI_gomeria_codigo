@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,69 +9,51 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <title>Inventario - Sistema Gomería</title>
 </head>
+
 <body>
-      <div class="contenedor">
+    <div class="contenedor">
         {% include "componentes/navbar.html" %}
 
         <!--CONTENIDO PRINCIPAL-->
         <main class="contenido-principal">
+
+            <!--Barra Superior de Navegación Externa-->
             <header class="barra-superior">
                 <div class="titulo-pagina">
                     <h1>Gestión de Inventario</h1>
                     <p>Control de stock y precios de productos</p>
                 </div>
                 <div class="barra-superior-acciones">
-                    <button class="btn btn-primario" id="btn-open-modal">Nuevo Producto</button>
+                    <button class="btn btn-primario" id="btn-nuevo-producto">Nuevo Producto</button>
                 </div>
             </header>
 
-            <!--TARJETAS-->
+            <!--TARJETAS DE METRICAS-->
             <section class="cuadricula-metricas">
                 <div class="tarjeta-metrica">
                     <div class="datos-metrica">
                         <h3>Total Productos</h3>
-                        <p class="valor-metrica">1,240</p>
-                    </div>
-                </div>
-                <div class="tarjeta-metrica">
-                    <div class="datos-metrica">
-                        <h3>Valor del Stock</h3>
-                        <p class="valor-metrica">$2.000.000</p>
-                    </div>
-                </div>
-                <div class="tarjeta-metrica tarjeta-alerta">
-                    <div class="datos-metrica cabecera-alerta">
-                        <h3>Productos en alerta</h3>
-                        <p class="valor-metrica tarjeta-valor">12</p>
-                        <span class="tarjeta-subtitulo">3 sin stock / 9 stock bajo</span>
+                        <p class="valor-metrica" id="valor_metrica">0</p>
                     </div>
                 </div>
             </section>
 
-
             <!--BARRA DE FILTROS Y BUSQUEDA-->
             <section class="barra-filtros">
                 <div class="contenedor-busqueda">
-                    <input type="text" placeholder="Buscar por nombre de producto o marca...">
+                    <input type="text" id="input-busqueda" placeholder="Buscar por nombre de producto">
                 </div>
                 <div class="acciones-filtros">
-                    <select class="filtro-seleccion">
-                        <option value="">Todos: Tipos</option>
-                        <option value="neumaticos">Neumáticos</option>
-                        <option value="insumos">Insumos Taller</option>
-                        <option value="camaras">Cámaras</option>
+                    <select class="filtro-seleccion" id="filtro-tipo">
+                        <option value="todos" selected>Tipo: Todos</option>
                     </select>
-                    <select class="filtro-seleccion">
-                        <option value="">Todas: Marcas</option>
-                        <option value="fate">Fate</option>
-                        <option value="pirelli">Pirelli</option>
-                        <option value="michelin">Michelin</option>
+                    <select class="filtro-seleccion" id="filtro-marca">
+                        <option value="todos" selected>Marca: Todas</option>
                     </select>
-                    <select class="filtro-seleccion">
-                        <option value="todos">Todos: Estados</option>
-                        <option value="bajo">Stock Bajo</option>
-                        <option value="agotado">Sin Stock</option>
-                        <option value="normal">Stock Normal</option>
+                    <select class="filtro-seleccion" id="filtro-estado">
+                        <option value="todos">Estado: Todos</option>
+                        <option value="activo" selected>Activo</option>
+                        <option value="inactivo">Inactivo</option>
                     </select>
                 </div>
             </section>
@@ -80,102 +63,145 @@
                 <table class="tabla-datos">
                     <thead>
                         <tr>
-                            <th>Producto</th>
+                            <th>COD.</th>
+                            <th>Producto / Medidas</th>
                             <th>Tipo</th>
                             <th>Marca</th>
-                            <th>Costo Unitario</th>
-                            <th>Precio Venta (Total)</th>
-                            <th>Stock</th>
-                            <th>Acciones</th>
+                            <th class="texto-derecha">Precio Venta</th>
+                            <th class="texto-centro">Stock Actual</th>
+                            <th class="texto-centro">Estado</th>
+                            <th class="texto-centro">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                Fate Cargo 295/80
-                            </td>
-                            <td>Neumático</td>
-                            <td>Fate</td>
-                            <td>$120,000.00</td>
-                            <td>$162,000.00</td>
-                            <td>45 u.</td>
-                            <td>
-                                <div class="btn-acciones">
-                                    <button class="btn-accion editar" title="Editar">Modificar</button>
-                                    <button class="btn-accion eliminar" title="Eliminar">Eliminar</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Parches para Camión</td>
-                            <td>Insumos Taller</td>
-                            <td>Generico</td>
-                            <td>$850.00</td>
-                            <td>$1,190.00</td>
-                            <td>3 u.</td>
-                            <td>
-                                <div class="btn-acciones">
-                                    <button class="btn-accion editar" title="Editar">Modificar</button>
-                                    <button class="btn-accion eliminar" title="Eliminar">Eliminar</button>
-                                </div>
-                            </td>
-                        </tr>
+                    <tbody id="tabla-inventario-body">
+                        <!-- Carga dinámica vía JS -->
                     </tbody>
                 </table>
+                <!-- CÓDIGO HTML PARA PAGINACIÓN -->
+                <div class="contenedor-paginacion" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px;">
+                    <button id="btn-pag-anterior" class="btn-accion" disabled>&laquo; Anterior</button>
+                    <span id="info-paginacion" style="font-weight: bold; color: #555;">Página 1 de 1</span>
+                    <button id="btn-pag-siguiente" class="btn-accion">Siguiente &raquo;</button>
+                </div>
             </section>
         </main>
     </div>
-    <!--Ventana emergente (Nuevo Producto)-->
-    <div id="modal-overlay" class="modal-overlay">
+
+    <!-- Cartel emergente de avisos y confirmaciones -->
+    <div class="cartel-emergente" id="cartel-emergente">
+        <h2 id="cartel-titulo"></h2>
+        <p id="cartel-mensaje"></p>
+    </div>
+
+    <!--Ventana emergente para REGISTRO de producto-->
+    <div id="modal-nuevo-producto" class="modal-overlay">
         <div class="modal-contenido">
             <div class="modal-cabecera">
                 <h2>Nuevo Producto</h2>
                 <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
             </div>
-            <form class="modal-cuerpo">
+            <form class="modal-cuerpo" id="form-nuevo-producto">
                 <div class="grupo-input">
                     <label for="input-producto">Nombre del producto/insumo</label>
-                    <input type="text" id="input-producto" placeholder="Ej. Neumático Fate Cargo 295/80 R22.5">
+                    <input type="text" id="input-producto" placeholder="Ej. Neumático Fate Cargo 295/80 R22.5" required>
                 </div>
                 <div class="fila-doble">
                     <div class="grupo-input">
-                        <label for="select-type">Tipo</label>
-                        <select name="select-type" id="select-type">
-                            <option value="neumatico">Neumático</option>
-                            <option value="insumo">Insumo Taller</option>
-                            <option value="camara">Cámara</option>
-                        </select>
+                        <label for="input-tipo">Tipo</label>
+                        <input type="text" id="input-tipo" placeholder="Ej. Neumático / Insumo" required>
                     </div>
                     <div class="grupo-input">
                         <label for="input-marca">Marca</label>
-                        <input type="text" id="input-marca" placeholder="Ej. Fate / Generico">
+                        <input type="text" id="input-marca" placeholder="Ej. Fate / Genérico">
                     </div>
                 </div>
-
+                <div class="grupo-input">
+                    <label for="input-medidas">Medidas / Especificaciones</label>
+                    <input type="text" id="input-medidas" placeholder="Ej. 295/80 R22.5">
+                </div>
                 <div class="fila-triple">
                     <div class="grupo-input">
-                        <label for="input-cant-producto">Cantidad</label>
-                        <input type="number" id="input-cant-producto" placeholder="5">
+                        <label for="input-cant-producto">Cantidad Actual</label>
+                        <input type="number" id="input-cant-producto" placeholder="0" min="0" required>
                     </div>
                     <div class="grupo-input">
-                        <label for="input-costo-uni">Costo Unitario ($)</label>
-                        <input type="number" id="input-costo-uni" placeholder="12000">
+                        <label for="input-cant-minima">Cantidad Mínima</label>
+                        <input type="number" id="input-cant-minima" placeholder="0" min="0">
                     </div>
                     <div class="grupo-input">
                         <label for="input-precio-venta">Precio Venta ($)</label>
-                        <input type="number" id="input-precio-venta" placeholder="162000">
+                        <input type="number" step="0.01" id="input-precio-venta" placeholder="0.00" required>
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-imagen">Imagen del producto</label>
+                        <input type="file" name="imagen_producto" id="input-imagen" accept="image/*">
                     </div>
                 </div>
 
-                <div class="btn-acciones-modal">
+                <div class="modal-pie">
                     <button type="button" class="btn-cancelar" id="btn-cancelar-modal">Cancelar</button>
                     <button type="submit" class="btn-guardar">Guardar Producto</button>
                 </div>
             </form>
         </div>
     </div>
+
+    <!--Ventana emergente para MODIFICAR un producto-->
+    <div id="modal-editar-producto" class="modal-overlay">
+        <div class="modal-contenido">
+            <div class="modal-cabecera" id="cabecera-editar">
+                <h2>Modificar Producto</h2>
+                <button class="btn-cerrar" id="btn-cerrar-modal-editar">X</button>
+            </div>
+            <form class="modal-cuerpo" id="form-editar-producto">
+                <div class="grupo-input">
+                    <label for="input-editar-producto">Nombre del producto/insumo</label>
+                    <input type="text" id="input-editar-producto" placeholder="Ej. Neumático Fate Cargo 295/80 R22.5" required>
+                </div>
+                <div class="fila-doble">
+                    <div class="grupo-input">
+                        <label for="input-editar-tipo">Tipo</label>
+                        <input type="text" id="input-editar-tipo" placeholder="Ej. Neumático / Insumo" required>
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-editar-marca">Marca</label>
+                        <input type="text" id="input-editar-marca" placeholder="Ej. Fate / Genérico">
+                    </div>
+                </div>
+                <div class="grupo-input">
+                    <label for="input-editar-medidas">Medidas / Especificaciones</label>
+                    <input type="text" id="input-editar-medidas" placeholder="Ej. 295/80 R22.5">
+                </div>
+                <div class="fila-triple">
+                    <div class="grupo-input">
+                        <label for="input-editar-cant-producto">Cantidad Actual</label>
+                        <input type="number" id="input-editar-cant-producto" placeholder="0" min="0" required>
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-editar-cant-minima">Cantidad Mínima</label>
+                        <input type="number" id="input-editar-cant-minima" placeholder="0" min="0">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-editar-precio-venta">Precio Venta ($)</label>
+                        <input type="number" step="0.01" id="input-editar-precio-venta" placeholder="0.00" required>
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-editar-imagen">Imagen del producto</label>
+                        <input type="file" id="input-editar-imagen" accept="image/*">
+                    </div>
+                </div>
+
+                <div class="modal-pie">
+                    <button type="button" class="btn-cancelar" id="btn-cancelar-modal-editar">Cancelar</button>
+                    <button type="submit" class="btn-guardar">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!--Script de JS-->
-    <script src="../static/js/open_modal.js"></script>
+    <script src="../static/js/inventario.js"></script>
     <script src="../static/js/navbar.js"></script>
 </body>
+
 </html>

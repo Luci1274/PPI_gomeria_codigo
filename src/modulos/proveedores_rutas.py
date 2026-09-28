@@ -42,7 +42,7 @@ def api_proveedores():
         "total_items": total_items
     }), 200
     
-@proveedores_bp.route("/api/proveedores", methods=["POST"])
+@proveedores_bp.route("/api/proveedores/crear", methods=["POST"])
 def api_crear_proveedor():
     datos = request.get_json()
     
