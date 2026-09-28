@@ -149,46 +149,46 @@ def api_obtener_empleados():
     )
 
 
-# ------------------------------------------
-# API: Registrar Nuevo Empleado             #
-# ------------------------------------------
-@empleados_bp.route("/api/empleados/crear", methods=["POST"])
-def api_crear_empleado():
-    if not probar_conexion():
-        return (
-            jsonify({"exito": False, "mensaje": "Base de datos fuera de línea"}),
-            500,
-        )
+# # ------------------------------------------
+# # API: Registrar Nuevo Empleado En gestion             #
+# # ------------------------------------------
+# @empleados_bp.route("/api/empleados/crear", methods=["POST"])
+# def api_crear_empleado():
+#     if not probar_conexion():
+#         return (
+#             jsonify({"exito": False, "mensaje": "Base de datos fuera de línea"}),
+#             500,
+#         )
 
-    datos = request.get_json(silent=True) or request.form
-    nombre = datos.get("nombre")
-    email = datos.get("email")
-    telefono = datos.get("telefono")
-    rol = datos.get("rol", "Empleado")
+#     datos = request.get_json(silent=True) or request.form
+#     nombre = datos.get("nombre")
+#     email = datos.get("email")
+#     telefono = datos.get("telefono")
+#     rol = datos.get("rol", "Empleado")
 
-    if not nombre or not email:
-        return (
-            jsonify(
-                {
-                    "exito": False,
-                    "mensaje": "El nombre y el email son campos obligatorios.",
-                }
-            ),
-            400,
-        )
+#     if not nombre or not email:
+#         return (
+#             jsonify(
+#                 {
+#                     "exito": False,
+#                     "mensaje": "El nombre y el email son campos obligatorios.",
+#                 }
+#             ),
+#             400,
+#         )
 
-    if Usuario.crear_empleado(nombre, email, telefono, rol):
-        return (
-            jsonify(
-                {"exito": True, "mensaje": "Empleado registrado correctamente."}
-            ),
-            201,
-        )
+#     if Usuario.crear_empleado(nombre, email, telefono, rol):
+#         return (
+#             jsonify(
+#                 {"exito": True, "mensaje": "Empleado registrado correctamente."}
+#             ),
+#             201,
+#         )
 
-    return (
-        jsonify({"exito": False, "mensaje": "No se pudo crear el empleado."}),
-        500,
-    )
+#     return (
+#         jsonify({"exito": False, "mensaje": "No se pudo crear el empleado."}),
+#         500,
+#     )
 
 
 # ------------------------------------------

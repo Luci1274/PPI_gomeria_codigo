@@ -16,11 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoPaginacion = document.getElementById('info-paginacion');
 
     // Modal Nuevo
-    const modalNuevoEmpleado = document.getElementById('modal-nuevo-empleado');
-    const btnNuevoEmpleado = document.getElementById('btn-nuevo-empleado');
-    const btnCerrarModalNuevo = document.getElementById('btn-cerrar-modal-nuevo');
-    const btnCancelarModalNuevo = document.getElementById('btn-cancelar-modal-nuevo');
-    const formNuevoEmpleado = document.getElementById('form-nuevo-empleado');
+    // const modalNuevoEmpleado = document.getElementById('modal-nuevo-empleado');
+    // const btnNuevoEmpleado = document.getElementById('btn-nuevo-empleado');
+    // const btnCerrarModalNuevo = document.getElementById('btn-cerrar-modal-nuevo');
+    // const btnCancelarModalNuevo = document.getElementById('btn-cancelar-modal-nuevo');
+    // const formNuevoEmpleado = document.getElementById('form-nuevo-empleado');
 
     // Modal Editar
     const modalEditarEmpleado = document.getElementById('modal-editar-empleado');
@@ -203,54 +203,54 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- MANEJO DE MODAL CREAR ---
+    // // --- MANEJO DE MODAL CREAR ---
 
-    function abrirModalNuevo() {
-        modalNuevoEmpleado.classList.add('activo');
-        modalNuevoEmpleado.style.display = 'flex';
-    }
+    // function abrirModalNuevo() {
+    //     modalNuevoEmpleado.classList.add('activo');
+    //     modalNuevoEmpleado.style.display = 'flex';
+    // }
 
-    function cerrarModalNuevo() {
-        modalNuevoEmpleado.classList.remove('activo');
-        modalNuevoEmpleado.style.display = 'none';
-        formNuevoEmpleado.reset();
-    }
+    // function cerrarModalNuevo() {
+    //     modalNuevoEmpleado.classList.remove('activo');
+    //     modalNuevoEmpleado.style.display = 'none';
+    //     formNuevoEmpleado.reset();
+    // }
 
-    if (btnNuevoEmpleado) btnNuevoEmpleado.addEventListener('click', abrirModalNuevo);
-    if (btnCerrarModalNuevo) btnCerrarModalNuevo.addEventListener('click', cerrarModalNuevo);
-    if (btnCancelarModalNuevo) btnCancelarModalNuevo.addEventListener('click', cerrarModalNuevo);
+    // if (btnNuevoEmpleado) btnNuevoEmpleado.addEventListener('click', abrirModalNuevo);
+    // if (btnCerrarModalNuevo) btnCerrarModalNuevo.addEventListener('click', cerrarModalNuevo);
+    // if (btnCancelarModalNuevo) btnCancelarModalNuevo.addEventListener('click', cerrarModalNuevo);
 
-    formNuevoEmpleado.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    // formNuevoEmpleado.addEventListener('submit', async (e) => {
+    //     e.preventDefault();
 
-        const nuevoEmpleado = {
-            nombre: document.getElementById('input-nombre').value.trim(),
-            email: document.getElementById('input-email').value.trim(),
-            telefono: document.getElementById('input-telefono').value.trim(),
-            rol: document.getElementById('input-rol').value.trim()
-        };
+    //     const nuevoEmpleado = {
+    //         nombre: document.getElementById('input-nombre').value.trim(),
+    //         email: document.getElementById('input-email').value.trim(),
+    //         telefono: document.getElementById('input-telefono').value.trim(),
+    //         rol: document.getElementById('input-rol').value.trim()
+    //     };
 
-        try {
-            const respuesta = await fetch('/api/empleados/crear', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(nuevoEmpleado)
-            });
+    //     try {
+    //         const respuesta = await fetch('/api/empleados/crear', {
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify(nuevoEmpleado)
+    //         });
 
-            const data = await respuesta.json();
+    //         const data = await respuesta.json();
 
-            if (respuesta.ok && data.exito) {
-                mostrarNotificacion('Éxito', 'Empleado registrado correctamente.');
-                cerrarModalNuevo();
-                cargarEmpleados();
-            } else {
-                mostrarNotificacion('Error', data.mensaje || 'No se pudo crear el empleado.');
-            }
-        } catch (error) {
-            console.error('Error al crear empleado:', error);
-            mostrarNotificacion('Error de red', 'Error de conexión al guardar empleado.');
-        }
-    });
+    //         if (respuesta.ok && data.exito) {
+    //             mostrarNotificacion('Éxito', 'Empleado registrado correctamente.');
+    //             cerrarModalNuevo();
+    //             cargarEmpleados();
+    //         } else {
+    //             mostrarNotificacion('Error', data.mensaje || 'No se pudo crear el empleado.');
+    //         }
+    //     } catch (error) {
+    //         console.error('Error al crear empleado:', error);
+    //         mostrarNotificacion('Error de red', 'Error de conexión al guardar empleado.');
+    //     }
+    // });
 
     // --- MANEJO DE MODAL EDITAR ---
 

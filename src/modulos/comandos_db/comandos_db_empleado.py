@@ -13,39 +13,62 @@ class Usuario:
 
 # LOGIN
     @staticmethod
-    def crear_empleado(
-        nombre, email, telefono, rol, contrasena="123456"
-    ):
-        """Crea un nuevo empleado en la base de datos."""
-        nombre = nombre.strip().title() if nombre else ""
-        email = email.strip().lower() if email else ""
-        telefono = telefono.strip() if telefono else ""
-        rol = rol.strip().title() if rol else "Empleado"
-        hash_contrasena = generate_password_hash(contrasena)
+    def hash_contraseña(contraseña):
+        return generate_password_hash(contraseña)
 
-        sql = """
-            INSERT INTO empleado (nombre_usuario, mail, telefono, contrasena, tipo, activo) 
-            VALUES (%s, %s, %s, %s, %s, 1)
-        """
+    @staticmethod
+    def verificar_credenciales(nombre_ingresado, contrasena_ingresada):
+        """Verifica si las credenciales coinciden con las almacenadas en la base de datos."""
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
-                valores = (nombre, email, telefono, hash_contrasena, rol)
-                cursor.execute(sql, valores)
-                conexion.commit()
+                sql = "SELECT idempleado, nombre_usuario, contrasena, tipo FROM empleado WHERE nombre_usuario = %s AND activo = 1"
+                cursor.execute(sql, (nombre_ingresado,))
+                usuario = cursor.fetchone()
 
-            print("Empleado guardado correctamente")
-            return True
-
+                if usuario and check_password_hash(usuario.get("contrasena"), contrasena_ingresada):
+                    return [usuario["idempleado"], usuario["tipo"], usuario["nombre_usuario"]]
+                return None
         except pymysql.MySQLError as e:
-            conexion.rollback()
-            print(f"Error al crear empleado: {e}")
+            print(f"Error al verificar las credenciales: {e}")
             return False
-
         finally:
             conexion.close()
 
-    # -------------------------------------------------------------------------
+    def crear_usuario(self):
+        """Inserta un nuevo empleado en la base de datos."""
+        conexion = Config.conectar_db()
+        try:
+            hash_contrasena = self.hash_contraseña(self.__contrasena)
+            with conexion.cursor() as cursor:
+                sql = "INSERT INTO empleado (nombre_usuario, mail, telefono, contrasena, tipo) VALUES (%s, %s, %s, %s, %s)"
+                cursor.execute(sql, (self.__nombre, self.__correo, self.__telefono, hash_contrasena, self.__tipo))
+                conexion.commit()
+                self.__id_usuario = cursor.lastrowid
+                return self.__id_usuario
+        except pymysql.MySQLError as e:
+            print(f"Error al crear el usuario: {e}")
+            return None
+        finally:
+            conexion.close()
+
+    @staticmethod
+    def existe_usuario(nombre_usuario):
+        """Comprueba si un usuario ya existe en la base de datos."""
+        conexion = Config.conectar_db()
+        try:
+            with conexion.cursor() as cursor:
+                sql = "SELECT nombre_usuario FROM empleado WHERE nombre_usuario = %s"
+                cursor.execute(sql, (nombre_usuario,))
+                resultado = cursor.fetchone()
+                return True if resultado else False
+        except pymysql.MySQLError as e:
+            print(f"Error al verificar existencia del usuario: {e}")
+            return False
+        finally:
+            conexion.close()
+
+# Gestion empleados
     @staticmethod
     def leer_empleados(
         pagina=1, por_pagina=10, buscar=None, rol=None, activo=1
@@ -230,3 +253,37 @@ class Usuario:
 
         finally:
             conexion.close()
+            
+# Crear usuario/empleado desde gestion
+# @staticmethod
+#     def crear_empleado(
+#         nombre, email, telefono, rol, contrasena="123456"
+#     ):
+#         """Crea un nuevo empleado en la base de datos."""
+#         nombre = nombre.strip().title() if nombre else ""
+#         email = email.strip().lower() if email else ""
+#         telefono = telefono.strip() if telefono else ""
+#         rol = rol.strip().title() if rol else "Empleado"
+#         hash_contrasena = generate_password_hash(contrasena)
+
+#         sql = """
+#             INSERT INTO empleado (nombre_usuario, mail, telefono, contrasena, tipo, activo) 
+#             VALUES (%s, %s, %s, %s, %s, 1)
+#         """
+#         conexion = Config.conectar_db()
+#         try:
+#             with conexion.cursor() as cursor:
+#                 valores = (nombre, email, telefono, hash_contrasena, rol)
+#                 cursor.execute(sql, valores)
+#                 conexion.commit()
+
+#             print("Empleado guardado correctamente")
+#             return True
+
+#         except pymysql.MySQLError as e:
+#             conexion.rollback()
+#             print(f"Error al crear empleado: {e}")
+#             return False
+
+#         finally:
+#             conexion.close()
