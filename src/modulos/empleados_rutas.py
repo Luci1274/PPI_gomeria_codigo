@@ -1,3 +1,4 @@
+import math
 from flask import Blueprint, render_template, request, jsonify, session, redirect
 from modulos.comandos_db.conexion import probar_conexion
 from modulos.comandos_db.comandos_db_empleado import Usuario
@@ -96,104 +97,193 @@ def api_registrarse():
 # ------------------------------------------
 # Gestión / Listado de Empleados           #
 # ------------------------------------------
+
 @empleados_bp.route("/empleados", methods=["GET"])
 def gestion_empleados():
-    if not probar_conexion():
-        return jsonify({
-            "exito": False,
-            "mensaje": "Base de datos fuera de línea"
-        }), 500
-
-    lista_empleados = Usuario.leer_usuarios()
-    return render_template("gestion_empleados.html", empleados=lista_empleados)
+    """Renderiza la vista HTML principal. Los datos de la tabla se cargan vía JavaScript."""
+    return render_template("empleados.html")
 
 
 # ------------------------------------------
-# Edición de Empleados                      #
+# API: Obtener Empleados (Paginación + Buscador)
 # ------------------------------------------
-@empleados_bp.route("/empleados/modificar/<int:id>", methods=["GET"])
-def modificar_usuario(id):
+@empleados_bp.route("/api/empleados", methods=["GET"])
+def api_obtener_empleados():
     if not probar_conexion():
-        return jsonify({
-            "exito": False,
-            "mensaje": "Base de datos fuera de línea",
-            "redireccion": "/empleados"
-        }), 500
-
-    datos_usuario = Usuario.leer_usuario(id)
-    if datos_usuario:
-        return render_template(
-            "editar_usuario.html",
-            id_usuario=datos_usuario.get("idempleado"),
-            nombre=datos_usuario.get("nombre_usuario"),
-            mail=datos_usuario.get("mail"),
-            telefono=datos_usuario.get("telefono"),
-            tipo=datos_usuario.get("tipo")
+        return (
+            jsonify({"exito": False, "mensaje": "Base de datos fuera de línea"}),
+            500,
         )
 
-    return jsonify({
-        "exito": False,
-        "mensaje": "Hubo un error al intentar obtener los datos del empleado",
-        "redireccion": "/empleados"
-    }), 404
+    pagina = request.args.get("pagina", 1, type=int)
+    buscar = request.args.get("buscar", None, type=str)
+    por_pagina = 10
 
-
-@empleados_bp.route("/api/empleados/modificar/<int:id>", methods=["POST"])
-def api_modificar_usuario(id):
-    datos = request.get_json(silent=True) or request.form
-    nombre = datos.get("nombre_usuario")
-    correo = datos.get("mail_usuario")
-    telefono = datos.get("telefono_usuario")
-    contrasena = datos.get("contrasena_usuario", None)
-    tipo = datos.get("tipo", "Empleado")
-
-    usuario_modificado = Usuario(
-        id_usuario=id,
-        nombre=nombre,
-        correo=correo,
-        telefono=telefono,
-        tipo=tipo
+    total_items, empleados, roles, ok = Usuario.leer_empleados(
+        pagina=pagina, por_pagina=por_pagina, buscar=buscar
     )
 
-    if usuario_modificado.actualizar_usuario(nueva_contrasena=contrasena):
-        return jsonify({
-            "exito": True,
-            "mensaje": "Empleado actualizado con éxito",
-            "redireccion": "/empleados"
-        }), 200
+    if not ok:
+        return (
+            jsonify(
+                {"exito": False, "mensaje": "Error al obtener los empleados."}
+            ),
+            500,
+        )
 
-    return jsonify({
-        "exito": False,
-        "mensaje": "Ha ocurrido un error al modificar al empleado",
-        "redireccion": "/empleados"
-    }), 500
+    total_paginas = (
+        math.ceil(total_items / por_pagina) if total_items > 0 else 1
+    )
+
+    return (
+        jsonify(
+            {
+                "exito": True,
+                "total_items": total_items,
+                "total_paginas": total_paginas,
+                "limite": por_pagina,
+                "empleados": empleados,
+            }
+        ),
+        200,
+    )
 
 
 # ------------------------------------------
-# Baja Lógica de Empleado                   #
+# API: Registrar Nuevo Empleado             #
 # ------------------------------------------
-@empleados_bp.route("/api/empleados/eliminar/<int:id>", methods=["POST"])
-def api_eliminar_usuario(id):
-    """Realiza la baja lógica (activo = 0) del empleado."""
+@empleados_bp.route("/api/empleados/crear", methods=["POST"])
+def api_crear_empleado():
     if not probar_conexion():
-        return jsonify({
-            "exito": False,
-            "mensaje": "Base de datos fuera de línea"
-        }), 500
+        return (
+            jsonify({"exito": False, "mensaje": "Base de datos fuera de línea"}),
+            500,
+        )
 
-    if Usuario.eliminar_usuario(id):
-        return jsonify({
-            "exito": True,
-            "mensaje": f"El empleado #{id} fue dado de baja correctamente.",
-            "redireccion": "/empleados"
-        }), 200
+    datos = request.get_json(silent=True) or request.form
+    nombre = datos.get("nombre")
+    email = datos.get("email")
+    telefono = datos.get("telefono")
+    rol = datos.get("rol", "Empleado")
 
-    return jsonify({
-        "exito": False,
-        "mensaje": "No se pudo dar de baja al empleado indicado."
-    }), 400
-    
+    if not nombre or not email:
+        return (
+            jsonify(
+                {
+                    "exito": False,
+                    "mensaje": "El nombre y el email son campos obligatorios.",
+                }
+            ),
+            400,
+        )
+
+    if Usuario.crear_empleado(nombre, email, telefono, rol):
+        return (
+            jsonify(
+                {"exito": True, "mensaje": "Empleado registrado correctamente."}
+            ),
+            201,
+        )
+
+    return (
+        jsonify({"exito": False, "mensaje": "No se pudo crear el empleado."}),
+        500,
+    )
+
+
+# ------------------------------------------
+# API: Obtener datos de un Empleado         #
+# ------------------------------------------
+@empleados_bp.route("/api/empleados/<int:id>/editar", methods=["GET"])
+def api_obtener_empleado(id):
+    if not probar_conexion():
+        return (
+            jsonify({"exito": False, "mensaje": "Base de datos fuera de línea"}),
+            500,
+        )
+
+    empleado, ok = Usuario.leer_empleado(id)
+
+    if ok and empleado:
+        return jsonify({"exito": True, "empleado": empleado}), 200
+
+    return (
+        jsonify({"exito": False, "mensaje": "Empleado no encontrado."}),
+        404,
+    )
+
+
+# ------------------------------------------
+# API: Modificar Empleado                   #
+# ------------------------------------------
+@empleados_bp.route("/api/empleados/<int:id>/editar", methods=["POST"])
+def api_modificar_empleado(id):
+    if not probar_conexion():
+        return (
+            jsonify({"exito": False, "mensaje": "Base de datos fuera de línea"}),
+            500,
+        )
+
+    datos = request.get_json(silent=True) or request.form
+    nombre = datos.get("nombre")
+    email = datos.get("email")
+    telefono = datos.get("telefono")
+    rol = datos.get("rol", "Empleado")
+
+    if Usuario.modificar_empleado(id, nombre, email, telefono, rol):
+        return (
+            jsonify({"exito": True, "mensaje": "Datos actualizados con éxito."}),
+            200,
+        )
+
+    return (
+        jsonify(
+            {
+                "exito": False,
+                "mensaje": "Ha ocurrido un error al modificar el empleado.",
+            }
+        ),
+        500,
+    )
+
+
+# ------------------------------------------
+# API: Baja Lógica de Empleado              #
+# ------------------------------------------
+@empleados_bp.route("/api/empleados/<int:id>/desactivar", methods=["POST"])
+def api_desactivar_empleado(id):
+    if not probar_conexion():
+        return (
+            jsonify({"exito": False, "mensaje": "Base de datos fuera de línea"}),
+            500,
+        )
+
+    if Usuario.eliminar_empleado(id):
+        return (
+            jsonify(
+                {
+                    "exito": True,
+                    "mensaje": f"El empleado fue desactivado correctamente.",
+                }
+            ),
+            200,
+        )
+
+    return (
+        jsonify(
+            {
+                "exito": False,
+                "mensaje": "No se pudo dar de baja al empleado indicado.",
+            }
+        ),
+        400,
+    )
+
+
+# ------------------------------------------
+# Cierre de Sesión                          #
+# ------------------------------------------
 @empleados_bp.route("/cerrar_sesion")
 def cerrar_sesion():
-    session.clear() # Borra todo lo que haya en la sesión (id, nombre, rol)
-    return redirect ("/iniciar_sesion")
+    session.clear()
+    return redirect("/iniciar_sesion")
