@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- ESTADO DE LA APLICACIÓN ---
     let paginaActual = 1;
-    let totalPaginas = 1; // 👈 AGREGADO: Guardamos el total de páginas
+    let totalPaginas = 1;
     let debounceTimer;
     let timerNotificacion;
 

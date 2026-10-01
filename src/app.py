@@ -4,6 +4,7 @@ from modulos.ventas_rutas import ventas_bp
 from modulos.empleados_rutas import empleados_bp
 from modulos.proveedores_rutas import proveedores_bp
 from modulos.inventario_rutas import inventario_bp
+from modulos.clientes_rutas import clientes_bp
 from modulos.comandos_db.comandos_db_pantalla_inicial import mostrar
 
 app = Flask(__name__)
@@ -50,7 +51,7 @@ def inicio():
 @app.route("/api/datos-dashboard")
 def api_datos_dashboard():
     total_productos, total_clientes, ventas_dia, ultimas_ventas, productos_bajos, exito = mostrar()
-
+    
     if not exito:
         return jsonify({
             "exito": False,
@@ -70,7 +71,8 @@ app.register_blueprint(ventas_bp)
 app.register_blueprint(empleados_bp)
 app.register_blueprint(proveedores_bp)
 app.register_blueprint(inventario_bp)
-    
+app.register_blueprint(clientes_bp)
+
 @app.route("/resumen_orden_compra")
 def resumen_orden_compra():
     return render_template("resumen_orden_compra.html")

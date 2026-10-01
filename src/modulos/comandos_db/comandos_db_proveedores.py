@@ -66,20 +66,15 @@ class Proveedor:
                 """consulta final aplicando filtros + limit/offset"""
                 offset = (pagina - 1) * por_pagina
                 sql = f"SELECT idproveedor, nombre, cuit, direccion, mail, ciudad, telefono, rubro, activo FROM proveedor{where_sql} ORDER BY idproveedor ASC LIMIT %s OFFSET %s"
-                print("offset :", offset)
                 """Combinar parametros de busqueda  con los de la paginación"""
                 parametros_paginados = parametros + [por_pagina, offset]
                 cursor.execute(sql, parametros_paginados)
                 proveedores = cursor.fetchall()
                 
-                print(proveedores)
-                
                 cursor.execute("SELECT DISTINCT rubro FROM proveedor WHERE rubro IS NOT NULL AND rubro != ''")
                 rubros = cursor.fetchall()
-                print("rubros :", rubros)
                 cursor.execute("SELECT DISTINCT ciudad FROM proveedor WHERE ciudad IS NOT NULL AND ciudad != ''")
                 ciudades = cursor.fetchall()
-                print("Ciudades: ", ciudades)
                 return total_items, proveedores, rubros, ciudades, True
                 
         except pymysql.MySQLError as e:
