@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (valorMetrica) {
                 valorMetrica.textContent = data.total_items;
             }
-
+            
             renderizarTabla(data.clientes);
             poblarSelectsCiudad(data.ciudades);
 
