@@ -8,7 +8,7 @@ clientes_bp = Blueprint("clientes", __name__)
 #----------------------------------------------------------------------------
 @clientes_bp.route("/clientes")
 def vista_gestion_clientes():
-    return render_template("cliente.html")
+    return render_template("clientes.html")
 
 #----------------------------------------------------------------------------
 # API: OBTENER LISTADO CON PAGINACIÓN Y FILTROS
@@ -61,7 +61,8 @@ def api_crear_cliente():
         cuit=datos.get("cuit"),
         numero_tel=datos.get("numero_tel"),
         mail=datos.get("mail"),
-        ciudad=datos.get("ciudad")
+        ciudad=datos.get("ciudad"),
+        direccion=datos.get("direccion")
     )
 
     if id_nuevo_cliente is not None:
@@ -109,7 +110,8 @@ def api_modificar_cliente(id):
         cuit=datos.get("cuit"),
         numero_tel=datos.get("numero_tel"),
         mail=datos.get("mail"),
-        ciudad=datos.get("ciudad")
+        ciudad=datos.get("ciudad"),
+        direccion=datos.get("direccion")
     )
 
     if exito:

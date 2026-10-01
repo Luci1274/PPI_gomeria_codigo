@@ -5,20 +5,21 @@ class Cliente:
 
 #----------------------------------------------------------------------------
     @staticmethod
-    def crear_cliente(nombre, apellido, cuit, numero_tel, mail, ciudad=None):
+    def crear_cliente(nombre, apellido, cuit, numero_tel, mail, ciudad=None, direccion=None):
         """Crea un nuevo cliente en la base de datos."""
         nombre = nombre.strip().title() if nombre else ""
         apellido = apellido.strip().title() if apellido else ""
-        ciudad = ciudad.strip().title() if ciudad else None
+        ciudad = ciudad.strip().title() if ciudad else ""
+        direccion = direccion.strip().title() if direccion else ""
         
         sql = """
-            INSERT INTO clientes (nombre, apellido, cuit, numero_tel, mail, ciudad, activo) 
-            VALUES (%s, %s, %s, %s, %s, %s, 1)
+            INSERT INTO cliente (nombre, apellido, cuit, numero_tel, mail, ciudad, direccion, activo) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 1)
         """
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
-                valores = (nombre, apellido, cuit, numero_tel, mail, ciudad)
+                valores = (nombre, apellido, cuit, numero_tel, mail, ciudad, direccion)
                 cursor.execute(sql, valores)
                 id_nuevo_cliente = cursor.lastrowid
             conexion.commit()
@@ -38,7 +39,7 @@ class Cliente:
     @staticmethod
     def leer_clientes(pagina=1, por_pagina=10, buscar=None, cuit=None, ciudad=None, activo=1):
         """
-        Lee los clientes de la base de datos aplicando paginación y filtros de búsqueda.
+        Lee los cliente de la base de datos aplicando paginación y filtros de búsqueda.
         Calcula la deuda acumulada sumando los montos de historial_pago_cliente de ventas activas e incompletas.
         """
         conexion = Config.conectar_db()
@@ -46,7 +47,7 @@ class Cliente:
         parametros = []
         where_sql = ""
 
-        # Filtros dinámicos para la tabla clientes
+        # Filtros dinámicos para la tabla cliente
         if buscar:
             condiciones.append("(c.nombre LIKE %s OR c.apellido LIKE %s OR c.cuit LIKE %s)")
             term = f"%{buscar}%"
@@ -67,7 +68,7 @@ class Cliente:
         try:
             with conexion.cursor() as cursor:
                 # 1. Contar total de filas para paginación
-                sql_count = f"SELECT COUNT(c.idcliente) AS total FROM clientes c{where_sql}"
+                sql_count = f"SELECT COUNT(c.idcliente) AS total FROM cliente c{where_sql}"
                 cursor.execute(sql_count, parametros)
                 total_items = cursor.fetchone()["total"]
 
@@ -82,9 +83,10 @@ class Cliente:
                         c.numero_tel, 
                         c.mail, 
                         c.ciudad,
+                        c.direccion,
                         c.activo,
                         IFNULL(SUM(h.monto), 0) AS deuda
-                    FROM clientes c
+                    FROM cliente c
                     LEFT JOIN venta v 
                         ON c.idcliente = v.idcliente AND v.activa = 1 AND v.estado = 0
                     LEFT JOIN historial_pago_cliente h 
@@ -96,17 +98,17 @@ class Cliente:
                 """
                 parametros_paginados = parametros + [por_pagina, offset]
                 cursor.execute(sql, parametros_paginados)
-                clientes = cursor.fetchall()
+                cliente = cursor.fetchall()
 
                 # 3. Obtener listado de ciudades distintas para los filtros
-                cursor.execute("SELECT DISTINCT ciudad FROM clientes WHERE ciudad IS NOT NULL AND ciudad != ''")
+                cursor.execute("SELECT DISTINCT ciudad FROM cliente WHERE ciudad IS NOT NULL AND ciudad != ''")
                 ciudades = cursor.fetchall()
 
-                return total_items, clientes, ciudades, True
+                return total_items, cliente, ciudades, True
 
         except pymysql.MySQLError as e:
             conexion.rollback()
-            print(f"Error al leer clientes: {e}")
+            print(f"Error al leer cliente: {e}")
             return 0, [], [], False
 
         finally:
@@ -128,9 +130,10 @@ class Cliente:
                         c.numero_tel, 
                         c.mail, 
                         c.ciudad,
+                        c.direccion,
                         c.activo,
                         IFNULL(SUM(h.monto), 0) AS deuda
-                    FROM clientes c
+                    FROM cliente c
                     LEFT JOIN venta v 
                         ON c.idcliente = v.idcliente AND v.activa = 1 AND v.estado = 0
                     LEFT JOIN historial_pago_cliente h 
@@ -150,26 +153,28 @@ class Cliente:
 
 #----------------------------------------------------------------------------
     @staticmethod
-    def modificar_cliente(id, nombre, apellido, cuit, numero_tel, mail, ciudad=None):
+    def modificar_cliente(id, nombre, apellido, cuit, numero_tel, mail, ciudad=None, direccion=None):
         """Modifica los datos de un cliente existente en la base de datos."""
         nombre = nombre.strip().title() if nombre else ""
         apellido = apellido.strip().title() if apellido else ""
         ciudad = ciudad.strip().title() if ciudad else None
+        direccion = direccion.strip().title() if direccion else None
 
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
                 sql = """
-                    UPDATE clientes
+                    UPDATE cliente
                     SET nombre = %s,
                         apellido = %s,
                         cuit = %s,
                         numero_tel = %s,
                         mail = %s,
-                        ciudad = %s
+                        ciudad = %s,
+                        direccion = %s
                     WHERE idcliente = %s
                 """
-                cursor.execute(sql, (nombre, apellido, cuit, numero_tel, mail, ciudad, id))
+                cursor.execute(sql, (nombre, apellido, cuit, numero_tel, mail, ciudad, direccion, id))
                 conexion.commit()
                 print("Cliente actualizado correctamente")
                 return True
@@ -187,7 +192,7 @@ class Cliente:
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
-                sql = "UPDATE clientes SET activo = 0 WHERE idcliente = %s"
+                sql = "UPDATE cliente SET activo = 0 WHERE idcliente = %s"
                 cursor.execute(sql, (id,))
                 conexion.commit()
                 print("Cliente eliminado correctamente")

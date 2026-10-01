@@ -192,14 +192,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Formatear nombre completo
             const nombreCompleto = cli.apellido ? `${cli.nombre || ''} ${cli.apellido}`.trim() : (cli.nombre || '-');
-            const contactoInfo = cli.numero_tel || cli.telefono || cli.mail || '-';
 
             tr.innerHTML = `
                 <td><strong>${nombreCompleto}</strong></td>
                 <td>${cli.cuit || cli.dni || '-'}</td>
-                <td>${contactoInfo}</td>
+                <td class="texto-derecha"> <a href="https://wa.me/${cli.numero_tel || '-'}" target="_blank">${cli.numero_tel || '-'}</a> - <a href="mailto:${cli.mail || '-'}" target="_blank">${cli.mail || '-'}</a></td>
                 <td>${cli.ciudad || '-'}</td>
                 <td>${cli.direccion || '-'}</td>
+                <td>${cli.deuda || '-'}</td>
                 <td>${estadoHTML}</td>
                 <td>
                     <div class="btn-acciones">
@@ -353,9 +353,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 apellido: apellido,
                 cuit: document.getElementById('input-cuit')?.value.trim() || '',
                 numero_tel: document.getElementById('input-telefono')?.value.trim() || '',
-                ciudad: document.getElementById('select-ciudad')?.value || '',
+                ciudad: document.getElementById('input-ciudad')?.value || '',
                 direccion: document.getElementById('input-direccion')?.value.trim() || '',
-                mail: ''
+                mail: document.getElementById('input-mail')?.value.trim() || ''
             };
 
             try {
@@ -431,8 +431,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const nombreMostrar = cli.apellido ? `${cli.nombre || ''} ${cli.apellido}`.trim() : (cli.nombre || '');
             setValor('input-editar-cliente', nombreMostrar);
             setValor('input-editar-cuit', cli.cuit || cli.dni);
-            setValor('input-editar-telefono', cli.numero_tel || cli.telefono);
-            setValor('select-editar-ciudad', (cli.ciudad || '').toLowerCase());
+            setValor('input-editar-telefono', cli.numero_tel || '');
+            setValor('input-editar-mail', cli.mail || '')
+            setValor('input-editar-ciudad', (cli.ciudad || '').toLowerCase());
             setValor('input-editar-direccion', cli.direccion);
             setValor('select-editar-estado', (cli.activo === 1 || cli.activo === true) ? 'activo' : 'inactivo');
 
@@ -459,9 +460,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 apellido: apellido,
                 cuit: document.getElementById('input-editar-cuit')?.value.trim() || '',
                 numero_tel: document.getElementById('input-editar-telefono')?.value.trim() || '',
-                ciudad: document.getElementById('select-editar-ciudad')?.value || '',
+                ciudad: document.getElementById('input-editar-ciudad')?.value.trim(),
                 direccion: document.getElementById('input-editar-direccion')?.value.trim() || '',
-                mail: ''
+                mail: document.getElementById('input-editar-mail')?.value.trim() || ''
             };
 
             try {
