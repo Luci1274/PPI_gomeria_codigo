@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <title>Clientes - Sistema Gomería</title>
 </head>
+
 <body>
     <div class="contenedor">
         {% include "componentes/navbar.html" %}
@@ -35,13 +36,17 @@
                 </div>
             </section>
 
-            <!--Barra de Filtros y Busqueda-->
+            <!--Barra de Filtros y Búsqueda-->
             <section class="barra-filtros">
                 <div class="contenedor-busqueda">
                     <input type="text" id="input-busqueda" placeholder="Buscar por Nombre o DNI...">
                 </div>
                 <div class="acciones-filtros">
-                    <select class="filtro-seleccion"></select>
+                    <select class="filtro-seleccion" id="filtro-estado">
+                        <option value="todos">Todos los estados</option>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">No Activo</option>
+                    </select>
                 </div>
             </section>
 
@@ -55,20 +60,22 @@
                             <th>Contacto</th>
                             <th>Ciudad</th>
                             <th>Dirección</th>
+                            <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <!-- A modo de ejemplo -->
+                            <!-- Ejemplo de fila -->
                             <td>Diego Gatica</td>
                             <td>47090234</td>
-                            <td>Telefono - mail</td>
-                            <td>Roldan</td>
+                            <td>3413456578</td>
+                            <td>Roldán</td>
                             <td>San Martín 1245</td>
+                            <td><span class="estado-badge activo">Activo</span></td>
                             <td>
                                 <div class="btn-acciones">
-                                    <button class="btn-accion editar" title="Editar">
+                                    <button class="btn-accion editar btn-open-modal-editar" title="Editar">
                                         Modificar
                                     </button>
                                     <button class="btn-accion eliminar" title="Eliminar">
@@ -83,53 +90,109 @@
         </main>
     </div>
 
-<!--Ventana emergente (Registro de Cliente)-->
-<div id="modal-overlay" class="modal-overlay">
-    <div class="modal-contenido">
-        <div class="modal-cabecera">
-            <h2>Nuevo Cliente</h2>
-            <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
-        </div>
-<!--Formulario de ingreso de datos-->
-        <form action="" class="modal-cuerpo">
-            <div class="grupo-input">
-                <label for="input-cliente">Nombre del Cliente</label>
-                <input type="text" id="input-cliente" placeholder="Ej:Michael zarza">
+    <!--Ventana emergente (Registro de Nuevo Cliente)-->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-contenido">
+            <div class="modal-cabecera">
+                <h2>Nuevo Cliente</h2>
+                <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
             </div>
-            <div class="fila-doble">
+            <!--Formulario de ingreso de datos-->
+            <form action="" class="modal-cuerpo">
                 <div class="grupo-input">
-                    <label for="input-cuit">CUIT/DNI</label>
-                    <input type="text" id="input-cuit" placeholder="Ej:34242532">
+                    <label for="input-cliente">Nombre del Cliente</label>
+                    <input type="text" id="input-cliente" placeholder="Ej: Michael Zarza">
                 </div>
-                <div class="grupo-input">
-                    <label for="input-telefono">Teléfono</label>
-                    <input type="text" id="input-telefono" placeholder="Ej: 3413456578">
+                <div class="fila-doble">
+                    <div class="grupo-input">
+                        <label for="input-cuit">CUIT/DNI</label>
+                        <input type="text" id="input-cuit" placeholder="Ej: 34242532">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-telefono">Teléfono</label>
+                        <input type="text" id="input-telefono" placeholder="Ej: 3413456578">
+                    </div>
                 </div>
-            </div>
-            <div class="fila-doble">
-                <div class="grupo-input">
-                    <label for="select-ciudad">Ciudad</label>
+                <div class="fila-doble">
+                    <div class="grupo-input">
+                        <label for="select-ciudad">Ciudad</label>
                         <select name="select-ciudad" id="select-ciudad">
-                            <option value="roldan">Roldan</option>
+                            <option value="roldan">Roldán</option>
                             <option value="rosario">Rosario</option>
                             <option value="funes">Funes</option>
                         </select>
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-direccion">Dirección</label>
+                        <input type="text" id="input-direccion" placeholder="Ej: San Lorenzo 2134">
+                    </div>
+                </div>
+                <div class="btn-acciones-modal">
+                    <button type="button" class="btn-cancelar" id="btn-cancelar-modal">Cancelar</button>
+                    <button type="submit" class="btn-guardar">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!--Ventana emergente (Edición de Cliente)-->
+    <div id="modal-editar-overlay" class="modal-overlay">
+        <div class="modal-contenido">
+            <div class="modal-cabecera">
+                <h2>Editar Cliente</h2>
+                <button class="btn-cerrar" id="btn-cerrar-modal-editar">X</button>
+            </div>
+            <!--Formulario de edición de datos-->
+            <form action="" class="modal-cuerpo">
+                <!-- Campo oculto opcional para ID del cliente -->
+                <input type="hidden" id="input-editar-id" value="">
+
+                <div class="grupo-input">
+                    <label for="input-editar-cliente">Nombre del Cliente</label>
+                    <input type="text" id="input-editar-cliente">
+                </div>
+                <div class="fila-doble">
+                    <div class="grupo-input">
+                        <label for="input-editar-cuit">CUIT/DNI</label>
+                        <input type="text" id="input-editar-cuit">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-editar-telefono">Teléfono</label>
+                        <input type="text" id="input-editar-telefono">
+                    </div>
+                </div>
+                <div class="fila-doble">
+                    <div class="grupo-input">
+                        <label for="select-editar-ciudad">Ciudad</label>
+                        <select name="select-editar-ciudad" id="select-editar-ciudad">
+                            <option value="roldan">Roldán</option>
+                            <option value="rosario">Rosario</option>
+                            <option value="funes">Funes</option>
+                        </select>
+                    </div>
+                    <div class="grupo-input">
+                        <label for="input-editar-direccion">Dirección</label>
+                        <input type="text" id="input-editar-direccion">
+                    </div>
                 </div>
                 <div class="grupo-input">
-                    <label for="input-direccion">Dirección</label>
-                    <input type="text" id="input-direccion" placeholder="Ej: San Lorenzo 2134">
+                    <label for="select-editar-estado">Estado</label>
+                    <select name="select-editar-estado" id="select-editar-estado">
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">No Activo</option>
+                    </select>
                 </div>
-            </div>
-            <div class="btn-acciones-modal">
-                <button class="btn-cancelar" id="btn-cancelar-modal">Cancelar</button>
-                <button class="btn-guardar">Guardar</button>
-            </div>
-        </form>
-        <!-- formulario de edición de cliente -->
+                <div class="btn-acciones-modal">
+                    <button type="button" class="btn-cancelar" id="btn-cancelar-modal-editar">Cancelar</button>
+                    <button type="submit" class="btn-guardar">Actualizar</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
-<!--Script de JS-->
-<script src="../static/js/open_modal.js"></script>
-<script src="../static/js/navbar.js"></script>
+
+    <!--Scripts de JS-->
+    <script src="../static/js/clientes.js"></script>
+    <script src="../static/js/navbar.js"></script>
 </body>
+
 </html>
