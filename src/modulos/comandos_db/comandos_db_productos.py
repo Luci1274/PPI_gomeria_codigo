@@ -1,19 +1,45 @@
 import pymysql
 from config import Config
 
+
+class ProductoDuplicadoError(ValueError):
+    """Se intenta crear un producto con una identidad ya registrada."""
+
+
 class Producto:
     
     #----------------------------------------------------------------------------
     def crear_producto(nombre=None, tipo=None, marca=None, medidas=None, imagen_producto=None, cantidad_actual=0, cantidad_minima=0, precio=0.0):
-        """Crea un nuevo producto en la DB"""
+        """Crea un producto solo si no existe otro con los mismos datos identificatorios."""
         sql = """INSERT INTO producto_servicio (
                 nombre, tipo, marca, medidas, imagen_producto,
                 activo, cantidad_actual, cantidad_minima, precio
                 ) VALUES (%s, %s, %s, %s,%s, 1, %s, %s, %s)
             """
+        nombre = (nombre or "").strip()
+        tipo = (tipo or "").strip()
+        marca = (marca or "").strip()
+        medidas = (medidas or "").strip()
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT idproducto_servicio
+                    FROM producto_servicio
+                    WHERE LOWER(TRIM(nombre)) = LOWER(%s)
+                      AND LOWER(TRIM(tipo)) = LOWER(%s)
+                      AND LOWER(TRIM(COALESCE(marca, ''))) = LOWER(%s)
+                      AND LOWER(TRIM(COALESCE(medidas, ''))) = LOWER(%s)
+                    LIMIT 1
+                    """,
+                    (nombre, tipo, marca, medidas),
+                )
+                if cursor.fetchone():
+                    raise ProductoDuplicadoError(
+                        "Ya existe un producto con el mismo nombre, tipo, marca y medidas."
+                    )
+
                 valores = (nombre, tipo, marca, medidas, imagen_producto, cantidad_actual, cantidad_minima, precio)
                 cursor.execute(sql, valores)
             conexion.commit()

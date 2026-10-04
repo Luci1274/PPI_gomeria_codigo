@@ -1,27 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Elementos de la interfaz
-    const tablaBody = document.getElementById('tabla-ventas-body');
+    // --- ELEMENTOS DE LA INTERFAZ ---
+    const tablaBody = document.getElementById('tabla-compras-body');
     const inputBusqueda = document.getElementById('input-busqueda');
     const selectFiltroFecha = document.getElementById('select-filtro-fecha');
-    const metricaTotalVentas = document.getElementById('metrica-total-ventas');
+    const selectFiltroEstado = document.getElementById('select-filtro-estado');
+    const metricaTotalCompras = document.getElementById('metrica-total-compras');
     const metricaTotalProductos = document.getElementById('metrica-total-productos');
     const contenedorPaginacion = document.getElementById('contenedor-paginacion');
-
-    // Elementos del Modal
-    const modal = document.getElementById('modal-overlay');
-    const btnCerrarModal = document.getElementById('btn-cerrar-modal');
-    const btnCerrarModalAlt = document.getElementById('btn-cerrar-modal-alt');
-    const modalNumVenta = document.getElementById('modal-num-venta');
-    const modalFecha = document.getElementById('modal-fecha');
-    const modalCliente = document.getElementById('modal-cliente');
-    const modalTablaBody = document.getElementById('modal-tabla-body');
-    const modalTotalMonto = document.getElementById('modal-total-monto');
 
     // --- ELEMENTOS DEL CARTEL EMERGENTE ---
     const cartelEmergente = document.getElementById('cartel-emergente');
     const cartelTitulo = document.getElementById('cartel-titulo');
     const cartelMensaje = document.getElementById('cartel-mensaje');
     let timerNotificacion;
+
+    // --- ELEMENTOS DEL MODAL ---
+    const modal = document.getElementById('modal-overlay');
+    const btnCerrarModal = document.getElementById('btn-cerrar-modal');
+    const btnCerrarModalAlt = document.getElementById('btn-cerrar-modal-alt');
+    const modalNumCompra = document.getElementById('modal-num-compra');
+    const modalFecha = document.getElementById('modal-fecha');
+    const modalProveedor = document.getElementById('modal-proveedor');
+    const modalTablaBody = document.getElementById('modal-tabla-body');
+    const modalTotalMonto = document.getElementById('modal-total-monto');
 
     let debounceTimer;
     let paginaActual = 1;
@@ -59,13 +60,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!cartelEmergente) return;
         cartelEmergente.style.display = 'none';
         limpiarBotonesCartel();
+        cartelEmergente.setAttribute('role', 'status');
+        cartelEmergente.setAttribute('aria-live', 'polite');
     }
 
     function pedirConfirmacion(titulo, mensaje) {
         return new Promise((resolve) => {
             if (!cartelEmergente || !cartelTitulo || !cartelMensaje) {
-                const res = confirm(`${titulo}\n\n${mensaje}`);
-                return resolve(res);
+                return resolve(confirm(`${titulo}\n\n${mensaje}`));
             }
 
             clearTimeout(timerNotificacion);
@@ -73,102 +75,119 @@ document.addEventListener('DOMContentLoaded', () => {
 
             cartelTitulo.textContent = titulo;
             cartelMensaje.textContent = mensaje;
+            cartelEmergente.setAttribute('role', 'alertdialog');
+            cartelEmergente.setAttribute('aria-live', 'assertive');
 
             const contenedorBotones = document.createElement('div');
             contenedorBotones.className = 'cartel-acciones';
-            contenedorBotones.style.marginTop = '15px';
-            contenedorBotones.style.display = 'flex';
-            contenedorBotones.style.justifyContent = 'center';
-            contenedorBotones.style.gap = '10px';
 
-            contenedorBotones.innerHTML = `
-                <button id="btn-confirmar-cartel" class="btn-accion">Confirmar</button>
-                <button id="btn-cancelar-cartel" class="btn-accion borrar">Cancelar</button>
-            `;
+            const btnConfirmar = document.createElement('button');
+            btnConfirmar.type = 'button';
+            btnConfirmar.id = 'btn-confirmar-cartel';
+            btnConfirmar.className = 'btn-accion';
+            btnConfirmar.textContent = 'Confirmar';
 
+            const btnCancelar = document.createElement('button');
+            btnCancelar.type = 'button';
+            btnCancelar.id = 'btn-cancelar-cartel';
+            btnCancelar.className = 'btn-accion borrar';
+            btnCancelar.textContent = 'Cancelar';
+
+            contenedorBotones.append(btnConfirmar, btnCancelar);
             cartelEmergente.appendChild(contenedorBotones);
             cartelEmergente.style.display = 'block';
 
-            document.getElementById('btn-confirmar-cartel').onclick = () => {
+            const finalizar = (confirmado) => {
+                window.removeEventListener('keydown', manejarEscape);
                 ocultarNotificacion();
-                resolve(true);
+                resolve(confirmado);
             };
 
-            document.getElementById('btn-cancelar-cartel').onclick = () => {
-                ocultarNotificacion();
-                resolve(false);
+            const manejarEscape = (event) => {
+                if (event.key === 'Escape') finalizar(false);
             };
+
+            btnConfirmar.addEventListener('click', () => finalizar(true), { once: true });
+            btnCancelar.addEventListener('click', () => finalizar(false), { once: true });
+            window.addEventListener('keydown', manejarEscape);
+            btnConfirmar.focus();
         });
     }
 
-    // 1. Cargar listado dinámico desde la API (con paginación)
-    async function cargarVentas() {
+    // 1. Cargar listado dinámico desde la API
+    async function cargarCompras() {
         const busqueda = inputBusqueda?.value.trim() || '';
         const filtroFecha = selectFiltroFecha?.value || 'todos';
+        const filtroEstado = selectFiltroEstado?.value || '1';
         const solicitud = ++solicitudActual;
 
-        const url = `/api/ventas?busqueda=${encodeURIComponent(busqueda)}&filtro_fecha=${filtroFecha}&pagina=${paginaActual}`;
+        const parametros = new URLSearchParams({
+            busqueda,
+            filtro_fecha: filtroFecha,
+            estado: filtroEstado,
+            pagina: paginaActual
+        });
 
         try {
-            const response = await fetch(url);
+            const response = await fetch(`/api/compras?${parametros}`);
             const data = await response.json();
 
             if (solicitud !== solicitudActual) return;
             if (!response.ok || !data.Exito) {
-                throw new Error(data.mensaje || 'No se pudieron cargar las ventas.');
+                throw new Error(data.mensaje || 'No se pudieron cargar las compras.');
             }
 
             const paginacion = data.paginacion || {};
-            const totalPaginas = Number(paginacion.total_paginas) || 1;
-            const paginaRespuesta = Number(paginacion.pagina_actual) || 1;
+            const totalPaginas = Math.max(1, Number(paginacion.total_paginas) || 1);
+            const paginaRespuesta = Math.max(1, Number(paginacion.pagina_actual) || 1);
 
             if (paginaRespuesta > totalPaginas) {
                 paginaActual = totalPaginas;
-                cargarVentas();
+                cargarCompras();
                 return;
             }
             paginaActual = paginaRespuesta;
 
             if (data.resumen) {
-                if (metricaTotalVentas) metricaTotalVentas.textContent = data.resumen.total_ventas || 0;
+                if (metricaTotalCompras) metricaTotalCompras.textContent = data.resumen.total_compras || 0;
                 if (metricaTotalProductos) metricaTotalProductos.textContent = data.resumen.total_productos || 0;
             }
 
-            renderizarTabla(data.ventas || []);
+            renderizarTabla(data.compras || []);
             renderizarPaginacion(paginaActual, totalPaginas);
         } catch (error) {
             if (solicitud !== solicitudActual) return;
-            console.error("Error al cargar ventas:", error);
+            console.error("Error al cargar compras:", error);
             if (contenedorPaginacion) contenedorPaginacion.replaceChildren();
             if (tablaBody) {
                 tablaBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Error al cargar los datos</td></tr>`;
             }
-            mostrarNotificacion("Error", "No se pudieron obtener las ventas del servidor.", 4000);
+            mostrarNotificacion("Error", "No se pudieron obtener las compras del servidor.", 4000);
         }
     }
 
     // 2. Renderizar filas de la tabla principal
-    function renderizarTabla(ventas) {
+    function renderizarTabla(compras) {
         if (!tablaBody) return;
         tablaBody.innerHTML = '';
 
-        if (ventas.length === 0) {
-            tablaBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No se encontraron registros</td></tr>`;
+        if (compras.length === 0) {
+            tablaBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No se encontraron órdenes de compra</td></tr>`;
             return;
         }
 
-        ventas.forEach(v => {
+        compras.forEach(c => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>#${v.idventa}</td>
-                <td>${v.fecha}</td>
-                <td>${v.cliente}</td>
-                <td>${v.cantidad_total_productos} productos</td>
-                <td>$${Number(v.precio_total).toLocaleString()}</td>
+                <td>#${c.idcompra || c.id_orden}</td>
+                <td>${c.fecha}</td>
+                <td>${c.proveedor || 'Proveedor General'}</td>
+                <td>${c.tipos_producto || 0} tipos</td>
+                <td>${c.total_productos || 0} unidades</td>
                 <td>
                     <div class="btn-acciones">
-                        <button class="btn-accion resumen" data-id="${v.idventa}">Ver resumen</button>
-                        <button class="btn-accion eliminar" data-id="${v.idventa}">Eliminar</button>
+                        <button class="btn-accion resumen" data-id="${c.idcompra || c.id_orden}">Ver resumen</button>
+                        <button class="btn-accion eliminar" data-id="${c.idcompra || c.id_orden}">Anular</button>
                     </div>
                 </td>
             `;
@@ -176,7 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. Renderizar controles de paginación dinámica
     function renderizarPaginacion(pagina, totalPaginas) {
         if (!contenedorPaginacion) return;
         contenedorPaginacion.replaceChildren();
@@ -192,13 +210,10 @@ document.addEventListener('DOMContentLoaded', () => {
             boton.disabled = deshabilitado;
             boton.addEventListener('click', () => {
                 paginaActual = paginaDestino;
-                cargarVentas();
+                cargarCompras();
             });
             contenedorPaginacion.appendChild(boton);
         };
-
-        // Botón Anterior
-        crearBoton('« Anterior', pagina - 1, 'Página anterior', pagina === 1);
 
         const agregarNumeroPagina = (numero) => {
             const boton = document.createElement('button');
@@ -209,10 +224,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (numero === pagina) boton.setAttribute('aria-current', 'page');
             boton.addEventListener('click', () => {
                 paginaActual = numero;
-                cargarVentas();
+                cargarCompras();
             });
             contenedorPaginacion.appendChild(boton);
         };
+
+        crearBoton('« Anterior', pagina - 1, 'Página anterior', pagina === 1);
 
         const inicio = Math.max(1, pagina - 2);
         const fin = Math.min(totalPaginas, pagina + 2);
@@ -241,63 +258,67 @@ document.addEventListener('DOMContentLoaded', () => {
             agregarNumeroPagina(totalPaginas);
         }
 
-        // Botón Siguiente
         crearBoton('Siguiente »', pagina + 1, 'Página siguiente', pagina === totalPaginas);
     }
 
-    // 4. Delegación de eventos para los botones de las filas
+    // 3. Delegación de eventos para los botones de las filas
     tablaBody?.addEventListener('click', (e) => {
         const btnResumen = e.target.closest('.resumen');
         const btnEliminar = e.target.closest('.eliminar');
 
         if (btnResumen) {
-            const idVenta = btnResumen.dataset.id;
-            verResumenVenta(idVenta);
+            const idCompra = btnResumen.dataset.id;
+            verResumenCompra(idCompra);
         }
 
         if (btnEliminar) {
-            const idVenta = btnEliminar.dataset.id;
-            anularVenta(idVenta);
+            const idCompra = btnEliminar.dataset.id;
+            anularCompra(idCompra);
         }
     });
 
-    // 5. Ver Resumen (Obtiene datos de /venta/<id>/detalle)
-    async function verResumenVenta(idVenta) {
+    // 4. Ver Resumen
+    async function verResumenCompra(idCompra) {
         try {
-            const response = await fetch(`/venta/${idVenta}/detalle`);
+            const response = await fetch(`/api/compras/${idCompra}/detalle`);
             const data = await response.json();
 
             if (!response.ok || !data.exito) {
-                mostrarNotificacion("Error", data.mensaje || "Ocurrió un error al obtener el detalle de la venta.", 4000);
+                mostrarNotificacion("Atención", data.mensaje || "Ocurrió un error al obtener el detalle de la compra.", 4000);
                 return;
             }
 
-            const venta = data.venta;
+            const compra = data.compra;
             const items = data.items || [];
 
             // Llenar datos de la cabecera del modal
-            if (modalNumVenta) modalNumVenta.textContent = venta.idventa;
-            if (modalFecha) modalFecha.textContent = venta.fecha || '-';
-            if (modalCliente) modalCliente.textContent = venta.nombre_cliente?.trim() || 'Cliente General';
-            if (modalTotalMonto) modalTotalMonto.textContent = `$${Number(venta.precio_total || 0).toLocaleString()}`;
+            if (modalNumCompra) modalNumCompra.textContent = compra.idcompra || compra.id_orden;
+            if (modalFecha) modalFecha.textContent = compra.fecha || '-';
+            if (modalProveedor) modalProveedor.textContent = compra.nombre_proveedor?.trim() || compra.proveedor || 'Proveedor General';
+            if (modalTotalMonto) modalTotalMonto.textContent = `$${Number(compra.precio_total || 0).toLocaleString()}`;
 
-            // Llenar la tabla de productos
+            // Llenar la tabla de productos del modal
             if (modalTablaBody) {
                 modalTablaBody.innerHTML = '';
 
                 if (items.length === 0) {
-                    modalTablaBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No hay ítems registrados</td></tr>`;
+                    modalTablaBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No hay ítems registrados en esta compra</td></tr>`;
                 } else {
                     items.forEach(item => {
                         const tr = document.createElement('tr');
-                        const precioUnitario = item.precio_unitario
-                            ? `$${Number(item.precio_unitario).toLocaleString()}`
+                        const precioUnitario = item.precio_unitario 
+                            ? `$${Number(item.precio_unitario).toLocaleString()}` 
                             : '-';
+                        const subtotal = item.subtotal 
+                            ? `$${Number(item.subtotal).toLocaleString()}` 
+                            : `$${Number((item.cantidad || 0) * (item.precio_unitario || 0)).toLocaleString()}`;
 
                         tr.innerHTML = `
-                            <td><img src="${item.imagen_producto}" alt="${item.producto_nombre}" style="width: 60px; height: 60px;"> - ${item.producto_nombre}</td>
+                            <td>${item.producto_nombre || item.producto}</td>
+                            <td>${item.tipo || '-'}</td>
                             <td>${item.cantidad}</td>
                             <td>${precioUnitario}</td>
+                            <td>${subtotal}</td>
                         `;
                         modalTablaBody.appendChild(tr);
                     });
@@ -307,41 +328,40 @@ document.addEventListener('DOMContentLoaded', () => {
             abrirModal();
 
         } catch (error) {
-            console.error("Error al cargar detalle de venta:", error);
-            mostrarNotificacion("Error", "No se pudo cargar la información de la venta.", 4000);
+            console.error("Error al cargar detalle de compra:", error);
+            mostrarNotificacion("Error", "No se pudo cargar la información de la compra.", 4000);
         }
     }
 
-    // 6. Anular / Eliminar Venta
-    async function anularVenta(idVenta) {
-        const confirmada = await pedirConfirmacion(
-            "Confirmar anulación",
-            `¿Está seguro de que desea anular la venta #${idVenta}?`
+    // 5. Anular / Eliminar Orden de Compra
+    async function anularCompra(idCompra) {
+        const confirmado = await pedirConfirmacion(
+            "Anular Orden de Compra",
+            `¿Está seguro de que desea anular la orden de compra #${idCompra}?`
         );
-        if (!confirmada) {
-            return;
-        }
+
+        if (!confirmado) return;
 
         try {
-            const response = await fetch(`/api/ventas/anular/${idVenta}`, {
+            const response = await fetch(`/api/compras/anular/${idCompra}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
             const data = await response.json();
 
             if (response.ok && data.exito) {
-                mostrarNotificacion("Venta anulada", `La venta #${idVenta} se anuló correctamente.`);
-                await cargarVentas();
+                mostrarNotificacion("Éxito", "La orden de compra fue anulada correctamente.", 3000);
+                await cargarCompras();
             } else {
-                mostrarNotificacion("Error", data.mensaje || "No se pudo anular la venta.", 4000);
+                mostrarNotificacion("Error", data.mensaje || "No se pudo anular la orden de compra.", 4000);
             }
         } catch (error) {
-            console.error("Error al anular venta:", error);
-            mostrarNotificacion("Error", "Error al intentar anular la venta.", 4000);
+            console.error("Error al anular compra:", error);
+            mostrarNotificacion("Error", "Ocurrió un fallo al intentar anular la orden de compra.", 4000);
         }
     }
 
-    // 7. Control del Modal
+    // 6. Control del Modal
     function abrirModal() { modal?.classList.add('activo'); }
     function cerrarModal() { modal?.classList.remove('activo'); }
 
@@ -349,18 +369,23 @@ document.addEventListener('DOMContentLoaded', () => {
     btnCerrarModalAlt?.addEventListener('click', cerrarModal);
     window.addEventListener('click', (e) => { if (e.target === modal) cerrarModal(); });
 
-    // 8. Eventos de los filtros (Resetean a la página 1)
+    // 7. Eventos de los filtros
     inputBusqueda?.addEventListener('input', () => {
         paginaActual = 1;
+        solicitudActual++;
         clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(cargarVentas, 300);
+        debounceTimer = setTimeout(cargarCompras, 300);
     });
 
     selectFiltroFecha?.addEventListener('change', () => {
         paginaActual = 1;
-        cargarVentas();
+        cargarCompras();
+    });
+    selectFiltroEstado?.addEventListener('change', () => {
+        paginaActual = 1;
+        cargarCompras();
     });
 
     // Carga inicial
-    cargarVentas();
+    cargarCompras();
 });

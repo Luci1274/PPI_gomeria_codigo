@@ -104,8 +104,7 @@ def api_anular_venta(id_venta):
 def vista_realizar_venta():
     
     productos, tipos, clientes, metodos, estado = Venta.obtener_datos_inicio_venta()
-
-    print(metodos)    
+  
     if not estado:
         return render_template(
             "orden_venta.html", 
