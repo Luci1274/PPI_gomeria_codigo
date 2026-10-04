@@ -89,6 +89,7 @@ class Compra:
                 total_paginas = (
                     math.ceil(total_compras / limite) if total_compras > 0 else 1
                 )
+                pagina = min(pagina, total_paginas)
                 offset = (pagina - 1) * limite
 
                 # 3. Consulta de las compras paginadas
