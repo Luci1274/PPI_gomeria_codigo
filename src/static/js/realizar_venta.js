@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const cartelEmergente = document.getElementById('cartel-emergente');
+    const cartelTitulo = document.getElementById('cartel-titulo');
+    const cartelMensaje = document.getElementById('cartel-mensaje');
+    const claveCarrito = 'ordenVentaCarrito';
+    let timerNotificacion;
+
     // ==========================================
     // 1. INICIALIZACIÓN Y FECHA ACTUAL
     // ==========================================
@@ -47,6 +53,52 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     let carrito = [];
 
+    function restaurarCarrito() {
+        let carritoGuardado;
+        try {
+            const datosGuardados = localStorage.getItem(claveCarrito);
+            if (!datosGuardados) return;
+            carritoGuardado = JSON.parse(datosGuardados);
+        } catch (error) {
+            console.error('No se pudo leer el carrito guardado:', error);
+            mostrarNotificacion('Aviso', 'No se pudo recuperar el pedido guardado.');
+            return;
+        }
+
+        if (!Array.isArray(carritoGuardado)) {
+            mostrarNotificacion('Aviso', 'El pedido guardado no tiene un formato válido.');
+            return;
+        }
+
+        const tarjetasPorId = new Map(
+            Array.from(document.querySelectorAll('.tarjeta-producto'))
+                .map(tarjeta => [Number(tarjeta.dataset.id), tarjeta])
+        );
+
+        carrito = carritoGuardado.reduce((items, guardado) => {
+            const id = Number(guardado?.idproducto_servicio);
+            const cantidad = Number(guardado?.cantidad);
+            const tarjeta = tarjetasPorId.get(id);
+            const precio = Number(tarjeta?.dataset.precio);
+
+            if (!tarjeta || !Number.isSafeInteger(cantidad) || cantidad <= 0 || !Number.isFinite(precio)) {
+                return items;
+            }
+
+            items.push({
+                idproducto_servicio: id,
+                nombre: tarjeta.dataset.nombre || 'Producto',
+                precio_unitario: precio,
+                cantidad
+            });
+            return items;
+        }, []);
+
+        if (carrito.length !== carritoGuardado.length) {
+            mostrarNotificacion('Aviso', 'Se restauraron los productos válidos del pedido guardado.');
+        }
+    }
+
     document.querySelectorAll('.tarjeta-producto').forEach(tarjeta => {
         tarjeta.addEventListener('click', () => {
             const id = parseInt(tarjeta.dataset.id);
@@ -67,6 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             actualizarResumen();
+            mostrarNotificacion('¡Añadido!', 'Producto agregado al pedido.', 2000);
         });
     });
 
@@ -121,17 +174,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnOpenModal = document.getElementById('btn-open-modal');
     const btnCerrarModal = document.getElementById('btn-cerrar-modal');
     const btnCancelarModal = document.getElementById('btn-cancelar');
+    const btnClientes = document.getElementById('btn-clientes');
 
     function abrirModal() {
         const selectPagoEl = document.getElementById('select-met-pago');
 
         if (carrito.length === 0) {
-            alert('El carrito está vacío. Agrega productos antes de continuar.');
+            mostrarNotificacion('Carrito vacío', 'Agrega productos antes de continuar.');
             return;
         }
 
         if (!selectPagoEl || !selectPagoEl.value) {
-            alert('Por favor, selecciona un método de pago antes de continuar.');
+            mostrarNotificacion('Método de pago requerido', 'Selecciona un método de pago antes de continuar.');
             return;
         }
 
@@ -177,12 +231,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function cerrarModal() {
         if (modal) modal.style.display = 'none';
-        window.location.href = '/ventas';
+        window.location.href = '/ventas/realizar';
     }
 
     if (btnOpenModal) btnOpenModal.addEventListener('click', abrirModal);
     if (btnCerrarModal) btnCerrarModal.addEventListener('click', cerrarModal);
     if (btnCancelarModal) btnCancelarModal.addEventListener('click', cerrarModal);
+    if (btnClientes) {
+        btnClientes.addEventListener('click', () => {
+            try {
+                localStorage.setItem(claveCarrito, JSON.stringify(
+                    carrito.map(({ idproducto_servicio, cantidad }) => ({
+                        idproducto_servicio,
+                        cantidad
+                    }))
+                ));
+                window.location.href = '/clientes';
+            } catch (error) {
+                console.error('No se pudo guardar el pedido antes de abrir clientes:', error);
+                mostrarNotificacion('Error', 'No se pudo guardar el pedido. No se abrió la página de clientes.', 4000);
+            }
+        });
+    }
 
     // ==========================================
     // 5. ENVÍO DE LA VENTA AL BACKEND
@@ -197,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const idMetodoPago = selectPagoEl && selectPagoEl.value ? parseInt(selectPagoEl.value) : null;
 
             if (!idMetodoPago) {
-                alert('Debes seleccionar un método de pago válido.');
+                mostrarNotificacion('Método de pago inválido', 'Debes seleccionar un método de pago válido.');
                 return;
             }
 
@@ -221,19 +291,60 @@ document.addEventListener('DOMContentLoaded', () => {
                 const resultado = await respuesta.json();
 
                 if (respuesta.ok && resultado.exito) {
-                    alert(resultado.mensaje || 'Venta registrada con éxito');
-                    window.location.href = resultado.redireccion || '/ventas';
+                    try {
+                        localStorage.removeItem(claveCarrito);
+                    } catch (error) {
+                        console.error('No se pudo borrar el carrito guardado después de registrar la venta:', error);
+                        mostrarNotificacion('Venta registrada', 'La venta se registró, pero no se pudo borrar el pedido guardado.', 4000);
+                        setTimeout(() => {
+                            window.location.href = resultado.redireccion || '/ventas';
+                        }, 3500);
+                        return;
+                    }
+
+                    mostrarNotificacion('Venta registrada', resultado.mensaje || 'La venta se registró con éxito.', 2500);
+                    setTimeout(() => {
+                        window.location.href = resultado.redireccion || '/ventas';
+                    }, 2000);
                 } else {
-                    alert(`Error: ${resultado.mensaje || resultado.error || 'No se pudo procesar la venta'}`);
+                    mostrarNotificacion('Error', resultado.mensaje || resultado.error || 'No se pudo procesar la venta.', 4000);
                     btnConfirmarVenta.disabled = false;
                     btnConfirmarVenta.textContent = 'Confirmar Venta';
                 }
             } catch (error) {
                 console.error('Error en la solicitud HTTP:', error);
-                alert('Ocurrió un error de conexión al enviar la venta.');
+                mostrarNotificacion('Error de conexión', 'Ocurrió un error al enviar la venta.', 4000);
                 btnConfirmarVenta.disabled = false;
                 btnConfirmarVenta.textContent = 'Confirmar Venta';
             }
         });
     }
+
+    restaurarCarrito();
+    actualizarResumen();
+
+    function mostrarNotificacion(titulo, mensaje, tiempo = 3000) {
+        if (!cartelEmergente || !cartelTitulo || !cartelMensaje) {
+            console.warn(`[${titulo}] ${mensaje}`);
+            return;
+        }
+
+        clearTimeout(timerNotificacion);
+
+        cartelTitulo.textContent = titulo;
+        cartelMensaje.textContent = mensaje;
+        cartelEmergente.style.display = 'block';
+
+        if (tiempo > 0) {
+            timerNotificacion = setTimeout(() => {
+                ocultarNotificacion();
+            }, tiempo);
+        }
+    }
+
+    function ocultarNotificacion() {
+        if (!cartelEmergente) return;
+        cartelEmergente.style.display = 'none';
+    }
+
 });

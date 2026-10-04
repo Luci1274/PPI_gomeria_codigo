@@ -17,9 +17,89 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTablaBody = document.getElementById('modal-tabla-body');
     const modalTotalMonto = document.getElementById('modal-total-monto');
 
+    // --- ELEMENTOS DEL CARTEL EMERGENTE ---
+    const cartelEmergente = document.getElementById('cartel-emergente');
+    const cartelTitulo = document.getElementById('cartel-titulo');
+    const cartelMensaje = document.getElementById('cartel-mensaje');
+    let timerNotificacion;
+
     let debounceTimer;
     let paginaActual = 1;
     let solicitudActual = 0;
+
+    // --- NOTIFICACIONES Y CONFIRMACIONES ---
+
+    function limpiarBotonesCartel() {
+        if (!cartelEmergente) return;
+        const contenedorBotones = cartelEmergente.querySelector('.cartel-acciones');
+        if (contenedorBotones) contenedorBotones.remove();
+    }
+
+    function mostrarNotificacion(titulo, mensaje, tiempo = 3000) {
+        if (!cartelEmergente || !cartelTitulo || !cartelMensaje) {
+            console.warn(`[${titulo}] ${mensaje}`);
+            return;
+        }
+
+        clearTimeout(timerNotificacion);
+        limpiarBotonesCartel();
+
+        cartelTitulo.textContent = titulo;
+        cartelMensaje.textContent = mensaje;
+        cartelEmergente.style.display = 'block';
+
+        if (tiempo > 0) {
+            timerNotificacion = setTimeout(() => {
+                ocultarNotificacion();
+            }, tiempo);
+        }
+    }
+
+    function ocultarNotificacion() {
+        if (!cartelEmergente) return;
+        cartelEmergente.style.display = 'none';
+        limpiarBotonesCartel();
+    }
+
+    function pedirConfirmacion(titulo, mensaje) {
+        return new Promise((resolve) => {
+            if (!cartelEmergente || !cartelTitulo || !cartelMensaje) {
+                const res = confirm(`${titulo}\n\n${mensaje}`);
+                return resolve(res);
+            }
+
+            clearTimeout(timerNotificacion);
+            limpiarBotonesCartel();
+
+            cartelTitulo.textContent = titulo;
+            cartelMensaje.textContent = mensaje;
+
+            const contenedorBotones = document.createElement('div');
+            contenedorBotones.className = 'cartel-acciones';
+            contenedorBotones.style.marginTop = '15px';
+            contenedorBotones.style.display = 'flex';
+            contenedorBotones.style.justifyContent = 'center';
+            contenedorBotones.style.gap = '10px';
+
+            contenedorBotones.innerHTML = `
+                <button id="btn-confirmar-cartel" class="btn-accion">Confirmar</button>
+                <button id="btn-cancelar-cartel" class="btn-accion borrar">Cancelar</button>
+            `;
+
+            cartelEmergente.appendChild(contenedorBotones);
+            cartelEmergente.style.display = 'block';
+
+            document.getElementById('btn-confirmar-cartel').onclick = () => {
+                ocultarNotificacion();
+                resolve(true);
+            };
+
+            document.getElementById('btn-cancelar-cartel').onclick = () => {
+                ocultarNotificacion();
+                resolve(false);
+            };
+        });
+    }
 
     // 1. Cargar listado dinámico desde la API (con paginación)
     async function cargarVentas() {
@@ -63,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tablaBody) {
                 tablaBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Error al cargar los datos</td></tr>`;
             }
+            mostrarNotificacion("Error", "No se pudieron obtener las ventas del servidor.", 4000);
         }
     }
 
@@ -187,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (!response.ok || !data.exito) {
-                alert(data.mensaje || "Ocurrió un error al obtener el detalle de la venta.");
+                mostrarNotificacion("Error", data.mensaje || "Ocurrió un error al obtener el detalle de la venta.", 4000);
                 return;
             }
 
@@ -227,13 +308,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Error al cargar detalle de venta:", error);
-            alert("No se pudo cargar la información de la venta.");
+            mostrarNotificacion("Error", "No se pudo cargar la información de la venta.", 4000);
         }
     }
 
     // 6. Anular / Eliminar Venta
     async function anularVenta(idVenta) {
-        if (!confirm(`¿Está seguro de que desea anular la venta #${idVenta}?`)) {
+        const confirmada = await pedirConfirmacion(
+            "Confirmar anulación",
+            `¿Está seguro de que desea anular la venta #${idVenta}?`
+        );
+        if (!confirmada) {
             return;
         }
 
@@ -245,13 +330,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok && data.exito) {
-                cargarVentas();
+                mostrarNotificacion("Venta anulada", `La venta #${idVenta} se anuló correctamente.`);
+                await cargarVentas();
             } else {
-                alert(data.mensaje || "No se pudo anular la venta.");
+                mostrarNotificacion("Error", data.mensaje || "No se pudo anular la venta.", 4000);
             }
         } catch (error) {
             console.error("Error al anular venta:", error);
-            alert("Error al intentar anular la venta.");
+            mostrarNotificacion("Error", "Error al intentar anular la venta.", 4000);
         }
     }
 
