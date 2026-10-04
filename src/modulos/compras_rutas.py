@@ -103,4 +103,85 @@ def api_anular_compra(id_compra):
     except Exception as e:
         return jsonify({"exito": False, "error": str(e)}), 500
     
-    
+@compras_bp.route("/compras/realizar", methods=["GET"])
+def vista_realizar_compra():
+    """Carga la vista para realizar una nueva orden de compra."""
+    productos, tipos, proveedores, estado = Compra.obtener_datos_inicio_compra()
+
+    if not estado:
+        return render_template(
+            "orden_compra.html",
+            listado_productos=[],
+            listado_tipos=[],
+            listado_proveedores=[],
+            error_db=True
+        ), 500
+
+    return render_template(
+        "orden_compra.html",
+        listado_productos=productos,
+        listado_tipos=tipos,
+        listado_proveedores=proveedores,
+        error_db=False
+    )
+
+@compras_bp.route("/api/compras/realizar", methods=["POST"])
+def api_realizar_compra():
+    """Recibe los datos de la orden de compra y la guarda en la base de datos."""
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({
+            "exito": False,
+            "mensaje": "No se recibieron datos para procesar la compra."
+        }), 400
+
+    try:
+        id_proveedor = int(data.get("id_proveedor"))
+        carrito = data.get("carrito")
+        if id_proveedor <= 0 or not isinstance(carrito, list) or not carrito:
+            raise ValueError
+
+        items_validos = []
+        for item in carrito:
+            if not isinstance(item, dict):
+                raise ValueError
+            id_producto = int(item.get("idproducto_servicio"))
+            cantidad = int(item.get("cantidad"))
+            if id_producto <= 0 or cantidad <= 0:
+                raise ValueError
+            items_validos.append({
+                "idproducto_servicio": id_producto,
+                "cantidad": cantidad
+            })
+    except (TypeError, ValueError):
+        return jsonify({
+            "exito": False,
+            "mensaje": "Selecciona un proveedor y agrega productos con cantidades válidas."
+        }), 400
+
+    total_productos = calcular_total_productos(items_validos)
+
+    id_nueva_compra, exito = Compra.registrar(
+        id_proveedor=id_proveedor,
+        listado_items=items_validos,
+        total_productos=total_productos,
+    )
+
+    if id_nueva_compra is None or not exito:
+        return jsonify({
+            "exito": False,
+            "mensaje": "Error al registrar la compra. Por favor, inténtalo nuevamente."
+        }), 500
+
+    return jsonify({
+        "exito": True,
+        "mensaje": f"Compra registrada exitosamente con ID {id_nueva_compra}.",
+        "id_compra": id_nueva_compra,
+        "redireccion": "/compras"
+    }), 200
+
+"""Función auxiliar para calcular la cantidad total de productos en el carrito."""
+
+def calcular_total_productos(carrito):
+    """Calcula la cantidad total de unidades dentro del carrito."""
+    return sum(int(item.get("cantidad", 0)) for item in carrito)

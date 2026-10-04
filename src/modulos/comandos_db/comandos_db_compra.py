@@ -7,9 +7,73 @@ from config import Config
 #------------------------------------------------------------------------
 
 class Compra:
-    # @staticmethod
-    # def registrar()
-    
+    @staticmethod
+    def registrar(
+        id_proveedor,
+        listado_items,
+        total_productos,
+        fecha=None,
+    ):
+        """Registra una compra, sus ítems y el ingreso de stock."""
+        conexion = Config.conectar_db()
+        try:
+            with conexion.cursor() as cursor:
+                items_sanitizados = [
+                    {
+                        "idproducto_servicio": item["idproducto_servicio"],
+                        "cantidad": item["cantidad"],
+                    }
+                    for item in listado_items
+                ]
+
+                sql_compra = """
+                    INSERT INTO compra (fecha, horas, cantidad_total, idproveedor, activo)
+                    VALUES (%s, %s, %s, %s, 1);
+                """
+                cursor.execute(
+                    sql_compra,
+                    (
+                        fecha or datetime.now().date(),
+                        datetime.now().time(),
+                        total_productos,
+                        id_proveedor,
+                    )
+                )
+                id_compra = cursor.lastrowid
+
+                sql_item_compra = """
+                    INSERT INTO item_compra (idproducto_servicio, idcompra, cantidad)
+                    VALUES (%s, %s, %s)
+                """
+                valores_items = [
+                    (item["idproducto_servicio"], id_compra, item["cantidad"])
+                    for item in items_sanitizados
+                ]
+                cursor.executemany(sql_item_compra, valores_items)
+
+                sql_actualizar_stock = """
+                    UPDATE producto_servicio
+                    SET cantidad_actual = cantidad_actual + %s
+                    WHERE idproducto_servicio = %s AND tipo != 'servicio';
+                """
+                valores_stock = [
+                    (item["cantidad"], item["idproducto_servicio"])
+                    for item in items_sanitizados
+                ]
+                cursor.executemany(sql_actualizar_stock, valores_stock)
+
+                conexion.commit()
+                print(f"Compra #{id_compra} registrada exitosamente y stock actualizado.")
+                return id_compra, True
+
+        except pymysql.MySQLError as e:
+            conexion.rollback()
+            print(f"Error al registrar la compra: {e}")
+            return None, False
+
+        finally:
+            conexion.close()
+
     @staticmethod
     def obtener_compras_paginadas(
         busqueda=None,
@@ -124,6 +188,8 @@ class Compra:
                 for comp in compras:
                     if isinstance(comp.get("fecha"), (datetime, date)):
                         comp["fecha"] = comp["fecha"].strftime("%d/%m/%Y")
+                    if comp.get("horas") is not None:
+                        comp["horas"] = str(comp["horas"])
 
                 return {
                     "compras": compras,
@@ -185,6 +251,8 @@ class Compra:
 
                 if isinstance(compra.get("fecha"), (datetime, date)):
                     compra["fecha"] = compra["fecha"].strftime("%d/%m/%Y")
+                if compra.get("horas") is not None:
+                    compra["horas"] = str(compra["horas"])
 
                 sql_items = """
                     SELECT 
@@ -266,5 +334,25 @@ class Compra:
         finally:
             conexion.close()
             
-    # @staticmethod
-    # def obtener_datos_inicio_venta():
+    @staticmethod
+    def obtener_datos_inicio_compra():
+        conexion = Config.conectar_db()
+        try:
+            with conexion.cursor() as cursor:
+                cursor.execute("SELECT p.idproducto_servicio, p.nombre, p.medidas, p.tipo, p.imagen_producto, p.cantidad_actual FROM producto_servicio AS p WHERE activo = 1;")
+                productos = cursor.fetchall()
+
+                cursor.execute("SELECT DISTINCT tipo FROM producto_servicio WHERE activo = 1;")
+                tipos = cursor.fetchall()
+
+                cursor.execute("SELECT idproveedor, nombre, telefono, mail FROM proveedor WHERE activo = 1")
+                proveedores = cursor.fetchall()
+
+                return productos, tipos, proveedores, True
+        except pymysql.MySQLError as e:
+            conexion.rollback()
+            print(f"Error al cargar los datos iniciales de compra: {e}")
+            return [], [], [], False
+
+        finally:
+            conexion.close()
