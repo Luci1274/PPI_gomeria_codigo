@@ -339,7 +339,7 @@ class Compra:
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
-                cursor.execute("SELECT p.idproducto_servicio, p.nombre, p.medidas, p.tipo, p.imagen_producto, p.cantidad_actual FROM producto_servicio AS p WHERE activo = 1;")
+                cursor.execute("SELECT p.idproducto_servicio, p.nombre, p.medidas, p.tipo, p.imagen_producto, p.cantidad_actual FROM producto_servicio AS p WHERE activo = 1 ORDER BY p.cantidad_actual ASC;")
                 productos = cursor.fetchall()
 
                 cursor.execute("SELECT DISTINCT tipo FROM producto_servicio WHERE activo = 1;")

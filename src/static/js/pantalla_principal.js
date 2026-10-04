@@ -99,7 +99,7 @@ function actualizarTablaStock(productos) {
         fila.innerHTML = `
             <td>${prod.nombre}</td>
             <td>${prod.cantidad_actual}</td>
-            <td><button class="btn-accion">Reponer</button></td>
+            <td><button class="btn-accion"> <a href="/compras/realizar" class="accion-rapida"> Reponer</a></button></td>
         `;
         tbody.appendChild(fila);
     });
