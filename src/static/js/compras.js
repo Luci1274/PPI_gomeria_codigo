@@ -60,13 +60,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!cartelEmergente) return;
         cartelEmergente.style.display = 'none';
         limpiarBotonesCartel();
+        cartelEmergente.setAttribute('role', 'status');
+        cartelEmergente.setAttribute('aria-live', 'polite');
     }
 
     function pedirConfirmacion(titulo, mensaje) {
         return new Promise((resolve) => {
             if (!cartelEmergente || !cartelTitulo || !cartelMensaje) {
-                const res = confirm(`${titulo}\n\n${mensaje}`);
-                return resolve(res);
+                return resolve(confirm(`${titulo}\n\n${mensaje}`));
             }
 
             clearTimeout(timerNotificacion);
@@ -74,31 +75,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
             cartelTitulo.textContent = titulo;
             cartelMensaje.textContent = mensaje;
+            cartelEmergente.setAttribute('role', 'alertdialog');
+            cartelEmergente.setAttribute('aria-live', 'assertive');
 
             const contenedorBotones = document.createElement('div');
             contenedorBotones.className = 'cartel-acciones';
-            contenedorBotones.style.marginTop = '15px';
-            contenedorBotones.style.display = 'flex';
-            contenedorBotones.style.justifyContent = 'center';
-            contenedorBotones.style.gap = '10px';
 
-            contenedorBotones.innerHTML = `
-                <button id="btn-confirmar-cartel" class="btn-accion">Confirmar</button>
-                <button id="btn-cancelar-cartel" class="btn-accion borrar">Cancelar</button>
-            `;
+            const btnConfirmar = document.createElement('button');
+            btnConfirmar.type = 'button';
+            btnConfirmar.id = 'btn-confirmar-cartel';
+            btnConfirmar.className = 'btn-accion';
+            btnConfirmar.textContent = 'Confirmar';
 
+            const btnCancelar = document.createElement('button');
+            btnCancelar.type = 'button';
+            btnCancelar.id = 'btn-cancelar-cartel';
+            btnCancelar.className = 'btn-accion borrar';
+            btnCancelar.textContent = 'Cancelar';
+
+            contenedorBotones.append(btnConfirmar, btnCancelar);
             cartelEmergente.appendChild(contenedorBotones);
             cartelEmergente.style.display = 'block';
 
-            document.getElementById('btn-confirmar-cartel').onclick = () => {
+            const finalizar = (confirmado) => {
+                window.removeEventListener('keydown', manejarEscape);
                 ocultarNotificacion();
-                resolve(true);
+                resolve(confirmado);
             };
 
-            document.getElementById('btn-cancelar-cartel').onclick = () => {
-                ocultarNotificacion();
-                resolve(false);
+            const manejarEscape = (event) => {
+                if (event.key === 'Escape') finalizar(false);
             };
+
+            btnConfirmar.addEventListener('click', () => finalizar(true), { once: true });
+            btnCancelar.addEventListener('click', () => finalizar(false), { once: true });
+            window.addEventListener('keydown', manejarEscape);
+            btnConfirmar.focus();
         });
     }
 
@@ -339,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok && data.exito) {
                 mostrarNotificacion("Éxito", "La orden de compra fue anulada correctamente.", 3000);
-                cargarCompras();
+                await cargarCompras();
             } else {
                 mostrarNotificacion("Error", data.mensaje || "No se pudo anular la orden de compra.", 4000);
             }

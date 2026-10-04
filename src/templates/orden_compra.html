@@ -3,153 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../static/css/orden_compra.css">
-    <link rel="stylesheet" href="../static/css/navbar.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/orden_compra.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <title>Orden de compra - Sistema Gomería</title>
 </head>
-<body>
+<body data-error-db="{{ 'true' if error_db else 'false' }}">
     <div class="contenedor">
         {% include "componentes/navbar.html" %}
 
-    <main class="contenido-principal">
-        <section class="seccion-catalogo">
-            <div class="barra-superior">
-                <h1>Orden de Compra</h1>
-                <p>Haz clic en un producto para agregarlo al pedido</p>
-            </div>
-            <div class="barras-pos">
-                <div class="contenedor-busqueda">
-                <input type="text" placeholder="Buscar producto por nombre...">
+        <main class="contenido-principal">
+            <section class="seccion-catalogo">
+                <div class="barra-superior">
+                    <h1>Orden de Compra</h1>
+                    <p>Haz clic en un producto para agregarlo al pedido</p>
                 </div>
-                <div class="filtros-categoria">
-                    <select name="select-categoría" id="">
-                        <option value="todos">Todas: Categoría</option>
-                        <option value="picos">Picos</option>
-                        <option value="camara">Camara</option>
-                        <option value="parche">Parches</option>  
-                    </select>
-                </div>
-            </div>
-            <div class="grilla-productos">
-                <div class="tarjeta-producto" onclick="">
-                    <div class="img-producto">
-                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRr8QaWNTc0pAEQXoyLtGzQQj_TzEgTMOB8lh4qnjqbmA&s" alt="">
+                <div class="barras-pos">
+                    <div class="contenedor-busqueda">
+                        <input type="text" id="buscar-producto" placeholder="Buscar producto por nombre..." aria-label="Buscar producto por nombre">
                     </div>
-                    <div class="info-producto">
-                        <h3>Cámara G-14 175/185 x 14</h3>
+                    <div class="filtros-categoria">
+                        <select name="select-categoria" id="select-categoria" aria-label="Filtrar por tipo de producto">
+                            <option value="todos">Todas las categorías</option>
+                            {% for t in listado_tipos %}
+                                <option value="{{ t.tipo }}">{{ t.tipo.capitalize() }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
-                <div class="tarjeta-producto" onclick=""> <!--Presionamos el producto y se agrega en el resumen de pedido con una function-->
-                    <div class="img-producto">
-                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZwUUEapxGCluYQnbAzZCnNJr-G2xhTfa-u_OCHFIxDA&s=10" alt="">
-                    </div>
-                    <div class="info-producto">
-                        <h3>Cubierta 175/65 R14</h3>
-                    </div>
+                <div class="grilla-productos">
+                    {% for p in listado_productos %}
+                    <button type="button" class="tarjeta-producto"
+                        data-id="{{ p.idproducto_servicio }}"
+                        data-nombre="{{ p.nombre }}"
+                        data-tipo="{{ p.tipo }}"
+                        data-medidas="{{ p.medidas or '' }}"
+                        data-imagen="{{ p.imagen_producto or url_for('static', filename='image/default.png') }}"
+                        aria-label="Agregar {{ p.nombre }} al pedido">
+                        <span class="img-producto">
+                            <img src="{{ p.imagen_producto or url_for('static', filename='image/default.png') }}" alt="">
+                        </span>
+                        <span class="info-producto">
+                            <strong class="nombre-producto">{{ p.nombre }}</strong>
+                            {% if p.medidas %}
+                                <span class="medidas-producto">{{ p.medidas }}</span>
+                            {% endif %}
+                            <span class="precio-producto">{{ p.tipo }}</span>
+                        </span>
+                    </button>
+                    {% else %}
+                    <p class="catalogo-vacio">No hay productos disponibles para comprar.</p>
+                    {% endfor %}
                 </div>
-            </div>
-        </section>
-        <!--Resumen de Pedido-->
-        <aside class="panel-resumen-pos">
-            <div class="cabecera-resumen">
-                <h2>Resumen de Pedido</h2>
-            </div>
-            <div class="formulario-resumen">
-                <div class="campo-pos">
-                    <label for="fecha-actual">Fecha:</label>
-                    <span class="fecha-actual" id="fecha-actual">12/04/2026</span>
-                </div>
-                <div class="campo-pos">
-                    <label for="select-cliente">Proveedor</label>
-                    <select name="select-cliente" id="select-cliente" class="select-cliente">
-                        <option value="">Seleccionar Proveedor</option>
-                        <option value="1">Michael zarza</option>
-                        <option value="2">Luciano Gonzalez</option>
-                    </select>
-                </div>
-            </div>
+            </section>
 
-            <hr class="divisor">
+            <aside class="panel-resumen-pos">
+                <div class="cabecera-resumen">
+                    <h2>Resumen de Pedido</h2>
+                </div>
+                <div class="formulario-resumen">
+                    <div class="campo-pos">
+                        <label for="fecha-actual">Fecha:</label>
+                        <span class="fecha-actual" id="fecha-actual"></span>
+                    </div>
+                    <div class="campo-pos">
+                        <label for="select-proveedor">Proveedor</label>
+                        <select name="select-proveedor" id="select-proveedor" class="select-cliente">
+                            <option value="">Seleccionar proveedor</option>
+                            {% for p in listado_proveedores %}
+                                <option value="{{ p.idproveedor }}">{{ p.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
 
-            <div class="lista-items-pedido" id="lista-resumen">
-                <div class="item-pedido">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRr8QaWNTc0pAEQXoyLtGzQQj_TzEgTMOB8lh4qnjqbmA&s" alt="" class="img-item">
-                    <div class="detalles-item">
-                        <strong>Cámara G-14</strong>
-                        <span class="cant-item">Cant: 1</span>
-                        <button class="eliminar-producto" onclick="">X</button>
+                <hr class="divisor">
+
+                <div class="lista-items-pedido" id="lista-resumen" aria-live="polite"></div>
+
+                <div class="footer-resumen">
+                    <div class="monto-total-pos">
+                        <span>Total productos:</span>
+                        <strong id="cantidad-total">0</strong>
+                    </div>
+                    <div class="btn-acciones-pos">
+                        <button type="button" class="btn btn-cerrar" id="btn-cancelar">Cerrar</button>
+                        <button type="button" class="btn btn-proveedores" id="btn-proveedores">Proveedores</button>
+                        <button type="button" class="btn btn-primario" id="btn-open-modal">Continuar</button>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <div class="cartel-emergente" id="cartel-emergente" role="status" aria-live="polite" aria-atomic="true" aria-labelledby="cartel-titulo" aria-describedby="cartel-mensaje">
+        <h2 id="cartel-titulo"></h2>
+        <p id="cartel-mensaje"></p>
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+        <div class="modal-contenido">
+            <div class="modal-cabecera">
+                <h2 id="modal-titulo">Resumen Orden de Compra</h2>
+                <p>Revisa los productos y cantidades antes de registrar la compra</p>
+                <button type="button" class="btn-cerrar" id="btn-cerrar-modal" aria-label="Cerrar resumen">X</button>
+            </div>
+            <div class="contenedor-tarjetas">
+                <div class="tarjeta-metrica">
+                    <div class="datos-metricas">
+                        <p>Fecha:</p>
+                        <p id="modal-fecha">-</p>
+                    </div>
+                </div>
+                <div class="tarjeta-metrica">
+                    <div class="datos-metricas">
+                        <p>Proveedor:</p>
+                        <p id="modal-proveedor">-</p>
                     </div>
                 </div>
             </div>
-            <div class="footer-resumen">
-                <div class="monto-total-pos">
-                    <span>Total productos:</span>
-                    <strong>1</strong>
-                </div>
-                <div class="btn-acciones-pos">
-                    <button class="btn btn-cerrar">Cerrar</button>
-                    <button class="btn btn-primario" id="btn-open-modal">Continuar</button>
-                </div>
+            <div class="modal-contenedor-tabla">
+                <table class="modal-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Tipo</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-tabla-body"></tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" class="total-table">Total productos</td>
+                            <td class="total-table" id="modal-total-productos">0</td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
-        </aside>
-    </main>
-
-<!--Ventana emergente (Ver resumen)-->
-  <div class="modal-overlay" id="modal-overlay">
-            <div class="modal-contenido">
-                <div class="modal-cabecera">
-                    <h2>Resumen Orden de Compra</h2>
-                    <p>Detalles completo de la orden de compra a realizar</p>
-                    <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
-                </div>
-                <div class="contenedor-tarjetas">
-                    <div class="tarjeta-metrica">
-                        <div class="datos-metricas">
-                            <p>Fecha:</p>
-                            <p>12/06/2026</p>
-                        </div>
-                    </div>
-                    <div class="tarjeta-metrica">
-                        <div class="datos-metricas">
-                            <p>Proveedor:</p>
-                            <p>Luciano Gonzalez</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-contenedor-tabla">
-                    <table class="modal-table">
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th>Cantidad</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Cubierta 175/06</td>
-                                <td>10 unidades</td>
-                            </tr>
-                            <tr>
-                                <td>Camara R14</td>
-                                <td>2 unidades</td>
-                            </tr>
-                            <tr>
-                                <td class="total-table">Total</td>
-                                <td class="total-table">12</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="btn-acciones">
-                    <button class="btn accion">Descargar PDF</button>
-                    <button class="btn accion">Imprimir</button>
-                    <button class="btn accion">Enviar por Email</button>
-                    <button class="btn accion">Enviar por WhatsApp</button>
-                </div>
+            <div class="btn-acciones">
+                <button type="button" class="btn accion" id="btn-confirmar-compra">Registrar Compra</button>
             </div>
         </div>
-    <script src="../static/js/open_modal.js"></script>
-    <script src="../static/js/navbar.js"></script>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/realizar_compra.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
 </body>
 </html>
