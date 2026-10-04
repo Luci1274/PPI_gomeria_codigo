@@ -324,6 +324,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     formNuevoProducto.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const btnGuardarProducto = formNuevoProducto.querySelector('button[type="submit"]');
+        if (btnGuardarProducto?.disabled) return;
+        if (btnGuardarProducto) btnGuardarProducto.disabled = true;
 
         const formData = new FormData();
         formData.append('nombre', document.getElementById('input-producto').value.trim());
@@ -352,11 +355,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 cerrarModalNuevo();
                 cargarProductos();
             } else {
-                mostrarNotificacion('Error al guardar', data.mensaje || 'No se pudieron guardar los datos.');
+                mostrarNotificacion(
+                    respuesta.status === 409 ? 'Producto duplicado' : 'Error al guardar',
+                    data.mensaje || 'No se pudieron guardar los datos.'
+                );
             }
         } catch (error) {
             console.error('Error al guardar producto:', error);
             mostrarNotificacion('Error de red', 'Ocurrió un error en la red al intentar guardar el producto.');
+        } finally {
+            if (btnGuardarProducto) btnGuardarProducto.disabled = false;
         }
     });
 

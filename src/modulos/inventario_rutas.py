@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, session
-from modulos.comandos_db.comandos_db_productos import Producto
+from modulos.comandos_db.comandos_db_productos import Producto, ProductoDuplicadoError
 from modulos.api_claudinary import subir_imagen
 
 inventario_bp = Blueprint("inventario", __name__)
@@ -70,16 +70,19 @@ def api_crear_producto():
             }), 400
 
     # 3. Guardamos en BD
-    exito = Producto.crear_producto(
-        nombre=nombre,
-        tipo=tipo,
-        marca=marca,
-        medidas=medidas,
-        imagen_producto=url_producto,
-        cantidad_actual=cantidad,
-        cantidad_minima=minimo,
-        precio=precio   
-    )
+    try:
+        exito = Producto.crear_producto(
+            nombre=nombre,
+            tipo=tipo,
+            marca=marca,
+            medidas=medidas,
+            imagen_producto=url_producto,
+            cantidad_actual=cantidad,
+            cantidad_minima=minimo,
+            precio=precio
+        )
+    except ProductoDuplicadoError as error:
+        return jsonify({"exito": False, "mensaje": str(error)}), 409
     
     if not exito:
         return jsonify({"exito": False, "mensaje": "Error al guardar el producto"}), 500
