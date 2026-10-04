@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectFiltroFecha = document.getElementById('select-filtro-fecha');
     const metricaTotalVentas = document.getElementById('metrica-total-ventas');
     const metricaTotalProductos = document.getElementById('metrica-total-productos');
+    const contenedorPaginacion = document.getElementById('contenedor-paginacion');
 
     // Elementos del Modal
     const modal = document.getElementById('modal-overlay');
@@ -17,32 +18,57 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTotalMonto = document.getElementById('modal-total-monto');
 
     let debounceTimer;
+    let paginaActual = 1;
+    let solicitudActual = 0;
 
-    // 1. Cargar listado dinámico desde la API
+    // 1. Cargar listado dinámico desde la API (con paginación)
     async function cargarVentas() {
-        const busqueda = inputBusqueda.value.trim();
-        const filtroFecha = selectFiltroFecha.value;
+        const busqueda = inputBusqueda?.value.trim() || '';
+        const filtroFecha = selectFiltroFecha?.value || 'todos';
+        const solicitud = ++solicitudActual;
 
-        const url = `/api/ventas?busqueda=${encodeURIComponent(busqueda)}&filtro_fecha=${filtroFecha}`;
+        const url = `/api/ventas?busqueda=${encodeURIComponent(busqueda)}&filtro_fecha=${filtroFecha}&pagina=${paginaActual}`;
 
         try {
             const response = await fetch(url);
             const data = await response.json();
 
+            if (solicitud !== solicitudActual) return;
+            if (!response.ok || !data.Exito) {
+                throw new Error(data.mensaje || 'No se pudieron cargar las ventas.');
+            }
+
+            const paginacion = data.paginacion || {};
+            const totalPaginas = Number(paginacion.total_paginas) || 1;
+            const paginaRespuesta = Number(paginacion.pagina_actual) || 1;
+
+            if (paginaRespuesta > totalPaginas) {
+                paginaActual = totalPaginas;
+                cargarVentas();
+                return;
+            }
+            paginaActual = paginaRespuesta;
+
             if (data.resumen) {
-                metricaTotalVentas.textContent = data.resumen.total_ventas || 0;
-                metricaTotalProductos.textContent = data.resumen.total_productos || 0;
+                if (metricaTotalVentas) metricaTotalVentas.textContent = data.resumen.total_ventas || 0;
+                if (metricaTotalProductos) metricaTotalProductos.textContent = data.resumen.total_productos || 0;
             }
 
             renderizarTabla(data.ventas || []);
+            renderizarPaginacion(paginaActual, totalPaginas);
         } catch (error) {
+            if (solicitud !== solicitudActual) return;
             console.error("Error al cargar ventas:", error);
-            tablaBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Error al cargar los datos</td></tr>`;
+            if (contenedorPaginacion) contenedorPaginacion.replaceChildren();
+            if (tablaBody) {
+                tablaBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Error al cargar los datos</td></tr>`;
+            }
         }
     }
 
-    // 2. Renderizar filas de la tabla
+    // 2. Renderizar filas de la tabla principal
     function renderizarTabla(ventas) {
+        if (!tablaBody) return;
         tablaBody.innerHTML = '';
 
         if (ventas.length === 0) {
@@ -69,8 +95,77 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. Delegación de eventos para los botones de las filas
-    tablaBody.addEventListener('click', (e) => {
+    // 3. Renderizar controles de paginación dinámica
+    function renderizarPaginacion(pagina, totalPaginas) {
+        if (!contenedorPaginacion) return;
+        contenedorPaginacion.replaceChildren();
+
+        if (totalPaginas <= 1) return;
+
+        const crearBoton = (texto, paginaDestino, etiqueta, deshabilitado = false) => {
+            const boton = document.createElement('button');
+            boton.type = 'button';
+            boton.className = 'btn-paginacion';
+            boton.textContent = texto;
+            boton.setAttribute('aria-label', etiqueta);
+            boton.disabled = deshabilitado;
+            boton.addEventListener('click', () => {
+                paginaActual = paginaDestino;
+                cargarVentas();
+            });
+            contenedorPaginacion.appendChild(boton);
+        };
+
+        // Botón Anterior
+        crearBoton('« Anterior', pagina - 1, 'Página anterior', pagina === 1);
+
+        const agregarNumeroPagina = (numero) => {
+            const boton = document.createElement('button');
+            boton.type = 'button';
+            boton.className = `btn-paginacion ${numero === pagina ? 'activo' : ''}`;
+            boton.textContent = numero;
+            boton.setAttribute('aria-label', `Página ${numero}`);
+            if (numero === pagina) boton.setAttribute('aria-current', 'page');
+            boton.addEventListener('click', () => {
+                paginaActual = numero;
+                cargarVentas();
+            });
+            contenedorPaginacion.appendChild(boton);
+        };
+
+        const inicio = Math.max(1, pagina - 2);
+        const fin = Math.min(totalPaginas, pagina + 2);
+
+        if (inicio > 1) {
+            agregarNumeroPagina(1);
+            if (inicio > 2) {
+                const separador = document.createElement('span');
+                separador.textContent = '…';
+                separador.setAttribute('aria-hidden', 'true');
+                contenedorPaginacion.appendChild(separador);
+            }
+        }
+
+        for (let numero = inicio; numero <= fin; numero++) {
+            agregarNumeroPagina(numero);
+        }
+
+        if (fin < totalPaginas) {
+            if (fin < totalPaginas - 1) {
+                const separador = document.createElement('span');
+                separador.textContent = '…';
+                separador.setAttribute('aria-hidden', 'true');
+                contenedorPaginacion.appendChild(separador);
+            }
+            agregarNumeroPagina(totalPaginas);
+        }
+
+        // Botón Siguiente
+        crearBoton('Siguiente »', pagina + 1, 'Página siguiente', pagina === totalPaginas);
+    }
+
+    // 4. Delegación de eventos para los botones de las filas
+    tablaBody?.addEventListener('click', (e) => {
         const btnResumen = e.target.closest('.resumen');
         const btnEliminar = e.target.closest('.eliminar');
 
@@ -85,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 4. Ver Resumen (Obtiene datos de /ventas/<id>/detalle)
+    // 5. Ver Resumen (Obtiene datos de /venta/<id>/detalle)
     async function verResumenVenta(idVenta) {
         try {
             const response = await fetch(`/venta/${idVenta}/detalle`);
@@ -100,35 +195,34 @@ document.addEventListener('DOMContentLoaded', () => {
             const items = data.items || [];
 
             // Llenar datos de la cabecera del modal
-            modalNumVenta.textContent = venta.idventa;
-            modalFecha.textContent = venta.fecha || '-';
-            modalCliente.textContent = venta.nombre_cliente?.trim() || 'Cliente General';
-            modalTotalMonto.textContent = `$${Number(venta.precio_total || 0).toLocaleString()}`;
+            if (modalNumVenta) modalNumVenta.textContent = venta.idventa;
+            if (modalFecha) modalFecha.textContent = venta.fecha || '-';
+            if (modalCliente) modalCliente.textContent = venta.nombre_cliente?.trim() || 'Cliente General';
+            if (modalTotalMonto) modalTotalMonto.textContent = `$${Number(venta.precio_total || 0).toLocaleString()}`;
 
             // Llenar la tabla de productos
-            modalTablaBody.innerHTML = '';
+            if (modalTablaBody) {
+                modalTablaBody.innerHTML = '';
 
-            if (items.length === 0) {
-                modalTablaBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No hay ítems registrados</td></tr>`;
-            } else {
-                items.forEach(item => {
-                    const tr = document.createElement('tr');
-                    
-                    // Si tu consulta devuelve precio_unitario, lo formateas aquí
-                    const precioUnitario = item.precio_unitario 
-                        ? `$${Number(item.precio_unitario).toLocaleString()}` 
-                        : '-';
+                if (items.length === 0) {
+                    modalTablaBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No hay ítems registrados</td></tr>`;
+                } else {
+                    items.forEach(item => {
+                        const tr = document.createElement('tr');
+                        const precioUnitario = item.precio_unitario
+                            ? `$${Number(item.precio_unitario).toLocaleString()}`
+                            : '-';
 
-                    tr.innerHTML = `
-                        <td> <img src="${item.imagen_producto}" alt="${item.producto_nombre}" style="width: 60px; height: 60px;"> - ${item.producto_nombre}</td>
-                        <td>${item.cantidad}</td>
-                        <td>${precioUnitario}</td>
-                    `;
-                    modalTablaBody.appendChild(tr);
-                });
+                        tr.innerHTML = `
+                            <td><img src="${item.imagen_producto}" alt="${item.producto_nombre}" style="width: 60px; height: 60px;"> - ${item.producto_nombre}</td>
+                            <td>${item.cantidad}</td>
+                            <td>${precioUnitario}</td>
+                        `;
+                        modalTablaBody.appendChild(tr);
+                    });
+                }
             }
 
-            // Mostrar el modal
             abrirModal();
 
         } catch (error) {
@@ -137,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 5. Anular / Eliminar Venta
+    // 6. Anular / Eliminar Venta
     async function anularVenta(idVenta) {
         if (!confirm(`¿Está seguro de que desea anular la venta #${idVenta}?`)) {
             return;
@@ -151,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok && data.exito) {
-                cargarVentas(); // Recarga la tabla con los datos actualizados
+                cargarVentas();
             } else {
                 alert(data.mensaje || "No se pudo anular la venta.");
             }
@@ -161,21 +255,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 6. Control del Modal
-    function abrirModal() { modal.classList.add('activo'); }
-    function cerrarModal() { modal.classList.remove('activo'); }
+    // 7. Control del Modal
+    function abrirModal() { modal?.classList.add('activo'); }
+    function cerrarModal() { modal?.classList.remove('activo'); }
 
     btnCerrarModal?.addEventListener('click', cerrarModal);
     btnCerrarModalAlt?.addEventListener('click', cerrarModal);
     window.addEventListener('click', (e) => { if (e.target === modal) cerrarModal(); });
 
-    // 7. Eventos de los filtros
-    inputBusqueda.addEventListener('input', () => {
+    // 8. Eventos de los filtros (Resetean a la página 1)
+    inputBusqueda?.addEventListener('input', () => {
+        paginaActual = 1;
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(cargarVentas, 300);
     });
 
-    selectFiltroFecha.addEventListener('change', cargarVentas);
+    selectFiltroFecha?.addEventListener('change', () => {
+        paginaActual = 1;
+        cargarVentas();
+    });
 
     // Carga inicial
     cargarVentas();

@@ -20,6 +20,8 @@ class Venta:
         descuento=0.0,
         precio_total=0.0,
         total_productos=0,
+        estado=1, #Es el estado de la venta 1 = completo, 0= deuda
+        plazo_pago=0 #la cantidad de dias que el 0 tiene para pagar
     ):
         """Registra la Venta, sus Ítems, descuenta Stock e inserta el registro en el historial de pagos."""
         conexion = Config.conectar_db()
@@ -69,7 +71,7 @@ class Venta:
                     INSERT INTO venta (
                         numero_factura, fecha_emision_factura, descuento, iva, 
                         cantidad_total_productos, precio_total, idcliente, idempleado, activa, estado
-                    ) VALUES (%s, NOW(), %s, %s, %s, %s, %s, %s, 1, 'completa');
+                    ) VALUES (%s, NOW(), %s, %s, %s, %s, %s, %s, 1, %s);
                 """
                 cursor.execute(
                     sql_venta,
@@ -81,6 +83,7 @@ class Venta:
                         precio_total,
                         id_cliente,
                         id_empleado,
+                        estado
                     ),
                 )
                 id_venta = cursor.lastrowid
@@ -117,10 +120,10 @@ class Venta:
                 # 5. Insertar en historial_pago (Coincidiendo con la estructura de la imagen)
                 sql_pago = """
                     INSERT INTO historial_pago_cliente (
-                        fecha, hora, monto, idmetodos_pago, idventa
-                    ) VALUES (CURDATE(), CURTIME(), %s, %s, %s);
+                        fecha, hora, monto, idmetodos_pago, plazo_pago, idventa
+                    ) VALUES (CURDATE(), CURTIME(), %s, %s, %s, %s);
                 """
-                cursor.execute(sql_pago, (precio_total, id_metodo_pago, id_venta))
+                cursor.execute(sql_pago, (precio_total, id_metodo_pago, plazo_pago, id_venta))
 
             conexion.commit()
             print(f"Venta #{id_venta} y su pago fueron registrados exitosamente.")
@@ -163,7 +166,7 @@ class Venta:
                         OR CONCAT(c.nombre, ' ', c.apellido) LIKE %s
                     )""")
                     patron = f"%{busqueda.strip()}%"
-                    parametros.extend([patron] * 5)
+                    parametros.extend([patron] * 3)
 
                 # Filtro por rango específico o predefinido
                 if fecha_inicio and fecha_fin:
