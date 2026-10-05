@@ -48,7 +48,7 @@
                             {% if p.medidas %}
                                 <span class="medidas-producto">{{ p.medidas }}</span>
                             {% endif %}
-                            <span class="precio-producto">Cantidad: {{ p.cantidad_actual }}</span>
+                            <span class="precio-producto">Cantidad: {{ p.cantidad_actual }} - Minima: {{p.cantidad_minima}}</span>
                             <span class="precio-producto">{{ p.tipo }}</span>
                         </span>
                     </button>

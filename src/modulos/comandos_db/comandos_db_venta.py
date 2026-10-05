@@ -334,7 +334,7 @@ class Venta:
         
     @staticmethod
     def anular(id_venta):
-        """Anula de forma lógica una venta y reintegra las cantidades al stock de productos."""
+        """Anula una venta y restituye el stock de los artículos que no son servicios."""
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
@@ -362,7 +362,7 @@ class Venta:
                 sql_restituir_stock = """
                     UPDATE producto_servicio 
                     SET cantidad_actual = cantidad_actual + %s 
-                    WHERE idproducto_servicio = %s AND tipo = 'producto';
+                    WHERE idproducto_servicio = %s AND tipo != 'servicio';
                 """
                 valores_stock = [
                     (item["cantidad"], item["idproducto_servicio"]) for item in items

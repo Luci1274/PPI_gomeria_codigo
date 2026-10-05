@@ -279,7 +279,7 @@ class Compra:
 
     @staticmethod
     def anular(id_compra):
-        """Anula de forma lógica una compra (activo=0) y descuenta las cantidades agregadas al stock."""
+        """Anula una compra y revierte el stock de los artículos que no son servicios."""
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
@@ -309,7 +309,7 @@ class Compra:
                 sql_revertir_stock = """
                     UPDATE producto_servicio 
                     SET cantidad_actual = cantidad_actual - %s 
-                    WHERE idproducto_servicio = %s AND tipo = 'producto';
+                    WHERE idproducto_servicio = %s AND tipo != 'servicio';
                 """
                 valores_stock = [
                     (item["cantidad"], item["idproducto_servicio"]) for item in items
@@ -339,7 +339,7 @@ class Compra:
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
-                cursor.execute("SELECT p.idproducto_servicio, p.nombre, p.medidas, p.tipo, p.imagen_producto, p.cantidad_actual FROM producto_servicio AS p WHERE activo = 1 ORDER BY p.cantidad_actual ASC;")
+                cursor.execute("SELECT p.idproducto_servicio, p.nombre, p.medidas, p.tipo, p.imagen_producto, p.cantidad_actual, p.cantidad_minima FROM producto_servicio AS p WHERE activo = 1 ORDER BY p.cantidad_actual ASC;")
                 productos = cursor.fetchall()
 
                 cursor.execute("SELECT DISTINCT tipo FROM producto_servicio WHERE activo = 1;")
