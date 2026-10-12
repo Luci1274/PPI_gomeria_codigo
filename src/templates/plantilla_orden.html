@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ordenes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>{% block titulo_documento %}Orden - Sistema Gomería{% endblock %}</title>
+</head>
+
+<body data-error-db="{{ 'true' if error_db else 'false' }}">
+    <div class="contenedor">
+        {% include "componentes/navbar.html" %}
+
+        <button type="button" class="btn-carrito-pos" id="btn-carrito-pos"
+            aria-label="Abrir resumen del pedido" aria-expanded="false" aria-controls="panel-resumen-pos">
+            <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+        </button>
+
+        <main class="contenido-principal orden-pos">
+            <section class="seccion-catalogo">
+                <header class="barra-superior">
+                    <h1>{% block titulo_pagina %}{% endblock %}</h1>
+                    <p>Haz clic en un producto para agregarlo al pedido</p>
+                </header>
+                <div class="barras-pos">
+                    <div class="contenedor-busqueda">
+                        <input type="text" id="buscar-producto" placeholder="Buscar producto por nombre..." aria-label="Buscar producto por nombre">
+                    </div>
+                    <div class="filtros-categoria">
+                        <select name="select-categoria" id="select-categoria" aria-label="Filtrar por tipo de producto">
+                            <option value="todos">Todas las categorías</option>
+                            {% for t in listado_tipos %}
+                            <option value="{{ t.tipo }}">{{ t.tipo.capitalize() }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="grilla-productos">
+                    {% block productos %}{% endblock %}
+                </div>
+            </section>
+
+            <aside class="panel-resumen-pos" id="panel-resumen-pos" tabindex="-1">
+                <div class="cabecera-resumen">
+                    <h2>Resumen de Pedido</h2>
+                </div>
+                <div class="formulario-resumen">
+                    <div class="campo-pos">
+                        <label for="fecha-actual">Fecha:</label>
+                        <span class="fecha-actual" id="fecha-actual"></span>
+                    </div>
+                    {% block campos_resumen %}{% endblock %}
+                </div>
+                <hr class="divisor">
+                <div class="lista-items-pedido" id="lista-resumen" aria-live="polite"></div>
+                <div class="footer-resumen">
+                    {% block total_resumen %}{% endblock %}
+                    <div class="btn-acciones-pos">
+                        <button type="button" class="btn btn-cerrar" id="btn-cancelar">Cerrar</button>
+                        {% block accion_secundaria %}{% endblock %}
+                        <button type="button" class="btn btn-primario" id="btn-open-modal">Continuar</button>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <button type="button" class="overlay-resumen-pos" id="overlay-resumen-pos"
+        aria-label="Cerrar resumen del pedido" tabindex="-1"></button>
+
+    <div class="cartel-emergente" id="cartel-emergente" role="status" aria-live="polite" aria-atomic="true" aria-labelledby="cartel-titulo" aria-describedby="cartel-mensaje">
+        <h2 id="cartel-titulo"></h2>
+        <p id="cartel-mensaje"></p>
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+        <div class="modal-contenido">
+            <header class="modal-cabecera">
+                <div>
+                    <h2 id="modal-titulo">{% block titulo_modal %}{% endblock %}</h2>
+                    <p>{% block descripcion_modal %}{% endblock %}</p>
+                </div>
+                <button type="button" class="btn-cerrar" id="btn-cerrar-modal" aria-label="Cerrar resumen">X</button>
+            </header>
+            <div class="contenedor-tarjetas">
+                {% block datos_modal %}{% endblock %}
+            </div>
+            <div class="modal-contenedor-tabla">
+                <table class="modal-table">
+                    <thead>
+                        {% block cabecera_modal_tabla %}{% endblock %}
+                    </thead>
+                    <tbody id="modal-tabla-body"></tbody>
+                    {% block pie_modal_tabla %}{% endblock %}
+                </table>
+            </div>
+            <div class="btn-acciones">
+                {% block acciones_modal %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    {% block scripts_pagina %}{% endblock %}
+    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+</body>
+
+</html>
