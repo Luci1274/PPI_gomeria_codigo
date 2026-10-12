@@ -1,147 +1,139 @@
-<!DOCTYPE html>
-<html lang="es">
+{% extends "plantailla_gestion.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/compra.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <title>Compras - Sistema Gomería</title>
-</head>
+{% block estilos_pagina %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/gestion_ordenes.css') }}">
+{% endblock %}
 
-<body>
-    <div class="contenedor">
-        {% include "componentes/navbar.html" %}
+{% block titulo_documento %}Compras - Sistema Gomería{% endblock %}
+{% block titulo_pagina %}Gestión de Compras{% endblock %}
+{% block descripcion_pagina %}Administra y gestiona tus compras{% endblock %}
 
-        <main class="contenido-principal">
-            <header class="barra-superior">
-                <div class="titulo-pagina">
-                    <h1>Gestión de Compras</h1>
-                    <p>Administra y gestiona tus compras</p>
-                </div>
-                <div class="barra-superior-accion">
-                    <a href="/compras/realizar" class="btn btn-primario">Nueva Orden de Compra</a>
-                </div>
-            </header>
+{% block acciones_superiores %}
+<div class="barra-superior-accion">
+    <a href="/compras/realizar" class="btn btn-primario">Nueva Orden de Compra</a>
+</div>
+{% endblock %}
 
-            <section class="cuadricula-metricas">
-                <div class="tarjeta-metrica">
-                    <div class="datos-metrica">
-                        <h3>Total Compras</h3>
-                        <p class="valor-metrica" id="metrica-total-compras">0</p>
-                    </div>
-                </div>
-                <div class="tarjeta-metrica">
-                    <div class="datos-metrica">
-                        <h3>Total Productos Comprados</h3>
-                        <p class="valor-metrica" id="metrica-total-productos">0</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="barra-filtrado">
-                <div class="contenedor-busqueda">
-                    <input type="text" id="input-busqueda" placeholder="Buscar por N° orden o proveedor...">
-                </div>
-                <div class="accion-filtro">
-                    <select class="filtro-seleccion" id="select-filtro-fecha">
-                        <option value="hoy">Hoy</option>
-                        <option value="semana">Últimos 7 días</option>
-                        <option value="mes">Este mes</option>
-                        <option value="anio">Este año</option>
-                        <option value="todos">Todas las fechas</option>
-                    </select>
-                </div>
-                <div class="accion-filtro">
-                    <select class="filtro-seleccion" id="select-filtro-estado">
-                        <option value="1">Activas</option>
-                        <option value="0">Anuladas</option>
-                        <option value="todos">Todas</option>
-                    </select>
-                </div>
-            </section>
-
-            <section class="contenedor-tabla">
-                <table class="tabla-datos">
-                    <thead>
-                        <tr>
-                            <th>N° Orden</th>
-                            <th>Fecha</th>
-                            <th>Proveedor</th>
-                            <th>Tipos Producto</th>
-                            <th>Total Productos</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-compras-body">
-                    </tbody>
-                </table>
-                <!-- Contenedor para la paginación dinámica -->
-                <nav class="paginacion-contenedor" id="contenedor-paginacion" aria-label="Paginación de compras"></nav>
-            </section>
-        </main>
-
-        <!-- Cartel emergente de avisos / confirmación -->
-        <div class="cartel-emergente" id="cartel-emergente" role="status" aria-live="polite" aria-atomic="true" aria-labelledby="cartel-titulo" aria-describedby="cartel-mensaje">
-            <h2 id="cartel-titulo"></h2>
-            <p id="cartel-mensaje"></p>
+{% block metricas %}
+<section class="cuadricula-metricas">
+    <div class="tarjeta-metrica">
+        <div class="datos-metrica">
+            <h3>Total Compras</h3>
+            <p class="valor-metrica" id="metrica-total-compras">0</p>
         </div>
+    </div>
+    <div class="tarjeta-metrica">
+        <div class="datos-metrica">
+            <h3>Total Productos Comprados</h3>
+            <p class="valor-metrica" id="metrica-total-productos">0</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
 
-        <!-- Ventana emergente (Resumen de Orden de Compra) -->
-        <div class="modal-overlay" id="modal-overlay">
-            <div class="modal-contenido">
-                <div class="modal-cabecera">
-                    <h2>Resumen Orden de Compra #<span id="modal-num-compra"></span></h2>
-                    <p>Detalles completos de la orden de compra</p>
-                    <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
+{% block filtros %}
+<section class="barra-filtrado">
+    <div class="contenedor-busqueda">
+        <input type="text" id="input-busqueda" placeholder="Buscar por N° orden o proveedor...">
+    </div>
+    <div class="accion-filtro">
+        <select class="filtro-seleccion" id="select-filtro-fecha">
+            <option value="hoy">Hoy</option>
+            <option value="semana">Últimos 7 días</option>
+            <option value="mes">Este mes</option>
+            <option value="anio">Este año</option>
+            <option value="todos">Todas las fechas</option>
+        </select>
+    </div>
+    <div class="accion-filtro">
+        <select class="filtro-seleccion" id="select-filtro-estado">
+            <option value="1">Activas</option>
+            <option value="0">Anuladas</option>
+            <option value="todos">Todas</option>
+        </select>
+    </div>
+</section>
+{% endblock %}
+
+{% block cabecera_tabla %}
+<tr>
+    <th>N° Orden</th>
+    <th>Fecha</th>
+    <th>Proveedor</th>
+    <th>Tipos Producto</th>
+    <th>Total Productos</th>
+    <th>Acciones</th>
+</tr>
+{% endblock %}
+
+{% block cuerpo_tabla %}
+<tbody id="tabla-compras-body"></tbody>
+{% endblock %}
+
+{% block paginacion %}
+<nav class="paginacion-contenedor" id="contenedor-paginacion" aria-label="Paginación de compras"></nav>
+{% endblock %}
+
+{% block cartel_emergente %}
+<div class="cartel-emergente" id="cartel-emergente" role="status" aria-live="polite" aria-atomic="true" aria-labelledby="cartel-titulo" aria-describedby="cartel-mensaje">
+    <h2 id="cartel-titulo"></h2>
+    <p id="cartel-mensaje"></p>
+</div>
+{% endblock %}
+
+{% block modales %}
+<div class="modal-overlay modal-ordenes" id="modal-overlay">
+    <div class="modal-contenido">
+        <div class="modal-cabecera">
+            <div>
+                <h2>Resumen Orden de Compra #<span id="modal-num-compra"></span></h2>
+                <p>Detalles completos de la orden de compra</p>
+            </div>
+            <button class="btn-cerrar" id="btn-cerrar-modal" type="button" aria-label="Cerrar">X</button>
+        </div>
+        <div class="contenedor-tarjetas">
+            <div class="tarjeta-metrica">
+                <div class="datos-metricas">
+                    <p>Fecha:</p>
+                    <p id="modal-fecha">-</p>
                 </div>
-                <div class="contenedor-tarjetas">
-                    <div class="tarjeta-metrica">
-                        <div class="datos-metricas">
-                            <p>Fecha:</p>
-                            <p id="modal-fecha">-</p>
-                        </div>
-                    </div>
-                    <div class="tarjeta-metrica">
-                        <div class="datos-metricas">
-                            <p>Proveedor:</p>
-                            <p id="modal-proveedor">-</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-contenedor-tabla">
-                    <table class="modal-table">
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th>Tipo</th>
-                                <th>Cantidad</th>
-                                <th>Precio Unitario</th>
-                                <th>Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody id="modal-tabla-body">
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="4" class="total-table">Total</td>
-                                <td class="total-table" id="modal-total-monto">$0</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-                <div class="btn-acciones">
-                    <button class="btn accion">Descargar PDF</button>
-                    <button class="btn accion">Imprimir</button>
-                    <button class="btn accion" id="btn-cerrar-modal-alt">Cerrar</button>
+            </div>
+            <div class="tarjeta-metrica">
+                <div class="datos-metricas">
+                    <p>Proveedor:</p>
+                    <p id="modal-proveedor">-</p>
                 </div>
             </div>
         </div>
+        <div class="modal-contenedor-tabla">
+            <table class="modal-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Tipo</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody id="modal-tabla-body"></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="total-table">Total</td>
+                        <td class="total-table" id="modal-total-monto">$0</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="btn-acciones">
+            <button class="btn accion" type="button">Descargar PDF</button>
+            <button class="btn accion" type="button">Imprimir</button>
+            <button class="btn accion" id="btn-cerrar-modal-alt" type="button">Cerrar</button>
+        </div>
     </div>
+</div>
+{% endblock %}
 
-    <script src="{{ url_for('static', filename='js/compras.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
-</body>
-
-</html>
+{% block scripts_pagina %}
+<script src="{{ url_for('static', filename='js/compras.js') }}"></script>
+{% endblock %}
