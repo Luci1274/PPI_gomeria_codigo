@@ -1,191 +1,165 @@
-<!DOCTYPE html>
-<html lang="es">
+{% extends "plantailla_gestion.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../static/css/clientes.css">
-    <link rel="stylesheet" href="../static/css/navbar.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <title>Clientes - Sistema Gomería</title>
-</head>
+{% block estilos_pagina %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/clientes.css') }}">
+{% endblock %}
 
-<body>
-    <div class="contenedor">
-        {% include "componentes/navbar.html" %}
+{% block titulo_documento %}Clientes - Sistema Gomería{% endblock %}
+{% block titulo_pagina %}Gestión de Clientes{% endblock %}
+{% block descripcion_pagina %}Administra y consulta los clientes.{% endblock %}
 
-        <!--Contenido Principal-->
-        <main class="contenido-principal">
-            <header class="barra-superior">
-                <div class="titulo-pagina">
-                    <h1>Gestión de Clientes</h1>
-                    <p>Administra y consulta los clientes.</p>
-                </div>
-                <div class="barra-superior-accion">
-                    <button class="btn btn-primario" id="btn-open-modal">Nuevo Cliente</button>
-                </div>
-            </header>
+{% block acciones_superiores %}
+<div class="barra-superior-accion">
+    <button class="btn btn-primario" id="btn-open-modal">Nuevo Cliente</button>
+</div>
+{% endblock %}
 
-            <!--Tarjeta-->
-            <section class="cuadricula-metricas">
-                <div class="tarjeta-metrica">
-                    <div class="datos-metrica">
-                        <h3>Total Clientes</h3>
-                        <p class="valor-metrica">20</p>
-                    </div>
-                </div>
-            </section>
-
-            <!--Barra de Filtros y Búsqueda-->
-            <section class="barra-filtros">
-                <div class="contenedor-busqueda">
-                    <input type="text" id="input-busqueda" placeholder="Buscar por Nombre o DNI...">
-                </div>
-                <div class="acciones-filtros">
-                    <select class="filtro-seleccion" id="filtro-estado">
-                        <option value="todos">Todos los estados</option>
-                        <option value="activo">Activo</option>
-                        <option value="inactivo">No Activo</option>
-                    </select>
-                </div>
-            </section>
-
-            <!--Tabla de datos-->
-            <section class="contenedor-tabla">
-                <table class="tabla-datos">
-                    <thead>
-                        <tr>
-                            <th>Nombre/Razón Social</th>
-                            <th>CUIT/DNI</th>
-                            <th>Contacto</th>
-                            <th>Ciudad</th>
-                            <th>Dirección</th>
-                            <th>Deuda</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-                <!-- CÓDIGO HTML PARA PAGINACIÓN -->
-                <div class="contenedor-paginacion" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px;">
-                    <button id="btn-pag-anterior" class="btn-accion" disabled>&laquo; Anterior</button>
-                    <span id="info-paginacion" style="font-weight: bold; color: #555;">Página 1 de 1</span>
-                    <button id="btn-pag-siguiente" class="btn-accion">Siguiente &raquo;</button>
-            </section>
-        </main>
-    </div>
-
-    <!-- Cartel emergente de avisos -->
-    <div class="cartel-emergente" id="cartel-emergente">
-        <h2 id="cartel-titulo"></h2>
-        <p id="cartel-mensaje"></p>
-    </div>
-
-    <!--Ventana emergente (Registro de Nuevo Cliente)-->
-    <div id="modal-overlay" class="modal-overlay">
-        <div class="modal-contenido">
-            <div class="modal-cabecera">
-                <h2>Nuevo Cliente</h2>
-                <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
-            </div>
-            <!--Formulario de ingreso de datos-->
-            <form action="" class="modal-cuerpo">
-                <div class="grupo-input">
-                    <label for="input-cliente">Nombre del Cliente</label>
-                    <input type="text" id="input-cliente" placeholder="Ej: Michael Zarza">
-                </div>
-                <div class="fila-doble">
-                    <div class="grupo-input">
-                        <label for="input-cuit">CUIT/DNI</label>
-                        <input type="text" id="input-cuit" placeholder="Ej: 34242532">
-                    </div>
-                    <div class="grupo-input">
-                        <label for="input-telefono">Teléfono</label>
-                        <input type="text" id="input-telefono" placeholder="Ej: 3413456578">
-                    </div>
-                </div>
-                <div class="grupo-input">
-                    <label for="input-mail">Mail</label>
-                    <input type="email" id="input-mail" placeholder="Ej: juanito15@gmail.com">
-                </div>
-                <div class="fila-doble">
-                    <div class="grupo-input">
-                        <label for="input-ciudad">Ciudad</label>
-                        <input type="text" name="input-ciudad" id="input-ciudad" placeholder="Roldan">
-                    </div>
-                    <div class="grupo-input">
-                        <label for="input-direccion">Dirección</label>
-                        <input type="text" id="input-direccion" placeholder="Ej: San Lorenzo 2134">
-                    </div>
-                </div>
-                <div class="btn-acciones-modal">
-                    <button type="button" class="btn-cancelar" id="btn-cancelar-modal">Cancelar</button>
-                    <button type="submit" class="btn-guardar">Guardar</button>
-                </div>
-            </form>
+{% block metricas %}
+<section class="cuadricula-metricas">
+    <div class="tarjeta-metrica">
+        <div class="datos-metrica">
+            <h3>Total Clientes</h3>
+            <p class="valor-metrica">20</p>
         </div>
     </div>
+</section>
+{% endblock %}
 
-    <!--Ventana emergente (Edición de Cliente)-->
-    <div id="modal-editar-overlay" class="modal-overlay">
-        <div class="modal-contenido">
-            <div class="modal-cabecera">
-                <h2>Editar Cliente</h2>
-                <button class="btn-cerrar" id="btn-cerrar-modal-editar">X</button>
-            </div>
-            <!--Formulario de edición de datos-->
-            <form action="" class="modal-cuerpo">
-                <!-- Campo oculto opcional para ID del cliente -->
-                <input type="hidden" id="input-editar-id" value="">
-
-                <div class="grupo-input">
-                    <label for="input-editar-cliente">Nombre del Cliente</label>
-                    <input type="text" id="input-editar-cliente">
-                </div>
-                <div class="fila-doble">
-                    <div class="grupo-input">
-                        <label for="input-editar-cuit">CUIT/DNI</label>
-                        <input type="text" id="input-editar-cuit">
-                    </div>
-                    <div class="grupo-input">
-                        <label for="input-editar-telefono">Teléfono</label>
-                        <input type="text" id="input-editar-telefono">
-                    </div>
-                </div>
-                <div class="grupo-input">
-                        <label for="input-editar-mail">Mail</label>
-                        <input type="text" id="input-editar-mail">
-                    </div>
-                <div class="fila-doble">
-                    <div class="grupo-input">
-                        <label for="input-editar-ciudad">Ciudad</label>
-                        <input type="text" id="input-editar-ciudad" name="input-editar-ciudad" placeholder="Rosario">
-                    </div>
-                    <div class="grupo-input">
-                        <label for="input-editar-direccion">Dirección</label>
-                        <input type="text" id="input-editar-direccion">
-                    </div>
-                </div>
-                <div class="grupo-input">
-                    <label for="select-editar-estado">Estado</label>
-                    <select name="select-editar-estado" id="select-editar-estado">
-                        <option value="activo">Activo</option>
-                        <option value="inactivo">No Activo</option>
-                    </select>
-                </div>
-                <div class="btn-acciones-modal">
-                    <button type="button" class="btn-cancelar" id="btn-cancelar-modal-editar">Cancelar</button>
-                    <button type="submit" class="btn-guardar">Actualizar</button>
-                </div>
-            </form>
-        </div>
+{% block filtros %}
+<section class="barra-filtros">
+    <div class="contenedor-busqueda">
+        <input type="text" id="input-busqueda" placeholder="Buscar por Nombre o DNI...">
     </div>
+    <div class="acciones-filtros">
+        <select class="filtro-seleccion" id="filtro-estado">
+            <option value="todos">Todos los estados</option>
+            <option value="activo">Activo</option>
+            <option value="inactivo">No Activo</option>
+        </select>
+    </div>
+</section>
+{% endblock %}
 
-    <!--Scripts de JS-->
-    <script src="../static/js/clientes.js"></script>
-    <script src="../static/js/navbar.js"></script>
-</body>
+{% block cabecera_tabla %}
+<tr>
+    <th>Nombre/Razón Social</th>
+    <th>CUIT/DNI</th>
+    <th>Contacto</th>
+    <th>Ciudad</th>
+    <th>Dirección</th>
+    <th>Deuda</th>
+    <th>Estado</th>
+    <th>Acciones</th>
+</tr>
+{% endblock %}
 
-</html>
+{% block cuerpo_tabla %}
+<tbody></tbody>
+{% endblock %}
+
+{% block cartel_emergente %}
+<div class="cartel-emergente" id="cartel-emergente">
+    <h2 id="cartel-titulo"></h2>
+    <p id="cartel-mensaje"></p>
+</div>
+{% endblock %}
+
+{% block modales %}
+<div id="modal-overlay" class="modal-overlay">
+    <div class="modal-contenido">
+        <div class="modal-cabecera">
+            <h2>Nuevo Cliente</h2>
+            <button class="btn-cerrar" id="btn-cerrar-modal">X</button>
+        </div>
+        <form action="" class="modal-cuerpo">
+            <div class="grupo-input">
+                <label for="input-cliente">Nombre del Cliente</label>
+                <input type="text" id="input-cliente" placeholder="Ej: Michael Zarza">
+            </div>
+            <div class="fila-doble">
+                <div class="grupo-input">
+                    <label for="input-cuit">CUIT/DNI</label>
+                    <input type="text" id="input-cuit" placeholder="Ej: 34242532">
+                </div>
+                <div class="grupo-input">
+                    <label for="input-telefono">Teléfono</label>
+                    <input type="text" id="input-telefono" placeholder="Ej: 3413456578">
+                </div>
+            </div>
+            <div class="grupo-input">
+                <label for="input-mail">Mail</label>
+                <input type="email" id="input-mail" placeholder="Ej: juanito15@gmail.com">
+            </div>
+            <div class="fila-doble">
+                <div class="grupo-input">
+                    <label for="input-ciudad">Ciudad</label>
+                    <input type="text" name="input-ciudad" id="input-ciudad" placeholder="Roldan">
+                </div>
+                <div class="grupo-input">
+                    <label for="input-direccion">Dirección</label>
+                    <input type="text" id="input-direccion" placeholder="Ej: San Lorenzo 2134">
+                </div>
+            </div>
+            <div class="btn-acciones-modal">
+                <button type="button" class="btn-cancelar" id="btn-cancelar-modal">Cancelar</button>
+                <button type="submit" class="btn-guardar">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modal-editar-overlay" class="modal-overlay">
+    <div class="modal-contenido">
+        <div class="modal-cabecera">
+            <h2>Editar Cliente</h2>
+            <button class="btn-cerrar" id="btn-cerrar-modal-editar">X</button>
+        </div>
+        <form action="" class="modal-cuerpo">
+            <input type="hidden" id="input-editar-id" value="">
+            <div class="grupo-input">
+                <label for="input-editar-cliente">Nombre del Cliente</label>
+                <input type="text" id="input-editar-cliente">
+            </div>
+            <div class="fila-doble">
+                <div class="grupo-input">
+                    <label for="input-editar-cuit">CUIT/DNI</label>
+                    <input type="text" id="input-editar-cuit">
+                </div>
+                <div class="grupo-input">
+                    <label for="input-editar-telefono">Teléfono</label>
+                    <input type="text" id="input-editar-telefono">
+                </div>
+            </div>
+            <div class="grupo-input">
+                <label for="input-editar-mail">Mail</label>
+                <input type="text" id="input-editar-mail">
+            </div>
+            <div class="fila-doble">
+                <div class="grupo-input">
+                    <label for="input-editar-ciudad">Ciudad</label>
+                    <input type="text" id="input-editar-ciudad" name="input-editar-ciudad" placeholder="Rosario">
+                </div>
+                <div class="grupo-input">
+                    <label for="input-editar-direccion">Dirección</label>
+                    <input type="text" id="input-editar-direccion">
+                </div>
+            </div>
+            <div class="grupo-input">
+                <label for="select-editar-estado">Estado</label>
+                <select name="select-editar-estado" id="select-editar-estado">
+                    <option value="activo">Activo</option>
+                    <option value="inactivo">No Activo</option>
+                </select>
+            </div>
+            <div class="btn-acciones-modal">
+                <button type="button" class="btn-cancelar" id="btn-cancelar-modal-editar">Cancelar</button>
+                <button type="submit" class="btn-guardar">Actualizar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts_pagina %}
+<script src="{{ url_for('static', filename='js/clientes.js') }}"></script>
+{% endblock %}

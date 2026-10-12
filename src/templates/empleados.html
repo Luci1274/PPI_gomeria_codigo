@@ -1,141 +1,100 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../static/css/clientes.css">
-    <link rel="stylesheet" href="../static/css/navbar.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <title>Empleados - Sistema Gomería</title>
-</head>
-<body>
-    <div class="contenedor">
-        {% include "componentes/navbar.html" %}
+{% extends "plantailla_gestion.html" %}
 
-        <main class="contenido-principal">
-            <header class="barra-superior">
-                <div class="titulo-pagina">
-                    <h1>Gestión de Empleados</h1>
-                    <p>Administra y consulta los empleados</p>
-                </div>
-                <div class="barra-superior-accion">
-                    <button class="btn btn-primario" id="btn-nuevo-empleado">Nuevo Empleado</button>
-                </div>
-            </header>
+{% block estilos_pagina %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/clientes.css') }}">
+{% endblock %}
 
-            <section class="cuadricula-metricas">
-                <div class="tarjeta-metrica">
-                    <div class="datos-metrica">
-                        <h3>Total Empleados</h3>
-                        <p class="valor-metrica" id="valor_metrica">0</p>
-                    </div>
-                </div>
-            </section>
+{% block titulo_documento %}Empleados - Sistema Gomería{% endblock %}
+{% block titulo_pagina %}Gestión de Empleados{% endblock %}
+{% block descripcion_pagina %}Administra y consulta los empleados{% endblock %}
 
-            <section class="barra-filtros">
-                <div class="contenedor-busqueda">
-                    <input type="text" id="input-busqueda" placeholder="Buscar por Nombre...">
-                </div>
-            </section>
+{% block acciones_superiores %}
+<div class="barra-superior-accion">
+    <button class="btn btn-primario" id="btn-nuevo-empleado">Nuevo Empleado</button>
+</div>
+{% endblock %}
 
-            <section class="contenedor-tabla">
-                <table class="tabla-datos">
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Email</th>
-                            <th>Teléfono</th>
-                            <th>Rol</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-empleados-body">
-                        <!-- Se llena dinámicamente con JS -->
-                    </tbody>
-                </table>
-
-                <!-- Controles de Paginación -->
-                <div class="paginacion-contenedor">
-                    <button id="btn-pag-anterior" class="btn-paginacion" disabled>&laquo; Anterior</button>
-                    <span id="info-paginacion" class="info-paginacion">Página 1 de 1</span>
-                    <button id="btn-pag-siguiente" class="btn-paginacion" disabled>Siguiente &raquo;</button>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <!-- Cartel emergente de avisos / confirmación -->
-    <div class="cartel-emergente" id="cartel-emergente">
-        <h2 id="cartel-titulo"></h2>
-        <p id="cartel-mensaje"></p>
-    </div>
-
-    <!-- Modal 1: Nuevo Empleado -->
-    <!-- <div id="modal-nuevo-empleado" class="modal-overlay">
-        <div class="modal-contenido">
-            <div class="modal-cabecera">
-                <h2>Nuevo Empleado</h2>
-                <button class="btn-cerrar" id="btn-cerrar-modal-nuevo">X</button>
-            </div>
-            <form id="form-nuevo-empleado" class="modal-cuerpo">
-                <div class="grupo-input">
-                    <label for="input-nombre">Nombre del empleado</label>
-                    <input type="text" id="input-nombre" placeholder="Ej: Michael Zarza" required>
-                </div>
-                <div class="grupo-input">
-                    <label for="input-email">Email</label>
-                    <input type="email" id="input-email" placeholder="Ej: michaelzarza12@gmail.com" required>
-                </div>
-                <div class="grupo-input">
-                    <label for="input-telefono">Teléfono</label>
-                    <input type="text" id="input-telefono" placeholder="Ej: 3415463421">
-                </div>
-                <div class="grupo-input">
-                    <label for="input-rol">Rol / Puesto</label>
-                    <input type="text" id="input-rol" placeholder="Ej: Mecánico, Vendedor, Administrador">
-                </div>
-                <div class="btn-acciones-modal">
-                    <button type="button" class="btn-cancelar" id="btn-cancelar-modal-nuevo">Cancelar</button>
-                    <button type="submit" class="btn-guardar" id="btn-guardar-empleado">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div> -->
-
-    <!-- Modal 2: Editar Empleado -->
-    <div id="modal-editar-empleado" class="modal-overlay">
-        <div class="modal-contenido">
-            <div class="modal-cabecera">
-                <h2>Editar Empleado</h2>
-                <button class="btn-cerrar" id="btn-cerrar-modal-editar">X</button>
-            </div>
-            <form id="form-editar-empleado" class="modal-cuerpo">
-                <div class="grupo-input">
-                    <label for="input-editar-nombre">Nombre del empleado</label>
-                    <input type="text" id="input-editar-nombre" required>
-                </div>
-                <div class="grupo-input">
-                    <label for="input-editar-email">Email</label>
-                    <input type="email" id="input-editar-email" required>
-                </div>
-                <div class="grupo-input">
-                    <label for="input-editar-telefono">Teléfono</label>
-                    <input type="text" id="input-editar-telefono">
-                </div>
-                <div class="grupo-input">
-                    <label for="input-editar-rol">Rol / Puesto</label>
-                    <input type="text" id="input-editar-rol">
-                </div>
-                <div class="btn-acciones-modal">
-                    <button type="button" class="btn-cancelar" id="btn-cancelar-modal-editar">Cancelar</button>
-                    <button type="submit" class="btn-guardar">Actualizar</button>
-                </div>
-            </form>
+{% block metricas %}
+<section class="cuadricula-metricas">
+    <div class="tarjeta-metrica">
+        <div class="datos-metrica">
+            <h3>Total Empleados</h3>
+            <p class="valor-metrica" id="valor_metrica">0</p>
         </div>
     </div>
+</section>
+{% endblock %}
 
-    <!-- Scripts JS -->
-    <script src="../static/js/navbar.js"></script>
-    <script src="../static/js/empleados.js"></script>
-</body>
-</html>
+{% block filtros %}
+<section class="barra-filtros">
+    <div class="contenedor-busqueda">
+        <input type="text" id="input-busqueda" placeholder="Buscar por Nombre...">
+    </div>
+</section>
+{% endblock %}
+
+{% block cabecera_tabla %}
+<tr>
+    <th>Nombre</th>
+    <th>Email</th>
+    <th>Teléfono</th>
+    <th>Rol</th>
+    <th>Acciones</th>
+</tr>
+{% endblock %}
+
+{% block cuerpo_tabla %}
+<tbody id="tabla-empleados-body"></tbody>
+{% endblock %}
+
+{% block paginacion %}
+<div class="paginacion-contenedor">
+    <button id="btn-pag-anterior" class="btn-paginacion" disabled>&laquo; Anterior</button>
+    <span id="info-paginacion" class="info-paginacion">Página 1 de 1</span>
+    <button id="btn-pag-siguiente" class="btn-paginacion" disabled>Siguiente &raquo;</button>
+</div>
+{% endblock %}
+
+{% block cartel_emergente %}
+<div class="cartel-emergente" id="cartel-emergente">
+    <h2 id="cartel-titulo"></h2>
+    <p id="cartel-mensaje"></p>
+</div>
+{% endblock %}
+
+{% block modales %}
+<div id="modal-editar-empleado" class="modal-overlay">
+    <div class="modal-contenido">
+        <div class="modal-cabecera">
+            <h2>Editar Empleado</h2>
+            <button class="btn-cerrar" id="btn-cerrar-modal-editar">X</button>
+        </div>
+        <form id="form-editar-empleado" class="modal-cuerpo">
+            <div class="grupo-input">
+                <label for="input-editar-nombre">Nombre del empleado</label>
+                <input type="text" id="input-editar-nombre" required>
+            </div>
+            <div class="grupo-input">
+                <label for="input-editar-email">Email</label>
+                <input type="email" id="input-editar-email" required>
+            </div>
+            <div class="grupo-input">
+                <label for="input-editar-telefono">Teléfono</label>
+                <input type="text" id="input-editar-telefono">
+            </div>
+            <div class="grupo-input">
+                <label for="input-editar-rol">Rol / Puesto</label>
+                <input type="text" id="input-editar-rol">
+            </div>
+            <div class="btn-acciones-modal">
+                <button type="button" class="btn-cancelar" id="btn-cancelar-modal-editar">Cancelar</button>
+                <button type="submit" class="btn-guardar">Actualizar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts_pagina %}
+<script src="{{ url_for('static', filename='js/empleados.js') }}"></script>
+{% endblock %}
