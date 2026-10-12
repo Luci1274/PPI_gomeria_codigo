@@ -269,6 +269,12 @@ class Compra:
                 cursor.execute(sql_items, (id_compra,))
                 items = cursor.fetchall()
 
+                compra["precio_total"] = sum(
+                    float(item.get("subtotal") or 0) for item in items
+                )
+                for item in items:
+                    item["tipo"] = item.pop("producto_tipo", None)
+
                 return compra, items, True
 
         except Exception as e:

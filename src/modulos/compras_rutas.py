@@ -55,6 +55,7 @@ def api_compras():
 # ------------------------------------------
 # Cargar compra por id                      #
 # ------------------------------------------
+@compras_bp.route("/api/compras/<int:id>/detalle", methods=["GET"])
 @compras_bp.route("/compra/<int:id>/detalle", methods=["GET"])
 def vista_detalle_compra(id):
     """Carga la vista de detalle de una orden de compra específica y sus ítems."""
@@ -74,11 +75,13 @@ def vista_detalle_compra(id):
             "redireccion": "/compras"
         }), 404
 
-    return jsonify({
+    respuesta = jsonify({
         "exito": True,
         "compra": compra_obtenida,
         "items": items_compra
-    }), 200
+    })
+    respuesta.headers["Cache-Control"] = "no-store"
+    return respuesta, 200
 
 
 # ------------------------------------------
