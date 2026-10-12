@@ -1,0 +1,332 @@
+.barra-superior-accion a {
+    text-decoration: none;
+}
+
+.cuadricula-metricas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 30px;
+}
+
+.barra-filtrado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.barra-filtrado .contenedor-busqueda {
+    position: relative;
+    flex: 1 1 260px;
+    max-width: 450px;
+}
+
+.barra-filtrado .contenedor-busqueda input {
+    padding: 12px 16px;
+    border-color: var(--color-borde);
+    box-shadow: var(--sombra-chica);
+}
+
+.barra-filtrado .contenedor-busqueda input:focus {
+    border-color: var(--primario-claro);
+    box-shadow: 0 0 0 3px rgba(11, 34, 64, 0.1);
+}
+
+.accion-filtro {
+    display: flex;
+    gap: 12px;
+}
+
+.accion-filtro .filtro-seleccion {
+    min-width: 180px;
+    padding: 12px 20px;
+    box-shadow: var(--sombra-chica);
+}
+
+.modal-ordenes .modal-contenido {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: min(90%, 900px);
+    padding: 0 24px 18px;
+    position: relative;
+    overflow-x: hidden;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+}
+
+.modal-ordenes .modal-cabecera {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    margin: 0 -24px;
+    padding: 18px 24px;
+    border-radius: 12px 12px 0 0;
+    background-color: #0d1b5e;
+    color: #ffffff;
+}
+
+.modal-ordenes .modal-cabecera h2 {
+    color: #ffffff;
+    font-size: 22px;
+}
+
+.modal-ordenes .modal-cabecera p {
+    margin-top: 5px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+}
+
+.modal-ordenes .modal-cabecera .btn-cerrar {
+    flex: 0 0 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+}
+
+.modal-ordenes .modal-cabecera .btn-cerrar:hover {
+    border-radius: 50%;
+    background-color: #dc2626;
+    color: #ffffff;
+}
+
+.modal-ordenes .contenedor-tarjetas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.modal-ordenes .tarjeta-metrica {
+    padding: 15px 20px;
+    border-radius: 10px;
+    background-color: #f8fafc;
+}
+
+.modal-ordenes .datos-metricas {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 16px;
+}
+
+.modal-ordenes .datos-metricas p:first-child {
+    color: var(--color-primario);
+    font-weight: bold;
+}
+
+.modal-ordenes .modal-contenedor-tabla {
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-medio);
+    background-color: var(--fondo-tarjeta);
+}
+
+.modal-ordenes .modal-table {
+    width: 100%;
+    min-width: 520px;
+    margin-top: 0;
+    border-collapse: collapse;
+    text-align: center;
+    font-size: 14px;
+}
+
+.modal-ordenes .modal-table th {
+    padding: 14px 16px;
+    border-bottom: 2px solid var(--color-borde);
+    background-color: #fafbfc;
+    color: var(--color-primario);
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.modal-ordenes .modal-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--color-borde);
+    color: var(--texto-principal);
+}
+
+.modal-ordenes .producto-resumen {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 220px;
+    text-align: left;
+}
+
+.modal-ordenes .producto-resumen-imagen {
+    flex: 0 0 52px;
+    width: 52px;
+    height: 52px;
+    border: 1px solid var(--color-borde);
+    border-radius: 8px;
+    background-color: #ffffff;
+    object-fit: contain;
+}
+
+.modal-ordenes .producto-resumen-nombre {
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.modal-ordenes .modal-table tfoot td {
+    border-bottom: 0;
+    font-weight: bold;
+}
+
+.modal-ordenes .total-table {
+    font-weight: bold;
+}
+
+.modal-ordenes .btn-acciones {
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 0;
+}
+
+.modal-ordenes .btn.accion {
+    border: 1px solid var(--color-borde);
+    background-color: var(--fondo-tarjeta);
+    color: var(--color-primario);
+}
+
+.modal-ordenes .btn.accion:hover {
+    border-color: var(--color-primario);
+    background-color: #f1f5f9;
+}
+
+.paginacion-contenedor {
+    padding: 16px;
+    gap: 8px;
+}
+
+.paginacion-contenedor .btn-paginacion {
+    min-width: 40px;
+    padding: 8px 12px;
+    background-color: var(--fondo-tarjeta);
+    color: var(--color-primario);
+}
+
+.paginacion-contenedor .btn-paginacion:hover:not(:disabled),
+.paginacion-contenedor .btn-paginacion.activo {
+    border-color: var(--color-primario);
+    background-color: var(--color-primario);
+    color: #ffffff;
+}
+
+.paginacion-contenedor .btn-paginacion:disabled {
+    opacity: 0.5;
+}
+
+.paginacion-contenedor span {
+    color: var(--texto-atenuado);
+}
+
+.cartel-emergente .cartel-acciones {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+@media (max-width: 768px) {
+    .cuadricula-metricas {
+        gap: 16px;
+    }
+
+    .barra-filtrado {
+        align-items: stretch;
+    }
+
+    .barra-filtrado .contenedor-busqueda {
+        max-width: none;
+    }
+
+    .accion-filtro {
+        flex: 1 1 180px;
+    }
+
+    .accion-filtro .filtro-seleccion {
+        width: 100%;
+    }
+
+    .modal-ordenes .modal-contenido {
+        width: min(100%, 700px);
+    }
+
+    .modal-ordenes .contenedor-tarjetas {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 540px) {
+    .cuadricula-metricas {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .barra-filtrado {
+        flex-direction: column;
+    }
+
+    .accion-filtro {
+        width: 100%;
+    }
+
+    .modal-ordenes .modal-contenido {
+        width: 100%;
+        gap: 14px;
+        padding: 0 12px 12px;
+    }
+
+    .modal-ordenes .modal-cabecera {
+        margin: 0 -12px;
+        padding: 16px 12px;
+    }
+
+    .modal-ordenes .modal-cabecera h2 {
+        font-size: 18px;
+    }
+
+    .modal-ordenes .contenedor-tarjetas {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .modal-ordenes .datos-metricas {
+        gap: 6px;
+        font-size: 14px;
+    }
+
+    .modal-ordenes .modal-table {
+        min-width: 460px;
+    }
+
+    .modal-ordenes .producto-resumen {
+        min-width: 190px;
+        gap: 8px;
+    }
+
+    .modal-ordenes .producto-resumen-imagen {
+        flex-basis: 44px;
+        width: 44px;
+        height: 44px;
+    }
+
+    .modal-ordenes .btn-acciones {
+        flex-direction: column;
+    }
+
+    .modal-ordenes .btn-acciones .btn {
+        width: 100%;
+    }
+
+    .paginacion-contenedor {
+        padding: 12px 8px;
+    }
+}

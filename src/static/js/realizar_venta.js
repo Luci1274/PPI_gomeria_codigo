@@ -10,6 +10,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     const selectCliente = document.getElementById('select-cliente');
     const spanFecha = document.getElementById('fecha-actual');
+    const btnCarrito = document.getElementById('btn-carrito-pos');
+    const overlayResumen = document.getElementById('overlay-resumen-pos');
+    const panelResumen = document.getElementById('panel-resumen-pos');
+
+    function cerrarResumenMovil(devolverFoco = false) {
+        document.body.classList.remove('resumen-pos-abierto');
+        btnCarrito?.setAttribute('aria-expanded', 'false');
+        if (devolverFoco) btnCarrito?.focus();
+    }
+
+    btnCarrito?.addEventListener('click', () => {
+        const abierto = document.body.classList.toggle('resumen-pos-abierto');
+        btnCarrito.setAttribute('aria-expanded', String(abierto));
+        if (abierto) panelResumen?.focus();
+    });
+    overlayResumen?.addEventListener('click', () => cerrarResumenMovil(true));
+    document.getElementById('btn-open-modal')?.addEventListener('click', () => cerrarResumenMovil());
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && document.body.classList.contains('resumen-pos-abierto')) {
+            cerrarResumenMovil(true);
+        }
+    });
 
     if (selectCliente && !selectCliente.value) {
         selectCliente.value = "1"; // Consumidor Final por defecto

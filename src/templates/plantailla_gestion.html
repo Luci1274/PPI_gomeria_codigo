@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gestion.css') }}">
+    {% block estilos_pagina %}
+    {% endblock %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>{% block titulo_documento %}Proveedor - Sistema Gomería{% endblock %}</title>
+</head>
+
+<body>
+    <div class="contenedor">
+        {% include "componentes/navbar.html" %}
+
+        <!--CONTENIDO PRINCIPAL-->
+        <main class="contenido-principal">
+
+            <!--Barra Superior de Navegación Externa-->
+            <header class="barra-superior">
+                <div class="titulo-pagina">
+                    <h1>{% block titulo_pagina %}Gestión de Proveedores{% endblock %}</h1>
+                    <p>{% block descripcion_pagina %}Administra y consulta de proveedores{% endblock %}</p>
+                </div>
+                <div class="barra-superior-acciones">
+                    {% block acciones_superiores %}
+                    <button class="btn btn-primario" id="btn-nuevo-proveedor">Nuevo Proveedor</button>
+                    {% endblock %}
+                </div>
+            </header>
+
+            <!--TARJETAS-->
+            {% block metricas %}
+            <section class="cuadricula-metricas">
+                <div class="tarjeta-metrica">
+                    <div class="datos-metrica">
+                        <h3>Total Proveedores</h3>
+                        <p class="valor-metrica" id="valor_metrica"></p>
+                    </div>
+                </div>
+            </section>
+            {% endblock %}
+
+            <!--BARRA DE FILTROS Y BUSQUEDA-->
+            {% block filtros %}
+            <section class="barra-filtros">
+                <div class="contenedor-busqueda">
+                    <input type="text" id="input-busqueda" placeholder="Buscar por Nombre o CUIT...">
+                </div>
+                <div class="acciones-filtros">
+                    <select class="filtro-seleccion" id="filtro-rubro">
+                        <option value="todos" selected>Rubro: Todos</option>
+                    </select>
+                    <select class="filtro-seleccion" id="filtro-estado">
+                        <option value="todos">Estado: Todos</option>
+                        <option value="activo" selected>Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                    <select class="filtro-seleccion" id="filtro-ciudad">
+                        <option value="todos" selected>Ciudad: Todas</option>
+                    </select>
+                </div>
+            </section>
+            {% endblock %}
+
+            <!--TABLA DE DATOS-->
+            <section class="contenedor-tabla">
+                <table class="tabla-datos">
+                    <thead>
+                        {% block cabecera_tabla %}
+                        <tr>
+                            <th>COD.</th>
+                            <th>Nombre / Razón Social</th>
+                            <th>CUIT</th>
+                            <th class="texto-derecha">Dirección</th>
+                            <th class="texto-derecha">Teléfono</th>
+                            <th class="texto-centro">Email</th>
+                            <th class="texto-centro">Estado</th>
+                            <th class="texto-centro">Acciones</th>
+                        </tr>
+                        {% endblock %}
+                    </thead>
+                    {% block cuerpo_tabla %}
+                    <tbody id="tabla-proveedor-body">
+                    </tbody>
+                    {% endblock %}
+                </table>
+                {% block paginacion %}
+                <!-- CÓDIGO HTML PARA PAGINACIÓN -->
+                <div class="contenedor-paginacion" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px;">
+                    <button id="btn-pag-anterior" class="btn-accion" disabled>&laquo; Anterior</button>
+                    <span id="info-paginacion" style="font-weight: bold; color: #555;">Página 1 de 1</span>
+                    <button id="btn-pag-siguiente" class="btn-accion">Siguiente &raquo;</button>
+                </div>
+                {% endblock %}
+            </section>
+        </main>
+    </div>
+
+    {% block cartel_emergente %}
+    <!-- Cartel emergente de avisos -->
+    <div class="cartel-emergente" id="cartel-emergente">
+        <h2 id="cartel-titulo"></h2>
+        <p id="cartel-mensaje"></p>
+    </div>
+    {% endblock %}
+
+    {% block modales %}
+    <!--Ventana emergente para registro-->
+    
+
+    <!--Ventana emergente para modificar-->
+    
+    {% endblock %}
+
+    <!--Script de JS-->
+    {% block scripts_pagina %}
+    {% endblock %}
+    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+</body>
+</html>

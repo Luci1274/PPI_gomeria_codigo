@@ -295,7 +295,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             : '-';
 
                         tr.innerHTML = `
-                            <td><img src="${item.imagen_producto}" alt="${item.producto_nombre}" style="width: 60px; height: 60px;"> - ${item.producto_nombre}</td>
+                            <td>
+                                <div class="producto-resumen">
+                                    <img class="producto-resumen-imagen" src="${item.imagen_producto}" alt="${item.producto_nombre}">
+                                    <span class="producto-resumen-nombre">${item.producto_nombre}</span>
+                                </div>
+                            </td>
                             <td>${item.cantidad}</td>
                             <td>${precioUnitario}</td>
                         `;

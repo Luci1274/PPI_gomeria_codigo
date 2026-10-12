@@ -174,6 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         productos.forEach(prod => {
             const tr = document.createElement('tr');
+            if (prod.activo === 0 || prod.activo === '0' || prod.activo === false) {
+                tr.classList.add('desactivado');
+            }
             
             const esActivo = prod.activo === undefined || prod.activo === 1 || prod.activo === true;
             const estadoHTML = `<span class="badge ${esActivo ? 'activo' : 'inactivo'}">${esActivo ? 'Activo' : 'Inactivo'}</span>`;

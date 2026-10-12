@@ -160,13 +160,18 @@ class Venta:
 
                 # Filtro por texto (Buscador)
                 if busqueda and busqueda.strip():
-                    condiciones.append("""( 
-                        c.nombre LIKE %s 
-                        OR c.apellido LIKE %s
-                        OR CONCAT(c.nombre, ' ', c.apellido) LIKE %s
-                    )""")
-                    patron = f"%{busqueda.strip()}%"
-                    parametros.extend([patron] * 3)
+                    terminos = busqueda.split()
+                    condiciones.append(
+                        "("
+                        + " AND ".join(
+                            "(c.nombre LIKE %s OR c.apellido LIKE %s)"
+                            for _ in terminos
+                        )
+                        + ")"
+                    )
+                    for termino in terminos:
+                        patron = f"%{termino}%"
+                        parametros.extend([patron, patron])
 
                 # Filtro por rango específico o predefinido
                 if fecha_inicio and fecha_fin:
