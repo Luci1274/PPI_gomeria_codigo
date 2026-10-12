@@ -171,6 +171,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         proveedores.forEach(prov => {
             const tr = document.createElement('tr');
+            if (prov.activo === 0 || prov.activo === '0' || prov.activo === false) {
+                tr.classList.add('desactivado');
+            }
             const esActivo = prov.activo === 1 || prov.activo === true;
             const estadoHTML = `<span class="badge ${esActivo ? 'activo' : 'inactivo'}">${esActivo ? 'Activo' : 'Inactivo'}</span>`;
 

@@ -186,6 +186,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         clientes.forEach(cli => {
             const tr = document.createElement('tr');
+            if (cli.activo === 0 || cli.activo === '0' || cli.activo === false) {
+                tr.classList.add('desactivado');
+            }
             const idCliente = cli.idcliente || cli.id_cliente || cli.id;
             const esActivo = cli.activo === 1 || cli.activo === true || cli.activo === '1';
             const estadoHTML = `<span class="estado-badge ${esActivo ? 'activo' : 'inactivo'}">${esActivo ? 'Activo' : 'No Activo'}</span>`;

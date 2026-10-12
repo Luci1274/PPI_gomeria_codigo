@@ -7,19 +7,27 @@
     --texto-atenuado: #7f8c8d;
     --color-borde: #e2e8f0;
     --radio-medio: 8px;
+    --radio-grande: 12px;
+    --sombra-chica: 0 2px 8px rgba(15, 23, 42, 0.08);
     --sombra-media: 0 4px 12px rgba(15, 23, 42, 0.16);
 }
 
 * {
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
     font-family: sans-serif;
 }
 
 body {
-    margin: 0;
     background-color: var(--fondo-principal);
     color: var(--texto-principal);
     overflow-x: hidden;
+}
+
+.contenedor {
+    display: flex;
+    min-height: 100vh;
 }
 
 .contenido-principal {
@@ -90,6 +98,10 @@ body {
     border: 1px solid var(--color-borde);
     border-radius: 12px;
     background-color: var(--fondo-tarjeta);
+}
+
+.tarjeta-alerta {
+    border-left: 5px solid #dd0101;
 }
 
 .datos-metrica h3 {
@@ -190,8 +202,48 @@ body {
     color: var(--texto-principal);
 }
 
+.nombre-razon-social {
+    display: block;
+    color: var(--color-primario);
+    font-weight: 600;
+}
+
+.texto-derecha-negrita {
+    color: var(--color-primario);
+    font-weight: 700;
+    text-align: right;
+}
+
+.texto-derecha {
+    text-align: right;
+}
+
+.texto-centro {
+    text-align: center;
+}
+
+.etiqueta {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.estado-stock {
+    display: inline-block;
+    border-radius: var(--radio-medio);
+    font-size: 14px;
+    font-weight: 700;
+}
+
 .tabla-datos tbody tr:hover {
     background-color: #f8fafc;
+}
+
+.tabla-datos tbody tr.desactivado,
+.tabla-datos tbody tr.desactivado:hover {
+    background-color: #fce4e4;
 }
 
 .btn-acciones,
@@ -215,10 +267,23 @@ body {
     color: var(--color-primario);
 }
 
+.btn-accion.btn-editar,
+.botones-accion .btn-editar {
+    border-color: var(--color-primario);
+    background-color: var(--color-primario);
+    color: #ffffff;
+}
+
 .btn-accion.editar:hover {
     border-color: #cbd5e1;
     background-color: #f1f5f9;
     color: var(--color-primario);
+}
+
+.btn-accion.btn-editar:hover,
+.botones-accion .btn-editar:hover {
+    border-color: var(--primario-claro);
+    background-color: var(--primario-claro);
 }
 
 .btn-accion.eliminar {
@@ -226,9 +291,22 @@ body {
     color: #dc2626;
 }
 
+.btn-accion.btn-eliminar,
+.botones-accion .btn-eliminar {
+    border-color: #dc2626;
+    background-color: #dc2626;
+    color: #ffffff;
+}
+
 .btn-accion.eliminar:hover {
     border-color: #fca5a5;
     background-color: #fef2f2;
+}
+
+.btn-accion.btn-eliminar:hover,
+.botones-accion .btn-eliminar:hover {
+    border-color: #b91c1c;
+    background-color: #b91c1c;
 }
 
 .contenedor-paginacion,

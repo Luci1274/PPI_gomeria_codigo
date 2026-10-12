@@ -143,6 +143,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         empleados.forEach(emp => {
             const tr = document.createElement('tr');
+            if (emp.activo === 0 || emp.activo === '0' || emp.activo === false) {
+                tr.classList.add('desactivado');
+            }
             const idEmp = emp.idempleado || emp.id;
 
             tr.innerHTML = `
