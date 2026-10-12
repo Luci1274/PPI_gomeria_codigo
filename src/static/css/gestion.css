@@ -81,6 +81,11 @@ body {
     color: #ffffff;
 }
 
+.redireccion{
+    text-decoration: none;
+}
+
+
 .btn-primario:hover {
     background-color: var(--primario-claro);
     transform: translateY(-1px);
