@@ -29,6 +29,9 @@ def api_compras():
     estado_param = request.args.get("estado", 1)
     estado = int(estado_param) if estado_param is not None and str(estado_param).isdigit() else None
 
+    completo_param = request.args.get("completo", None)
+    completo = int(completo_param) if completo_param is not None and str(completo_param).isdigit() else None
+
     pagina = int(request.args.get("pagina", 1))
     limite = int(request.args.get("limite", 20))
 
@@ -38,6 +41,7 @@ def api_compras():
         fecha_inicio=fecha_inicio,
         fecha_fin=fecha_fin,
         estado=estado,
+        completo=completo,
         pagina=pagina,
         limite=limite,
     )
@@ -188,3 +192,48 @@ def api_realizar_compra():
 def calcular_total_productos(carrito):
     """Calcula la cantidad total de unidades dentro del carrito."""
     return sum(int(item.get("cantidad", 0)) for item in carrito)
+
+@compras_bp.route("/compras/completar", methods=["POST"])
+def completar_compra():
+    """Guarda las cantidades recibidas y completa la orden de compra."""
+    try:
+        id_compra = int(request.form.get("id_compra", ""))
+        ids_items = request.form.getlist("iditem_compra")
+        cantidades = request.form.getlist("cantidad_recibida")
+        if (
+            id_compra <= 0
+            or not ids_items
+            or len(ids_items) != len(cantidades)
+        ):
+            raise ValueError
+
+        cantidades_por_item = {}
+        for id_item, cantidad in zip(ids_items, cantidades):
+            id_item = int(id_item)
+            cantidad = int(cantidad)
+            if id_item <= 0 or cantidad < 0 or id_item in cantidades_por_item:
+                raise ValueError
+            cantidades_por_item[id_item] = cantidad
+    except (TypeError, ValueError):
+        return jsonify({
+            "exito": False,
+            "mensaje": "La compra o las cantidades recibidas no son válidas."
+        }), 400
+
+    exito = Compra.completar_compra(
+        id_compra=id_compra,
+        cantidad_entregada_por_item=cantidades_por_item,
+    )
+
+    if not exito:
+        return jsonify({
+            "exito": False,
+            "mensaje": "Error al completar la compra. Por favor, inténtalo nuevamente.",
+            "redireccion": "/compras"
+        }), 500
+
+    return jsonify({
+        "exito": True,
+        "mensaje": "Compra completada exitosamente.",
+        "redireccion": "/compras"
+    }), 200

@@ -14,21 +14,22 @@ class Compra:
         total_productos,
         fecha=None,
     ):
-        """Registra una compra, sus ítems y el ingreso de stock."""
+        """ Registra una nueva compra en la base de datos y No actualiza el stock porque la compra aún no está completa
+        se hará cuando se confirme la recepción de los productos."""
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
                 items_sanitizados = [
                     {
                         "idproducto_servicio": item["idproducto_servicio"],
-                        "cantidad": item["cantidad"],
+                        "cantidad_pedida": item["cantidad"],
                     }
                     for item in listado_items
                 ]
 
                 sql_compra = """
-                    INSERT INTO compra (fecha, horas, cantidad_total, idproveedor, activo)
-                    VALUES (%s, %s, %s, %s, 1);
+                    INSERT INTO compra (fecha, horas, cantidad_total, idproveedor, activo, completo)
+                    VALUES (%s, %s, %s, %s, 1, 0);
                 """
                 cursor.execute(
                     sql_compra,
@@ -42,7 +43,7 @@ class Compra:
                 id_compra = cursor.lastrowid
 
                 sql_item_compra = """
-                    INSERT INTO item_compra (idproducto_servicio, idcompra, cantidad)
+                    INSERT INTO item_compra (idproducto_servicio, idcompra, cantidad_pedida)
                     VALUES (%s, %s, %s)
                 """
                 valores_items = [
@@ -50,18 +51,6 @@ class Compra:
                     for item in items_sanitizados
                 ]
                 cursor.executemany(sql_item_compra, valores_items)
-
-                sql_actualizar_stock = """
-                    UPDATE producto_servicio
-                    SET cantidad_actual = cantidad_actual + %s
-                    WHERE idproducto_servicio = %s AND tipo != 'servicio';
-                """
-                valores_stock = [
-                    (item["cantidad"], item["idproducto_servicio"])
-                    for item in items_sanitizados
-                ]
-                cursor.executemany(sql_actualizar_stock, valores_stock)
-
                 conexion.commit()
                 print(f"Compra #{id_compra} registrada exitosamente y stock actualizado.")
                 return id_compra, True
@@ -81,6 +70,7 @@ class Compra:
         fecha_inicio=None,
         fecha_fin=None,
         estado=1,
+        completo=None,
         pagina=1,
         limite=20,
     ):
@@ -108,6 +98,11 @@ class Compra:
                     )""")
                     patron = f"%{busqueda.strip()}%"
                     parametros.extend([patron, patron])
+
+                #Filtro por estado de completitud (1 = Completo, 0 = Incompleto)
+                if completo is not None:
+                    condiciones.append("c.completo = %s")
+                    parametros.append(completo)
 
                 # Filtro por rango de fecha específico o predefinido
                 if fecha_inicio and fecha_fin:
@@ -170,7 +165,8 @@ class Compra:
                             WHERE ic.idcompra = c.idcompra
                         ) AS tipo,
                         IFNULL(c.cantidad_total, 0) AS total_productos,
-                        c.activo AS estado
+                        c.activo AS estado,
+                        c.completo
                     FROM compra AS c
                     LEFT JOIN proveedor AS p ON c.idproveedor = p.idproveedor
                     {where_clause}
@@ -238,7 +234,8 @@ class Compra:
                         c.horas,
                         IFNULL(p.nombre, 'Sin Proveedor') AS proveedor,
                         c.cantidad_total AS total_productos,
-                        c.activo
+                        c.activo,
+                        c.completo
                     FROM compra AS c
                     LEFT JOIN proveedor AS p ON c.idproveedor = p.idproveedor
                     WHERE c.idcompra = %s;
@@ -259,19 +256,15 @@ class Compra:
                         ic.iditem_compra,
                         ps.nombre AS producto_nombre,
                         ps.tipo AS producto_tipo,
-                        ic.cantidad,
-                        ic.precio_unitario,
-                        (ic.cantidad * ic.precio_unitario) AS subtotal
+                        ic.cantidad_pedida,
+                        ic.cantidad_entregada
                     FROM item_compra AS ic
                     INNER JOIN producto_servicio AS ps ON ic.idproducto_servicio = ps.idproducto_servicio
                     WHERE ic.idcompra = %s;
                 """
                 cursor.execute(sql_items, (id_compra,))
                 items = cursor.fetchall()
-
-                compra["precio_total"] = sum(
-                    float(item.get("subtotal") or 0) for item in items
-                )
+                
                 for item in items:
                     item["tipo"] = item.pop("producto_tipo", None)
 
@@ -290,7 +283,8 @@ class Compra:
         try:
             with conexion.cursor() as cursor:
                 cursor.execute(
-                    "SELECT activo FROM compra WHERE idcompra = %s;", (id_compra,)
+                    "SELECT activo, completo FROM compra WHERE idcompra = %s;",
+                    (id_compra,),
                 )
                 compra = cursor.fetchone()
 
@@ -302,27 +296,27 @@ class Compra:
                     print(f"La compra ID {id_compra} ya se encuentra anulada.")
                     return False
 
-                # Obtener ítems comprados para revertir el ingreso a stock
-                sql_obtener_items = """
-                    SELECT idproducto_servicio, cantidad 
-                    FROM item_compra 
-                    WHERE idcompra = %s;
-                """
-                cursor.execute(sql_obtener_items, (id_compra,))
-                items = cursor.fetchall()
+                if compra["completo"]:
+                    sql_obtener_items = """
+                        SELECT idproducto_servicio, cantidad_entregada
+                        FROM item_compra
+                        WHERE idcompra = %s;
+                    """
+                    cursor.execute(sql_obtener_items, (id_compra,))
+                    items = cursor.fetchall()
 
-                # En una compra se sumó stock; al anular se resta del inventario
-                sql_revertir_stock = """
-                    UPDATE producto_servicio 
-                    SET cantidad_actual = cantidad_actual - %s 
-                    WHERE idproducto_servicio = %s AND tipo != 'servicio';
-                """
-                valores_stock = [
-                    (item["cantidad"], item["idproducto_servicio"]) for item in items
-                ]
+                    sql_revertir_stock = """
+                        UPDATE producto_servicio
+                        SET cantidad_actual = cantidad_actual - %s
+                        WHERE idproducto_servicio = %s AND tipo != 'servicio';
+                    """
+                    valores_stock = [
+                        (item["cantidad_entregada"] or 0, item["idproducto_servicio"])
+                        for item in items
+                    ]
 
-                if valores_stock:
-                    cursor.executemany(sql_revertir_stock, valores_stock)
+                    if valores_stock:
+                        cursor.executemany(sql_revertir_stock, valores_stock)
 
                 # Anulación lógica (activo = 0)
                 sql_anular = "UPDATE compra SET activo = 0 WHERE idcompra = %s;"
@@ -359,6 +353,91 @@ class Compra:
             conexion.rollback()
             print(f"Error al cargar los datos iniciales de compra: {e}")
             return [], [], [], False
+
+        finally:
+            conexion.close()
+            
+    @staticmethod
+    def completar_compra(id_compra, cantidad_entregada_por_item):
+        """Guarda las cantidades recibidas y actualiza el stock una sola vez."""
+        conexion = Config.conectar_db()
+        try:
+            with conexion.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT activo, completo
+                    FROM compra
+                    WHERE idcompra = %s
+                    FOR UPDATE;
+                    """,
+                    (id_compra,),
+                )
+                compra = cursor.fetchone()
+                if not compra or not compra["activo"] or compra["completo"]:
+                    conexion.rollback()
+                    return False
+
+                cursor.execute(
+                    """
+                    SELECT ic.iditem_compra, ic.idproducto_servicio, ps.tipo
+                    FROM item_compra AS ic
+                    INNER JOIN producto_servicio AS ps
+                        ON ps.idproducto_servicio = ic.idproducto_servicio
+                    WHERE ic.idcompra = %s
+                    FOR UPDATE;
+                    """,
+                    (id_compra,),
+                )
+                items = cursor.fetchall()
+                ids_items_compra = {item["iditem_compra"] for item in items}
+                if not items or ids_items_compra != set(cantidad_entregada_por_item):
+                    conexion.rollback()
+                    return False
+
+                for item in items:
+                    id_item = item["iditem_compra"]
+                    cantidad = cantidad_entregada_por_item[id_item]
+                    cursor.execute(
+                        """
+                        UPDATE item_compra
+                        SET cantidad_entregada = %s
+                        WHERE iditem_compra = %s AND idcompra = %s;
+                        """,
+                        (cantidad, id_item, id_compra),
+                    )
+
+                valores_stock = [
+                    (cantidad_entregada_por_item[item["iditem_compra"]], item["idproducto_servicio"])
+                    for item in items
+                    if item["tipo"] != "servicio"
+                ]
+                if valores_stock:
+                    cursor.executemany(
+                        """
+                        UPDATE producto_servicio
+                        SET cantidad_actual = cantidad_actual + %s
+                        WHERE idproducto_servicio = %s;
+                        """,
+                        valores_stock,
+                    )
+
+                cursor.execute(
+                    """
+                    UPDATE compra
+                    SET completo = 1
+                    WHERE idcompra = %s AND completo = 0;
+                    """,
+                    (id_compra,),
+                )
+
+            conexion.commit()
+            print(f"Compra #{id_compra} completada exitosamente y stock actualizado.")
+            return True
+
+        except pymysql.MySQLError as e:
+            conexion.rollback()
+            print(f"Error al completar la compra ID {id_compra}: {e}")
+            return False
 
         finally:
             conexion.close()

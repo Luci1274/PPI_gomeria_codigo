@@ -49,7 +49,14 @@
         <select class="filtro-seleccion" id="select-filtro-estado">
             <option value="1">Activas</option>
             <option value="0">Anuladas</option>
-            <option value="todos">Todas</option>
+            <option value="todos" selected>Todas</option>
+        </select>
+    </div>
+    <div class="accion-filtro">
+        <select class="filtro-seleccion" id="select-filtro-completo">
+            <option value="1">Completas</option>
+            <option value="0">Incompletas</option>
+            <option value="todos" selected>Todas</option>
         </select>
     </div>
 </section>
@@ -62,6 +69,7 @@
     <th>Proveedor</th>
     <th>Tipos Producto</th>
     <th>Total Productos</th>
+    <th>Estado</th>
     <th>Acciones</th>
 </tr>
 {% endblock %}
@@ -86,52 +94,50 @@
     <div class="modal-contenido">
         <div class="modal-cabecera">
             <div>
-                <h2>Resumen Orden de Compra #<span id="modal-num-compra"></span></h2>
-                <p>Detalles completos de la orden de compra</p>
+                <h2><span id="modal-titulo-accion">Resumen</span> Orden de Compra #<span id="modal-num-compra"></span></h2>
+                <p id="modal-descripcion">Detalles completos de la orden de compra</p>
             </div>
             <button class="btn-cerrar" id="btn-cerrar-modal" type="button" aria-label="Cerrar">X</button>
         </div>
-        <div class="contenedor-tarjetas">
-            <div class="tarjeta-metrica">
-                <div class="datos-metricas">
-                    <p>Fecha:</p>
-                    <p id="modal-fecha">-</p>
+        <form id="form-completar-compra" action="{{ url_for('compras.completar_compra') }}" method="post">
+            <input type="hidden" name="id_compra" id="form-id-compra">
+            <div class="contenedor-tarjetas">
+                <div class="tarjeta-metrica">
+                    <div class="datos-metricas">
+                        <p>Fecha:</p>
+                        <p id="modal-fecha">-</p>
+                    </div>
+                </div>
+                <div class="tarjeta-metrica">
+                    <div class="datos-metricas">
+                        <p>Proveedor:</p>
+                        <p id="modal-proveedor">-</p>
+                    </div>
                 </div>
             </div>
-            <div class="tarjeta-metrica">
-                <div class="datos-metricas">
-                    <p>Proveedor:</p>
-                    <p id="modal-proveedor">-</p>
-                </div>
+            <div class="modal-contenedor-tabla">
+                <table class="modal-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Tipo</th>
+                            <th>Cantidad Pedida</th>
+                            <th>Cantidad Recibida</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-tabla-body"></tbody>
+                </table>
             </div>
-        </div>
-        <div class="modal-contenedor-tabla">
-            <table class="modal-table">
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Tipo</th>
-                        <th>Cantidad</th>
-                        <th>Precio Unitario</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody id="modal-tabla-body"></tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="4" class="total-table">Total</td>
-                        <td class="total-table" id="modal-total-monto">$0</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-        <div class="btn-acciones">
-            <button class="btn accion" type="button">Descargar PDF</button>
-            <button class="btn accion" type="button">Imprimir</button>
-            <button class="btn accion" id="btn-cerrar-modal-alt" type="button">Cerrar</button>
-        </div>
+            <div class="btn-acciones">
+                <button class="btn accion" id="btn-descargar-pdf" type="button">Descargar PDF</button>
+                <button class="btn accion" id="btn-imprimir" type="button">Imprimir</button>
+                <button class="btn accion" id="btn-confirmar-completar" type="submit" hidden>Completar / Confirmar</button>
+                <button class="btn accion" id="btn-cerrar-modal-alt" type="button">Cerrar</button>
+            </div>
+        </form>
     </div>
 </div>
+
 {% endblock %}
 
 {% block scripts_pagina %}

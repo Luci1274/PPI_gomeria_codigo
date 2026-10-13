@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputBusqueda = document.getElementById('input-busqueda');
     const selectFiltroFecha = document.getElementById('select-filtro-fecha');
     const selectFiltroEstado = document.getElementById('select-filtro-estado');
+    const selectFiltroCompleto = document.getElementById('select-filtro-completo');
     const metricaTotalCompras = document.getElementById('metrica-total-compras');
     const metricaTotalProductos = document.getElementById('metrica-total-productos');
     const contenedorPaginacion = document.getElementById('contenedor-paginacion');
@@ -22,7 +23,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalFecha = document.getElementById('modal-fecha');
     const modalProveedor = document.getElementById('modal-proveedor');
     const modalTablaBody = document.getElementById('modal-tabla-body');
-    const modalTotalMonto = document.getElementById('modal-total-monto');
+    const modalTituloAccion = document.getElementById('modal-titulo-accion');
+    const modalDescripcion = document.getElementById('modal-descripcion');
+    const formCompletarCompra = document.getElementById('form-completar-compra');
+    const formIdCompra = document.getElementById('form-id-compra');
+    const btnDescargarPdf = document.getElementById('btn-descargar-pdf');
+    const btnImprimir = document.getElementById('btn-imprimir');
+    const btnConfirmarCompletar = document.getElementById('btn-confirmar-completar');
 
     let debounceTimer;
     let paginaActual = 1;
@@ -119,12 +126,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const busqueda = inputBusqueda?.value.trim() || '';
         const filtroFecha = selectFiltroFecha?.value || 'todos';
         const filtroEstado = selectFiltroEstado?.value || '1';
+        const filtroCompleto = selectFiltroCompleto?.value || 'todos';
         const solicitud = ++solicitudActual;
 
         const parametros = new URLSearchParams({
             busqueda,
             filtro_fecha: filtroFecha,
             estado: filtroEstado,
+            completo: filtroCompleto,
             pagina: paginaActual
         });
 
@@ -184,9 +193,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${c.proveedor || 'Proveedor General'}</td>
                 <td>${c.tipos_producto || 0} tipos</td>
                 <td>${c.total_productos || 0} unidades</td>
+                <td>${Number(c.completo) === 1 ? 'Completa' : 'Incompleta'}</td>
                 <td>
                     <div class="btn-acciones">
                         <button class="btn-accion resumen" data-id="${c.idcompra || c.id_orden}">Ver resumen</button>
+                        ${Number(c.completo) === 1 || Number(c.estado) === 0 ? '' : `<button class="btn-accion completar" data-id="${c.idcompra || c.id_orden}">Completar</button>`}
                         <button class="btn-accion eliminar" data-id="${c.idcompra || c.id_orden}">Anular</button>
                     </div>
                 </td>
@@ -265,6 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tablaBody?.addEventListener('click', (e) => {
         const btnResumen = e.target.closest('.resumen');
         const btnEliminar = e.target.closest('.eliminar');
+        const btnCompletar = e.target.closest('.completar');
 
         if (btnResumen) {
             const idCompra = btnResumen.dataset.id;
@@ -275,10 +287,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const idCompra = btnEliminar.dataset.id;
             anularCompra(idCompra);
         }
+
+        if (btnCompletar) {
+            const idCompra = btnCompletar.dataset.id;
+            verResumenCompra(idCompra, true);
+        }
     });
 
     // 4. Ver Resumen
-    async function verResumenCompra(idCompra) {
+    async function verResumenCompra(idCompra, modoCompletar = false) {
         try {
             const response = await fetch(`/api/compras/${idCompra}/detalle`);
             const data = await response.json();
@@ -292,34 +309,63 @@ document.addEventListener('DOMContentLoaded', () => {
             const items = data.items || [];
 
             // Llenar datos de la cabecera del modal
+            if (modalTituloAccion) modalTituloAccion.textContent = modoCompletar ? 'Completar' : 'Resumen';
+            if (modalDescripcion) {
+                modalDescripcion.textContent = modoCompletar
+                    ? 'Ingresa la cantidad recibida de cada producto.'
+                    : 'Detalles completos de la orden de compra';
+            }
             if (modalNumCompra) modalNumCompra.textContent = compra.idcompra || compra.id_orden;
             if (modalFecha) modalFecha.textContent = compra.fecha || '-';
             if (modalProveedor) modalProveedor.textContent = compra.nombre_proveedor?.trim() || compra.proveedor || 'Proveedor General';
-            if (modalTotalMonto) modalTotalMonto.textContent = `$${Number(compra.precio_total || 0).toLocaleString()}`;
+            if (formIdCompra) formIdCompra.value = compra.idcompra || compra.id_orden;
+            if (btnDescargarPdf) btnDescargarPdf.hidden = modoCompletar;
+            if (btnImprimir) btnImprimir.hidden = modoCompletar;
+            if (btnConfirmarCompletar) btnConfirmarCompletar.hidden = !modoCompletar;
 
             // Llenar la tabla de productos del modal
             if (modalTablaBody) {
-                modalTablaBody.innerHTML = '';
+                modalTablaBody.replaceChildren();
 
                 if (items.length === 0) {
-                    modalTablaBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No hay ítems registrados en esta compra</td></tr>`;
+                    modalTablaBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No hay ítems registrados en esta compra</td></tr>`;
                 } else {
                     items.forEach(item => {
                         const tr = document.createElement('tr');
-                        const precioUnitario = item.precio_unitario 
-                            ? `$${Number(item.precio_unitario).toLocaleString()}` 
-                            : '-';
-                        const subtotal = item.subtotal 
-                            ? `$${Number(item.subtotal).toLocaleString()}` 
-                            : `$${Number((item.cantidad || 0) * (item.precio_unitario || 0)).toLocaleString()}`;
+                        const celdas = [
+                            item.producto_nombre || item.producto || '-',
+                            item.tipo || '-',
+                            item.cantidad_pedida ?? '-',
+                        ];
 
-                        tr.innerHTML = `
-                            <td>${item.producto_nombre || item.producto}</td>
-                            <td>${item.tipo || '-'}</td>
-                            <td>${item.cantidad}</td>
-                            <td>${precioUnitario}</td>
-                            <td>${subtotal}</td>
-                        `;
+                        celdas.forEach(valor => {
+                            const td = document.createElement('td');
+                            td.textContent = valor;
+                            tr.appendChild(td);
+                        });
+
+                        const celdaRecibida = document.createElement('td');
+                        if (modoCompletar) {
+                            const idItem = document.createElement('input');
+                            idItem.type = 'hidden';
+                            idItem.name = 'iditem_compra';
+                            idItem.value = item.iditem_compra;
+
+                            const cantidadRecibida = document.createElement('input');
+                            cantidadRecibida.type = 'number';
+                            cantidadRecibida.name = 'cantidad_recibida';
+                            cantidadRecibida.className = 'cantidad-recibida-input';
+                            cantidadRecibida.min = '0';
+                            cantidadRecibida.step = '1';
+                            cantidadRecibida.required = true;
+                            cantidadRecibida.value = Number(item.cantidad_entregada) || 0;
+                            cantidadRecibida.setAttribute('aria-label', `Cantidad recibida de ${item.producto_nombre || item.producto || 'producto'}`);
+
+                            celdaRecibida.append(idItem, cantidadRecibida);
+                        } else {
+                            celdaRecibida.textContent = item.cantidad_entregada ?? '-';
+                        }
+                        tr.appendChild(celdaRecibida);
                         modalTablaBody.appendChild(tr);
                     });
                 }
@@ -332,6 +378,33 @@ document.addEventListener('DOMContentLoaded', () => {
             mostrarNotificacion("Error", "No se pudo cargar la información de la compra.", 4000);
         }
     }
+
+    formCompletarCompra?.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (!formCompletarCompra.reportValidity() || !btnConfirmarCompletar) return;
+
+        btnConfirmarCompletar.disabled = true;
+        try {
+            const response = await fetch(formCompletarCompra.action, {
+                method: 'POST',
+                body: new FormData(formCompletarCompra)
+            });
+            const data = await response.json();
+
+            if (!response.ok || !data.exito) {
+                throw new Error(data.mensaje || 'No se pudo completar la compra.');
+            }
+
+            cerrarModal();
+            mostrarNotificacion('Éxito', data.mensaje || 'Compra completada exitosamente.', 3000);
+            await cargarCompras();
+        } catch (error) {
+            console.error('Error al completar compra:', error);
+            mostrarNotificacion('Error', error.message || 'No se pudo completar la compra.', 4000);
+        } finally {
+            btnConfirmarCompletar.disabled = false;
+        }
+    });
 
     // 5. Anular / Eliminar Orden de Compra
     async function anularCompra(idCompra) {
@@ -382,6 +455,10 @@ document.addEventListener('DOMContentLoaded', () => {
         cargarCompras();
     });
     selectFiltroEstado?.addEventListener('change', () => {
+        paginaActual = 1;
+        cargarCompras();
+    });
+    selectFiltroCompleto?.addEventListener('change', () => {
         paginaActual = 1;
         cargarCompras();
     });
