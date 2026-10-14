@@ -1,5 +1,42 @@
+import re
+
 import pymysql
 from config import Config
+
+
+class ClienteCuitInvalidoError(ValueError):
+    """El CUIT/DNI está vacío o contiene caracteres no admitidos."""
+
+
+class ClienteCuitDuplicadoError(ValueError):
+    """El CUIT/DNI ya está asociado a otro cliente."""
+
+
+def _normalizar_cuit(cuit):
+    if not isinstance(cuit, str):
+        raise ClienteCuitInvalidoError("El CUIT/DNI es obligatorio.")
+    cuit_normalizado = re.sub(r"[ .-]", "", cuit)
+    if not cuit_normalizado or not cuit_normalizado.isdigit():
+        raise ClienteCuitInvalidoError(
+            "El CUIT/DNI debe contener solo números, puntos, guiones o espacios."
+        )
+    return cuit_normalizado
+
+
+def _buscar_cliente_por_cuit(cursor, cuit, excluir_id=None):
+    sql = """
+        SELECT idcliente
+        FROM cliente
+        WHERE REPLACE(REPLACE(REPLACE(TRIM(cuit), '.', ''), '-', ''), ' ', '') = %s
+    """
+    parametros = [cuit]
+    if excluir_id is not None:
+        sql += " AND idcliente != %s"
+        parametros.append(excluir_id)
+    sql += " LIMIT 1"
+    cursor.execute(sql, parametros)
+    return cursor.fetchone()
+
 
 class Cliente:
 
@@ -7,6 +44,7 @@ class Cliente:
     @staticmethod
     def crear_cliente(nombre, apellido, cuit, numero_tel, mail, ciudad=None, direccion=None):
         """Crea un nuevo cliente en la base de datos."""
+        cuit_normalizado = _normalizar_cuit(cuit)
         nombre = nombre.strip().title() if nombre else ""
         apellido = apellido.strip().title() if apellido else ""
         ciudad = ciudad.strip().title() if ciudad else ""
@@ -19,6 +57,10 @@ class Cliente:
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
+                if _buscar_cliente_por_cuit(cursor, cuit_normalizado):
+                    raise ClienteCuitDuplicadoError(
+                        "Ya existe un cliente registrado con ese CUIT/DNI."
+                    )
                 valores = (nombre, apellido, cuit, numero_tel, mail, ciudad, direccion)
                 cursor.execute(sql, valores)
                 id_nuevo_cliente = cursor.lastrowid
@@ -31,6 +73,9 @@ class Cliente:
             conexion.rollback()
             print(f"Error al crear cliente: {e}")
             return None
+        except (ClienteCuitDuplicadoError, ClienteCuitInvalidoError):
+            conexion.rollback()
+            raise
         
         finally:
             conexion.close()
@@ -155,6 +200,7 @@ class Cliente:
     @staticmethod
     def modificar_cliente(id, nombre, apellido, cuit, numero_tel, mail, ciudad=None, direccion=None):
         """Modifica los datos de un cliente existente en la base de datos."""
+        cuit_normalizado = _normalizar_cuit(cuit)
         nombre = nombre.strip().title() if nombre else ""
         apellido = apellido.strip().title() if apellido else ""
         ciudad = ciudad.strip().title() if ciudad else None
@@ -163,6 +209,19 @@ class Cliente:
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
+                cursor.execute(
+                    "SELECT idcliente FROM cliente WHERE idcliente = %s FOR UPDATE",
+                    (id,),
+                )
+                if not cursor.fetchone():
+                    conexion.rollback()
+                    return False
+
+                if _buscar_cliente_por_cuit(cursor, cuit_normalizado, excluir_id=id):
+                    raise ClienteCuitDuplicadoError(
+                        "Ya existe otro cliente registrado con ese CUIT/DNI."
+                    )
+
                 sql = """
                     UPDATE cliente
                     SET nombre = %s,
@@ -175,9 +234,20 @@ class Cliente:
                     WHERE idcliente = %s
                 """
                 cursor.execute(sql, (nombre, apellido, cuit, numero_tel, mail, ciudad, direccion, id))
+                if cursor.rowcount == 0:
+                    cursor.execute(
+                        "SELECT idcliente FROM cliente WHERE idcliente = %s FOR UPDATE",
+                        (id,),
+                    )
+                    if not cursor.fetchone():
+                        conexion.rollback()
+                        return False
                 conexion.commit()
                 print("Cliente actualizado correctamente")
                 return True
+        except (ClienteCuitDuplicadoError, ClienteCuitInvalidoError):
+            conexion.rollback()
+            raise
         except pymysql.MySQLError as e:
             conexion.rollback()
             print(f"Error al modificar cliente: {e}")

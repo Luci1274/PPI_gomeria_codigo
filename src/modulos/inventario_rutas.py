@@ -153,7 +153,7 @@ def api_modificar_producto(id):
         "mensaje": "Producto modificado exitosamente"
     }), 200
      
-@inventario_bp.route("/api/inventario/<int:id>/desactivar")
+@inventario_bp.route("/api/inventario/<int:id>/desactivar", methods=["POST"])
 def desactivar_producto(id):
     exito = Producto.eliminar_producto(id)
     

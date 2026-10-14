@@ -236,7 +236,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function desactivarCliente(id) {
         try {
-            const respuesta = await fetch(`/clientes/${id}/desactivar`);
+            const respuesta = await fetch(`/clientes/${id}/desactivar`, {
+                method: 'POST'
+            });
             const data = await respuesta.json();
 
             if (respuesta.ok && data.exito) {
@@ -375,7 +377,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     cerrarModalNuevo();
                     cargarClientes();
                 } else {
-                    mostrarNotificacion('Error al guardar', data.mensaje || 'No se pudieron guardar los datos del cliente.');
+                    mostrarNotificacion(
+                        respuesta.status === 409 ? 'CUIT/DNI duplicado' : 'Error al guardar',
+                        data.mensaje || 'No se pudieron guardar los datos del cliente.'
+                    );
                 }
             } catch (error) {
                 console.error('Error al guardar cliente:', error);
@@ -482,7 +487,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     cerrarModalEditar();
                     cargarClientes();
                 } else {
-                    mostrarNotificacion('Error al actualizar', data.mensaje || 'Error al actualizar el cliente.');
+                    mostrarNotificacion(
+                        respuesta.status === 409 ? 'CUIT/DNI duplicado' : 'Error al actualizar',
+                        data.mensaje || 'Error al actualizar el cliente.'
+                    );
                 }
             } catch (error) {
                 console.error('Error al actualizar cliente:', error);

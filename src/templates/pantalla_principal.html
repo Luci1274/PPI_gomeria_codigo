@@ -55,14 +55,14 @@
             <!--Botones de acciones rápidos-->
             <section class="enl-acciones-rapidas">
                 <h3>Accesos rápidos</h3>
-                {% if session.get("tipo") == "AD" %}
+                {% if session.get("tipo", "").upper() in ["AD", "DEV"] %}
                 <div class="cuadricula-acceso">
                     <div class="accion-rapida"><a href="/ventas/realizar">Nueva venta</a></div>
                     <div class="accion-rapida"><a href="/clientes">Nuevo cliente</a></div>
                     <div class="accion-rapida"><a href="/inventario">Cargar stock</a></div>
                     <div class="accion-rapida"><a href="/compras">Nueva Compra</a></div>
                 </div>
-                {% else %}
+                {% elif session.get("tipo", "").upper() in ["EM", "EMPLEADO"] %}
                 <div class="cuadricula-acceso">
                     <div class="accion-rapida"><a href="/ventas/realizar">Nueva venta</a></div>
                 </div>

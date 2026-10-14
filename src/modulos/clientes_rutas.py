@@ -1,5 +1,9 @@
 from flask import Blueprint, render_template, request, jsonify, session
-from modulos.comandos_db.comandos_db_clientes import Cliente
+from modulos.comandos_db.comandos_db_clientes import (
+    Cliente,
+    ClienteCuitDuplicadoError,
+    ClienteCuitInvalidoError,
+)
 
 clientes_bp = Blueprint("clientes", __name__)
 
@@ -53,17 +57,21 @@ def api_clientes():
 #----------------------------------------------------------------------------
 @clientes_bp.route("/api/clientes/crear", methods=["POST"])
 def api_crear_cliente():
-    datos = request.get_json() or {}
-
-    id_nuevo_cliente = Cliente.crear_cliente(
-        nombre=datos.get("nombre"),
-        apellido=datos.get("apellido"),
-        cuit=datos.get("cuit"),
-        numero_tel=datos.get("numero_tel"),
-        mail=datos.get("mail"),
-        ciudad=datos.get("ciudad"),
-        direccion=datos.get("direccion")
-    )
+    datos = request.get_json(silent=True) or {}
+    try:
+        id_nuevo_cliente = Cliente.crear_cliente(
+            nombre=datos.get("nombre"),
+            apellido=datos.get("apellido"),
+            cuit=datos.get("cuit"),
+            numero_tel=datos.get("numero_tel"),
+            mail=datos.get("mail"),
+            ciudad=datos.get("ciudad"),
+            direccion=datos.get("direccion")
+        )
+    except ClienteCuitDuplicadoError as error:
+        return jsonify({"exito": False, "mensaje": str(error)}), 409
+    except ClienteCuitInvalidoError as error:
+        return jsonify({"exito": False, "mensaje": str(error)}), 400
 
     if id_nuevo_cliente is not None:
         return jsonify({
@@ -101,18 +109,22 @@ def api_obtener_cliente(id):
 #----------------------------------------------------------------------------
 @clientes_bp.route("/api/clientes/<int:id>/editar", methods=["POST"])
 def api_modificar_cliente(id):
-    datos = request.get_json() or {}
-
-    exito = Cliente.modificar_cliente(
-        id=id,
-        nombre=datos.get("nombre"),
-        apellido=datos.get("apellido"),
-        cuit=datos.get("cuit"),
-        numero_tel=datos.get("numero_tel"),
-        mail=datos.get("mail"),
-        ciudad=datos.get("ciudad"),
-        direccion=datos.get("direccion")
-    )
+    datos = request.get_json(silent=True) or {}
+    try:
+        exito = Cliente.modificar_cliente(
+            id=id,
+            nombre=datos.get("nombre"),
+            apellido=datos.get("apellido"),
+            cuit=datos.get("cuit"),
+            numero_tel=datos.get("numero_tel"),
+            mail=datos.get("mail"),
+            ciudad=datos.get("ciudad"),
+            direccion=datos.get("direccion")
+        )
+    except ClienteCuitDuplicadoError as error:
+        return jsonify({"exito": False, "mensaje": str(error)}), 409
+    except ClienteCuitInvalidoError as error:
+        return jsonify({"exito": False, "mensaje": str(error)}), 400
 
     if exito:
         return jsonify({"exito": True, "mensaje": "Cliente modificado exitosamente"}), 200
@@ -122,7 +134,7 @@ def api_modificar_cliente(id):
 #----------------------------------------------------------------------------
 # API: DESACTIVAR CLIENTE (ELIMINACIÓN LÓGICA)
 #----------------------------------------------------------------------------
-@clientes_bp.route("/clientes/<int:id>/desactivar")
+@clientes_bp.route("/clientes/<int:id>/desactivar", methods=["POST"])
 def desactivar_cliente(id):
     exito = Cliente.eliminar_cliente(id)
 

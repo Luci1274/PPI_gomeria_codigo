@@ -1,5 +1,11 @@
 from flask import Blueprint, render_template, request, jsonify, session
-from modulos.comandos_db.comandos_db_proveedores import Proveedor
+from modulos.comandos_db.comandos_db_proveedores import (
+    Proveedor,
+    ProveedorCuitDuplicadoError,
+    ProveedorCuitInvalidoError,
+    ProveedorNoEncontradoError,
+    ProveedorYaInactivoError,
+)
 proveedores_bp = Blueprint("proveedores", __name__)
 
 @proveedores_bp.route("/proveedores")
@@ -44,17 +50,21 @@ def api_proveedores():
     
 @proveedores_bp.route("/api/proveedores/crear", methods=["POST"])
 def api_crear_proveedor():
-    datos = request.get_json()
-    
-    exito = Proveedor.crear_proveedor(
-        nombre=datos.get("nombre"),
-        cuit=datos.get("cuit"),
-        direccion=datos.get("direccion"),
-        mail=datos.get("mail"),
-        ciudad=datos.get("ciudad"),
-        telefono=datos.get("telefono"),
-        rubro=datos.get("rubro", "General")
-    )
+    datos = request.get_json(silent=True) or {}
+    try:
+        exito = Proveedor.crear_proveedor(
+            nombre=datos.get("nombre"),
+            cuit=datos.get("cuit"),
+            direccion=datos.get("direccion"),
+            mail=datos.get("mail"),
+            ciudad=datos.get("ciudad", ""),
+            telefono=datos.get("telefono"),
+            rubro=datos.get("rubro", "General")
+        )
+    except ProveedorCuitDuplicadoError as error:
+        return jsonify({"exito": False, "mensaje": str(error)}), 409
+    except ProveedorCuitInvalidoError as error:
+        return jsonify({"exito": False, "mensaje": str(error)}), 400
 
     if exito:
         return jsonify({"exito": True, "mensaje": "Proveedor creado exitosamente"}), 201
@@ -80,27 +90,38 @@ def api_obtener_proveedor(id):
 
 @proveedores_bp.route("/api/proveedores/<int:id>/editar", methods=["POST"])
 def api_modificar_proveedor(id):
-    datos = request.get_json()
-    
-    exito = Proveedor.modificar_proveedor(
-        id=id,
-        nombre=datos.get("nombre"),
-        cuit=datos.get("cuit"),
-        direccion=datos.get("direccion"),
-        mail=datos.get("mail"),
-        ciudad=datos.get("ciudad"),
-        telefono=datos.get("telefono"),
-        rubro=datos.get("rubro")
-    )
+    datos = request.get_json(silent=True) or {}
+    try:
+        exito = Proveedor.modificar_proveedor(
+            id=id,
+            nombre=datos.get("nombre"),
+            cuit=datos.get("cuit"),
+            direccion=datos.get("direccion"),
+            mail=datos.get("mail"),
+            ciudad=datos.get("ciudad", ""),
+            telefono=datos.get("telefono"),
+            rubro=datos.get("rubro", "")
+        )
+    except ProveedorCuitDuplicadoError as error:
+        return jsonify({"exito": False, "mensaje": str(error)}), 409
+    except ProveedorCuitInvalidoError as error:
+        return jsonify({"exito": False, "mensaje": str(error)}), 400
+    except ProveedorNoEncontradoError as error:
+        return jsonify({"exito": False, "mensaje": str(error)}), 404
 
     if exito:
         return jsonify({"exito": True, "mensaje": "Proveedor modificado exitosamente"}), 200
     else:
         return jsonify({"exito": False, "mensaje": "Error al modificar proveedor en la BD"}), 500
 
-@proveedores_bp.route("/proveedores/<int:id>/desactivar")
+@proveedores_bp.route("/proveedores/<int:id>/desactivar", methods=["POST"])
 def desactivar_proveedor(id):
-    exito = Proveedor.eliminar_proveedor(id)
+    try:
+        exito = Proveedor.eliminar_proveedor(id)
+    except ProveedorNoEncontradoError as error:
+        return jsonify({"exito": False, "mensaje": str(error)}), 404
+    except ProveedorYaInactivoError as error:
+        return jsonify({"exito": False, "mensaje": str(error)}), 409
     
     if exito:
         return jsonify({
@@ -110,5 +131,5 @@ def desactivar_proveedor(id):
                     }), 200
     return jsonify({
         "exito": False,
-        "mensaje": "No se pudo desactivar al proveedor indicado."
-            }), 400
+        "mensaje": "Error interno al desactivar al proveedor indicado."
+            }), 500

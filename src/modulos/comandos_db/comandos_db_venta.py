@@ -1,5 +1,6 @@
 from datetime import datetime, date
 import math
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 import pymysql
 from config import Config
 
@@ -18,8 +19,6 @@ class Venta:
         numero_factura=1,
         iva=21.0,
         descuento=0.0,
-        precio_total=0.0,
-        total_productos=0,
         estado=1, #Es el estado de la venta 1 = completo, 0= deuda
         plazo_pago=0 #la cantidad de dias que el 0 tiene para pagar
     ):
@@ -27,44 +26,87 @@ class Venta:
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
-                # Sanitización explícita de ítems
+                cantidades_por_producto = {}
+                for item in lista_items:
+                    id_producto = int(item["idproducto_servicio"])
+                    cantidad = int(item["cantidad"])
+                    if id_producto <= 0 or cantidad <= 0:
+                        raise ValueError("Los identificadores y cantidades deben ser positivos.")
+                    cantidades_por_producto[id_producto] = (
+                        cantidades_por_producto.get(id_producto, 0) + cantidad
+                    )
+
+                if not cantidades_por_producto:
+                    raise ValueError("El carrito de venta no puede estar vacío.")
+
                 items_sanitizados = [
                     {
-                        "idproducto_servicio": int(item["idproducto_servicio"]),
-                        "precio_unitario": float(item["precio_unitario"]),
-                        "cantidad": int(item["cantidad"])
+                        "idproducto_servicio": id_producto,
+                        "cantidad": cantidad
                     }
-                    for item in lista_items
+                    for id_producto, cantidad in cantidades_por_producto.items()
                 ]
 
                 # 1. Validar stock disponible
                 ids_productos = [item["idproducto_servicio"] for item in items_sanitizados]
 
-                if ids_productos:
-                    format_strings = ",".join(["%s"] * len(ids_productos))
-                    sql_check = f"""
-                        SELECT idproducto_servicio, nombre, cantidad_actual, tipo 
-                        FROM producto_servicio 
-                        WHERE idproducto_servicio IN ({format_strings});
-                    """
-                    cursor.execute(sql_check, ids_productos)
-                    productos_db = {
-                        p["idproducto_servicio"]: p for p in cursor.fetchall()
-                    }
+                format_strings = ",".join(["%s"] * len(ids_productos))
+                sql_check = f"""
+                    SELECT idproducto_servicio, nombre, cantidad_actual, tipo, precio, activo
+                    FROM producto_servicio
+                    WHERE idproducto_servicio IN ({format_strings})
+                    FOR UPDATE;
+                """
+                cursor.execute(sql_check, ids_productos)
+                productos_db = {
+                    p["idproducto_servicio"]: p for p in cursor.fetchall()
+                }
 
-                    for item in items_sanitizados:
-                        prod_id = item["idproducto_servicio"]
-                        cant_pedida = item["cantidad"]
+                if len(productos_db) != len(ids_productos):
+                    raise ValueError("Uno o más artículos ya no existen en el inventario.")
 
-                        if prod_id in productos_db:
-                            prod = productos_db[prod_id]
-                            if (
-                                prod["tipo"] == "producto"
-                                and prod["cantidad_actual"] < cant_pedida
-                            ):
-                                raise ValueError(
-                                    f"Stock insuficiente para '{prod['nombre']}'. Disponibles: {prod['cantidad_actual']}, Solicitados: {cant_pedida}"
-                                )
+                subtotal = Decimal("0.00")
+                actualizaciones_stock = []
+                for item in items_sanitizados:
+                    prod_id = item["idproducto_servicio"]
+                    cantidad = item["cantidad"]
+                    producto = productos_db[prod_id]
+                    if not producto["activo"]:
+                        raise ValueError(f"El artículo '{producto['nombre']}' está inactivo.")
+
+                    try:
+                        precio_unitario = Decimal(str(producto["precio"]))
+                    except (InvalidOperation, TypeError):
+                        raise ValueError(f"El precio de '{producto['nombre']}' no es válido.")
+                    if not precio_unitario.is_finite() or precio_unitario < 0:
+                        raise ValueError(f"El precio de '{producto['nombre']}' no es válido.")
+
+                    item["precio_unitario"] = precio_unitario
+                    subtotal += precio_unitario * cantidad
+
+                    if str(producto["tipo"]).strip().casefold() != "servicio":
+                        if producto["cantidad_actual"] < cantidad:
+                            raise ValueError(
+                                f"Stock insuficiente para '{producto['nombre']}'. "
+                                f"Disponibles: {producto['cantidad_actual']}, Solicitados: {cantidad}"
+                            )
+                        actualizaciones_stock.append((cantidad, prod_id))
+
+                try:
+                    descuento_decimal = Decimal(str(descuento))
+                except (InvalidOperation, TypeError):
+                    raise ValueError("El descuento no es válido.")
+                if (
+                    not descuento_decimal.is_finite()
+                    or descuento_decimal < 0
+                    or descuento_decimal > subtotal
+                ):
+                    raise ValueError("El descuento debe estar entre cero y el subtotal.")
+
+                precio_total = (subtotal - descuento_decimal).quantize(
+                    Decimal("0.01"), rounding=ROUND_HALF_UP
+                )
+                total_productos = sum(item["cantidad"] for item in items_sanitizados)
 
                 # 2. Insertar la cabecera de la venta
                 sql_venta = """
@@ -98,7 +140,7 @@ class Venta:
                     (
                         id_venta,
                         item["idproducto_servicio"],
-                        item["precio_unitario"],
+                        str(item["precio_unitario"]),
                         item["cantidad"],
                     )
                     for item in items_sanitizados
@@ -109,13 +151,10 @@ class Venta:
                 sql_stock = """
                     UPDATE producto_servicio 
                     SET cantidad_actual = cantidad_actual - %s 
-                    WHERE idproducto_servicio = %s AND tipo != 'servicio';
+                    WHERE idproducto_servicio = %s;
                 """
-                valores_stock = [
-                    (item["cantidad"], item["idproducto_servicio"])
-                    for item in items_sanitizados
-                ]
-                cursor.executemany(sql_stock, valores_stock)
+                if actualizaciones_stock:
+                    cursor.executemany(sql_stock, actualizaciones_stock)
 
                 # 5. Insertar en historial_pago (Coincidiendo con la estructura de la imagen)
                 sql_pago = """
@@ -123,12 +162,15 @@ class Venta:
                         fecha, hora, monto, idmetodos_pago, plazo_pago, idventa
                     ) VALUES (CURDATE(), CURTIME(), %s, %s, %s, %s);
                 """
-                cursor.execute(sql_pago, (precio_total, id_metodo_pago, plazo_pago, id_venta))
+                cursor.execute(sql_pago, (str(precio_total), id_metodo_pago, plazo_pago, id_venta))
 
             conexion.commit()
             print(f"Venta #{id_venta} y su pago fueron registrados exitosamente.")
             return id_venta
 
+        except ValueError:
+            conexion.rollback()
+            raise
         except Exception as e:
             conexion.rollback()
             print(f"Error en la transacción de la venta: {e}")
@@ -367,7 +409,8 @@ class Venta:
                 sql_restituir_stock = """
                     UPDATE producto_servicio 
                     SET cantidad_actual = cantidad_actual + %s 
-                    WHERE idproducto_servicio = %s AND tipo != 'servicio';
+                    WHERE idproducto_servicio = %s
+                      AND LOWER(TRIM(tipo)) != 'servicio';
                 """
                 valores_stock = [
                     (item["cantidad"], item["idproducto_servicio"]) for item in items
