@@ -198,10 +198,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="btn-acciones">
                         <button class="btn-accion resumen" data-id="${c.idcompra || c.id_orden}">Ver resumen</button>
                         ${Number(c.completo) === 1 || Number(c.estado) === 0 ? '' : `<button class="btn-accion completar" data-id="${c.idcompra || c.id_orden}">Completar</button>`}
-                        <button class="btn-accion eliminar" data-id="${c.idcompra || c.id_orden}">Anular</button>
+                        ${Number(c.estado) === 0 ? '' : `<button class="btn-accion eliminar" data-id="${c.idcompra || c.id_orden}">Anular</button>`}
                     </div>
                 </td>
             `;
+            if (c.estado === 0) {
+                tr.classList.add('desactivado');
+            }
             tablaBody.appendChild(tr);
         });
     }

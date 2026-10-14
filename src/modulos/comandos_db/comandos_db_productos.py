@@ -7,7 +7,6 @@ class ProductoDuplicadoError(ValueError):
 
 
 class Producto:
-    
     #----------------------------------------------------------------------------
     def crear_producto(nombre=None, tipo=None, marca=None, medidas=None, imagen_producto=None, cantidad_actual=0, cantidad_minima=0, precio=0.0):
         """Crea un producto solo si no existe otro con los mismos datos identificatorios."""
@@ -84,12 +83,7 @@ class Producto:
             
         if condiciones:
             where_sql += " WHERE " + " AND " .join(condiciones)
-        
-        print(
-            "where_sql:", where_sql,
-            "condiciones:", condiciones,
-            "parametros:", parametros 
-        )
+
         
         conexion = Config.conectar_db()
         try:
@@ -106,7 +100,6 @@ class Producto:
                 cursor.execute(sql, parametros_paginados)
                 productos = cursor.fetchall()
                 
-                print(productos)
                 
                 cursor.execute("SELECT DISTINCT tipo FROM producto_servicio WHERE tipo IS NOT NULL AND tipo !='' ")
                 tipos = cursor.fetchall()

@@ -314,6 +314,10 @@ body {
     background-color: #b91c1c;
 }
 
+.resumen {
+    box-shadow: var(--sombra-chica);
+}
+
 .contenedor-paginacion,
 .paginacion-contenedor {
     display: flex;

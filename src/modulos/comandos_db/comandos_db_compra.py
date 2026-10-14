@@ -47,7 +47,7 @@ class Compra:
                     VALUES (%s, %s, %s)
                 """
                 valores_items = [
-                    (item["idproducto_servicio"], id_compra, item["cantidad"])
+                    (item["idproducto_servicio"], id_compra, item["cantidad_pedida"])
                     for item in items_sanitizados
                 ]
                 cursor.executemany(sql_item_compra, valores_items)
