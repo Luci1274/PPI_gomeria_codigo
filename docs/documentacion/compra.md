@@ -1,89 +1,101 @@
-# Documentación técnica del módulo de compras
+# Documentación del módulo de compras
 
-## Descripción general
+## Objetivo y alcance
 
-El módulo de compras permite registrar y consultar órdenes de compra, filtrarlas por fecha y estado, visualizar el detalle de una compra y anular compras cuando corresponda. La funcionalidad está dividida entre:
+El módulo administra órdenes de compra a proveedores y el ingreso de mercadería al inventario. Una orden pasa por dos momentos:
 
-- rutas de Flask en `src/modulos/compras_rutas.py`
-- lógica de acceso a datos en `src/modulos/comandos_db/comandos_db_compra.py`
-- interfaz web en `src/templates/compra.html` y `src/templates/orden_compra.html`
-- interacción del cliente en `src/static/js/compras.js` y `src/static/js/realizar_compra.js`
+1. **Registro:** se guarda la orden y sus cantidades pedidas. Todavía no se modifica el stock.
+2. **Completar / confirmar recepción:** se registran las cantidades efectivamente recibidas y se actualiza el stock. La operación solo puede completarse una vez.
 
-La idea general del flujo es:
+Las órdenes también se pueden consultar, filtrar y anular. Si se anula una orden ya completada, se revierte del inventario la cantidad que había sido recibida. Si se anula antes de completarla, no se modifica el stock.
 
-1. La pantalla de gestión de compras lista las órdenes registradas.
-2. El usuario puede buscar por número, proveedor o fecha.
-3. Puede ver el resumen de una compra en una ventana modal.
-4. Desde la pantalla de orden de compra puede elegir productos, un proveedor y registrar la operación.
-5. Al registrar la compra se actualiza el stock del inventario y se persiste la compra junto con sus ítems.
+## Archivos involucrados
 
-## Estructura de archivos
+| Archivo | Responsabilidad |
+|---|---|
+| `src/modulos/compras_rutas.py` | Rutas Flask, validación de las solicitudes y respuestas HTTP. |
+| `src/modulos/comandos_db/comandos_db_compra.py` | Consultas, transacciones y lógica de persistencia de la clase `Compra`. |
+| `src/templates/compra.html` | Vista de gestión de órdenes; extiende `plantailla_gestion.html`. |
+| `src/templates/orden_compra.html` | Catálogo y formulario de nueva orden; extiende `plantilla_orden.html`. |
+| `src/static/js/compras.js` | Listado, filtros, paginación, detalle, recepción y anulación. |
+| `src/static/js/realizar_compra.js` | Catálogo, carrito y envío de una nueva orden. |
+| `src/static/css/gestion_ordenes.css` | Estilos específicos referenciados por la plantilla de gestión. |
+| `src/static/css/ordenes.css` | Estilos generales de la plantilla de creación de órdenes. |
 
-### Rutas y controladores
+## Modelo de estados
 
-Archivo: `src/modulos/compras_rutas.py`
+La tabla `compra` maneja dos atributos de estado independientes:
 
-Se define el blueprint `compras_bp` con las rutas principales:
+- `activo`: `1` indica que la orden está activa; `0`, que fue anulada.
+- `completo`: `0` indica que aún no se confirmó la recepción; `1`, que se completó.
+
+El estado de recepción no significa que se haya recibido necesariamente la cantidad pedida en todos los ítems. Al confirmar, el usuario informa las cantidades reales, que pueden ser cero, menores o mayores que lo solicitado.
+
+| `activo` | `completo` | Significado | Efecto en stock |
+|---:|---:|---|---|
+| 1 | 0 | Orden activa pendiente de recepción | Ninguno hasta confirmar. |
+| 1 | 1 | Orden activa con recepción confirmada | Ya se ingresaron las cantidades recibidas, excepto servicios. |
+| 0 | 0 | Orden pendiente anulada | No se revierte stock porque no se había ingresado. |
+| 0 | 1 | Orden completada y luego anulada | Se revierte la cantidad recibida, excepto servicios. |
+
+No hay un flujo implementado para reactivar una orden anulada o para completar parcialmente una orden en varias etapas.
+
+## Rutas
 
 | Método y ruta | Función | Descripción |
 |---|---|---|
-| `GET /compras` | `vista_gestion_compras` | Carga la pantalla de gestión de compras. |
-| `GET /api/compras` | `api_compras` | Devuelve el listado paginado con filtros. |
-| `GET /compra/<id>/detalle` | `vista_detalle_compra` | Devuelve la cabecera y los ítems de una compra. |
-| `POST /api/compras/anular/<id_compra>` | `api_anular_compra` | Anula una compra y ajusta stock. |
-| `GET /compras/realizar` | `vista_realizar_compra` | Carga la pantalla de nueva orden. |
-| `POST /api/compras/realizar` | `api_realizar_compra` | Registra la compra en base de datos. |
+| `GET /compras` | `vista_gestion_compras` | Renderiza la pantalla de gestión. |
+| `GET /api/compras` | `api_compras` | Devuelve el listado, las métricas y los datos de paginación con filtros. |
+| `GET /api/compras/<id>/detalle` | `vista_detalle_compra` | Devuelve la cabecera y los ítems de una orden. |
+| `GET /compra/<id>/detalle` | `vista_detalle_compra` | Alias alternativo de la ruta de detalle. |
+| `POST /api/compras/realizar` | `api_realizar_compra` | Registra una orden pendiente. |
+| `POST /compras/completar` | `completar_compra` | Registra las cantidades recibidas y completa la orden. |
+| `POST /api/compras/anular/<id_compra>` | `api_anular_compra` | Anula una orden y, si ya estaba completada, revierte el stock recibido. |
+| `GET /compras/realizar` | `vista_realizar_compra` | Renderiza el catálogo para crear una orden. |
 
-### Plantillas
+## Pantalla de gestión
 
-- `src/templates/compra.html`: pantalla principal con lista, filtros, métricas y modal de detalle.
-- `src/templates/orden_compra.html`: pantalla para crear una orden de compra con catálogo de productos y proveedor.
+La pantalla `compra.html` muestra:
 
-### JavaScript
+- acceso a **Nueva Orden de Compra**
+- métricas de total de compras y total de productos
+- búsqueda de orden por número o proveedor
+- filtro por fecha: hoy, últimos siete días, último mes, último año o todas las fechas
+- filtro de estado activo/anulado/todos
+- filtro de recepción completa/incompleta/todas
+- tabla con número, fecha, proveedor, tipos de producto, cantidad total, estado de recepción y acciones
+- modal para consultar el detalle o completar una orden pendiente
+- confirmación antes de anular una orden
+- paginación de resultados
 
-- `src/static/js/compras.js`: carga la tabla principal, aplica filtros, navega por páginas y maneja la anulación y el modal.
-- `src/static/js/realizar_compra.js`: administra el carrito local, la búsqueda de productos, la selección de proveedor y la confirmación final.
+La búsqueda se consulta luego de 300 ms sin nuevas pulsaciones. Al cambiar un filtro se vuelve a la primera página. El listado carga la primera página al abrir la vista y solicita hasta 20 órdenes por página.
 
-## Pantalla de gestión de compras
+Las acciones disponibles dependen de los estados:
 
-La vista principal se renderiza con `compra.html` y muestra:
+- **Ver resumen** está disponible en las filas listadas.
+- **Completar** se muestra solo para órdenes activas incompletas.
+- **Anular** se muestra solo para órdenes activas.
 
-- cabecera con título y botón `Nueva Orden de Compra`
-- dos métricas:
-  - total de compras
-  - total de productos comprados
-- filtros por:
-  - texto libre
-  - rango de fecha
-  - estado (`Activas`, `Anuladas`, `Todas`)
-- tabla con columnas:
-  - N° Orden
-  - Fecha
-  - Proveedor
-  - Tipos de producto
-  - Total de productos
-  - Acciones
-- paginación dinámica
-- cartel emergente para mensajes de éxito, error o confirmación
-- modal con detalle de la orden y total
+La columna `Estado` de la tabla representa si la recepción está completa o incompleta. El filtro `estado` de la API, en cambio, corresponde a `activo` (vigente/anulada). Las órdenes anuladas se representan visualmente con una clase de fila y no ofrecen la acción de volver a anular.
 
-### Filtros disponibles
+### Filtros de `GET /api/compras`
 
-La API `GET /api/compras` recibe los siguientes parámetros:
+| Parámetro | Tipo / valor predeterminado | Valores y comportamiento |
+|---|---|---|
+| `busqueda` | Texto vacío | Coincidencia parcial en el ID de compra o el nombre del proveedor. |
+| `filtro_fecha` | `hoy` | `hoy`, `semana`, `mes`, `anio` o `todos`. |
+| `fecha_inicio` | Opcional | Inicio de rango manual; se aplica solo si también se envía `fecha_fin`. |
+| `fecha_fin` | Opcional | Fin de rango manual; se aplica solo si también se envía `fecha_inicio`. |
+| `estado` | `1` | `1` activas, `0` anuladas, `todos` para no filtrar por `activo`. |
+| `completo` | Sin filtro en la ruta | `1` completas, `0` incompletas, `todos` para no filtrar por recepción. |
+| `pagina` | `1` | Página solicitada; se limita al intervalo disponible. |
+| `limite` | `20` | Tamaño de página; la consulta asegura un mínimo de 1. |
 
-| Parámetro | Tipo | Valores esperados | Uso |
-|---|---|---|---|
-| `busqueda` | string | texto libre | busca por número de orden o nombre del proveedor |
-| `filtro_fecha` | string | `hoy`, `semana`, `mes`, `anio`, `todos` | define el rango de fechas |
-| `fecha_inicio` | string | `YYYY-MM-DD` | rango manual de inicio |
-| `fecha_fin` | string | `YYYY-MM-DD` | rango manual de fin |
-| `estado` | entero | `1`, `0`, `todos` | activa, anulada o todas |
-| `pagina` | entero | `1` por defecto | página actual |
-| `limite` | entero | `20` por defecto | cantidad de registros por página |
+El filtro de fecha del formulario manual no está presente en la interfaz actual, aunque la API admite `fecha_inicio` y `fecha_fin`. El rango predefinido se aplica como fecha mayor o igual al límite calculado por MySQL; `todos` no agrega condición de fecha.
 
-### Respuesta esperada
+### Respuesta del listado
 
-La respuesta JSON devuelta por la API tiene esta estructura:
+Una respuesta exitosa tiene la estructura siguiente:
 
 ```json
 {
@@ -93,9 +105,10 @@ La respuesta JSON devuelta por la API tiene esta estructura:
       "fecha": "04/10/2026",
       "horas": "15:30:00",
       "proveedor": "Gomería Central",
-      "tipo": "neumático, banda",
+      "tipo": "insumo, herramienta",
       "total_productos": 12,
-      "estado": 1
+      "estado": 1,
+      "completo": 0
     }
   ],
   "paginacion": {
@@ -112,32 +125,20 @@ La respuesta JSON devuelta por la API tiene esta estructura:
 }
 ```
 
-En caso de error de la base de datos, la ruta devuelve `500` con un mensaje y una redirección.
+`total_productos` y la métrica homónima se calculan sumando `compra.cantidad_total`, es decir, las cantidades **pedidas**, no las recibidas. Las métricas respetan los filtros aplicados y se calculan sobre todas las coincidencias, no solo sobre la página visible. Cuando no hay coincidencias, el método de datos calcula una página y cero registros.
 
-## Detalle de una compra
+La API devuelve `500` si falla la consulta a la base de datos, con `Exito: false`, un mensaje y una redirección.
 
-La ruta `GET /compra/<int:id>/detalle` obtiene la cabecera y los ítems pertenecientes a una compra concreta.
+> **Desajuste actual de nombres:** la consulta devuelve los tipos agrupados en `tipo`, pero `compras.js` intenta mostrar `tipos_producto`. Como resultado, la columna de tipos puede aparecer como `0 tipos` aunque la orden tenga productos. El resto de la respuesta conserva la clave `tipo`.
 
-### Lógica de consulta
+## Consultar el detalle
 
-La clase `Compra.obtener_por_id(id_compra)` hace dos consultas:
+Al pedir el resumen, el navegador consulta `GET /api/compras/<id>/detalle`. La respuesta incluye:
 
-1. trae la cabecera de la compra:
-   - `idcompra`
-   - `fecha`
-   - `horas`
-   - `proveedor`
-   - `total_productos`
-   - `activo`
-2. trae el detalle de los ítems:
-   - `iditem_compra`
-   - `producto_nombre`
-   - `producto_tipo`
-   - `cantidad`
-   - `precio_unitario`
-   - `subtotal`
+- `compra`: `idcompra`, `fecha`, `horas`, `proveedor`, `total_productos`, `activo` y `completo`
+- `items`: `iditem_compra`, `producto_nombre`, `cantidad_pedida`, `cantidad_entregada` y `tipo`
 
-La respuesta final devuelve un JSON con:
+Ejemplo:
 
 ```json
 {
@@ -148,107 +149,46 @@ La respuesta final devuelve un JSON con:
     "horas": "15:30:00",
     "proveedor": "Gomería Central",
     "total_productos": 12,
-    "activo": 1
+    "activo": 1,
+    "completo": 0
   },
   "items": [
     {
       "iditem_compra": 15,
-      "producto_nombre": "Neumático 185/65R15",
-      "producto_tipo": "neumático",
-      "cantidad": 4,
-      "precio_unitario": 5000,
-      "subtotal": 20000
+      "producto_nombre": "Kit de reparación",
+      "cantidad_pedida": 12,
+      "cantidad_entregada": 0,
+      "tipo": "insumo"
     }
   ]
 }
 ```
 
-## Anulación de compras
+Las fechas se serializan como `DD/MM/YYYY` y las horas como texto. La respuesta exitosa incluye el encabezado `Cache-Control: no-store`.
 
-La anulación se realiza desde la tabla principal con el botón `Anular`.
+En la implementación actual, `Compra.obtener_por_id` devuelve un estado falso tanto si no encuentra la compra como ante un error de consulta. Por eso, la ruta responde `500` en ambos casos; aunque existe una rama preparada para `404`, la ausencia de la compra no llega a esa rama.
 
-### Ruta
+## Crear una orden
 
-`POST /api/compras/anular/<int:id_compra>`
+### Carga del catálogo
 
-### Comportamiento
+`GET /compras/realizar` obtiene de la base de datos:
 
-La clase `Compra.anular(id_compra)` ejecuta esta lógica:
-
-1. valida que la compra exista y no esté ya anulada
-2. obtiene los ítems asociados a la compra
-3. descuenta las cantidades de cada producto del stock en `producto_servicio`
-4. marca la compra como `activo = 0`
-5. confirma la transacción con `commit()`
-
-La lógica se implementa así:
-
-```python
-sql_revertir_stock = """
-    UPDATE producto_servicio 
-    SET cantidad_actual = cantidad_actual - %s 
-    WHERE idproducto_servicio = %s AND tipo = 'producto';
-"""
-```
-
-Esto permite que el stock vuelva a su estado anterior cuando la compra es anulada.
-
-### Respuesta
-
-Respuesta exitosa:
-
-```json
-{
-  "exito": true,
-  "mensaje": "La compra #42 fue anulada y el stock ajustado.",
-  "redireccion": "/compras"
-}
-```
-
-Si la compra no existe o ya está anulada, la API devuelve `400` o `500` según la condición.
-
-## Registro de una nueva orden de compra
-
-La creación de una compra se realiza desde la vista `orden_compra.html`, accesible por `GET /compras/realizar`.
-
-### Funcionalidades de la pantalla
-
-- catálogo de productos activos
-- búsqueda por nombre
-- filtro por tipo de producto
-- selección de proveedor
-- carrito local en memoria y persistido con `localStorage`
-- resumen del pedido con cantidad total
-- modal de confirmación antes de registrar
-
-### Datos cargados al abrir la pantalla
-
-La ruta `vista_realizar_compra()` llama a `Compra.obtener_datos_inicio_compra()` y carga:
-
-- productos activos
-- tipos de productos distintos
+- productos activos, ordenados por cantidad actual ascendente
+- tipos distintos de productos activos para el filtro
 - proveedores activos
 
-El método devuelve:
+La pantalla muestra el nombre, tipo, medidas, cantidad actual y mínima del producto. La búsqueda filtra por nombre y el selector filtra por tipo. En dispositivos pequeños se puede abrir/cerrar el panel del carrito.
 
-```python
-productos, tipos, proveedores, estado = Compra.obtener_datos_inicio_compra()
-```
+### Carrito
 
-### Proceso de compra
+`realizar_compra.js` mantiene el carrito en memoria y lo guarda en `localStorage` bajo la clave `ordenCompraCarrito` al abrir la sección de proveedores. Al volver a la pantalla, restaura únicamente los ítems cuyo ID sigue presente en el catálogo activo y cuya cantidad sea un entero positivo.
 
-Cuando el usuario confirma la operación:
+Al agregar varias veces el mismo producto, el carrito acumula la cantidad para ese mismo `idproducto_servicio`. El resumen muestra las unidades totales; el modal de confirmación requiere al menos un producto y un proveedor.
 
-1. `realizar_compra.js` arma el payload en formato JSON.
-2. Se envía a `POST /api/compras/realizar`.
-3. La ruta valida que:
-   - exista un proveedor
-   - el carrito tenga al menos un producto
-   - cada producto tenga una cantidad válida y positiva
-4. Se calcula el total de unidades con `calcular_total_productos(carrito)`.
-5. Se llama a `Compra.registrar(...)`.
+### Solicitud de registro
 
-### Payload esperado
+Al confirmar se envía `POST /api/compras/realizar` con JSON:
 
 ```json
 {
@@ -266,7 +206,9 @@ Cuando el usuario confirma la operación:
 }
 ```
 
-### Respuesta esperada
+La ruta valida que el cuerpo sea un objeto JSON, que el ID de proveedor y los IDs de producto sean enteros positivos, que el carrito no esté vacío y que todas las cantidades sean enteros positivos. Calcula `total_productos` como la suma de cantidades y llama a `Compra.registrar`.
+
+Respuesta exitosa (`200`):
 
 ```json
 {
@@ -277,121 +219,140 @@ Cuando el usuario confirma la operación:
 }
 ```
 
-## Clase `Compra` y acceso a datos
+Un cuerpo o carrito inválido devuelve `400`; un error al registrar en la base de datos devuelve `500`. Tras el éxito, el JavaScript elimina el carrito guardado y redirige a `/compras`.
 
-La clase `Compra` encapsula la lógica de persistencia y consultas a MySQL.
+### Persistencia inicial
 
-### `Compra.registrar(id_proveedor, listado_items, total_productos, fecha=None)`
+`Compra.registrar(id_proveedor, listado_items, total_productos, fecha=None)` crea en una transacción:
 
-Inserta la cabecera de la compra en la tabla `compra` y, en la misma transacción:
+1. Una fila en `compra` con fecha, hora, proveedor, cantidad total, `activo = 1` y `completo = 0`.
+2. Una fila en `item_compra` por cada producto, guardando `idproducto_servicio`, `idcompra` y `cantidad_pedida`.
 
-- crea la fila en `compra` con:
-  - `fecha`
-  - `horas`
-  - `cantidad_total`
-  - `idproveedor`
-  - `activo = 1`
-- crea los ítems en `item_compra`
-- actualiza `cantidad_actual` en `producto_servicio` sumando la cantidad comprada
+**No modifica `producto_servicio.cantidad_actual` en este paso.** Si falla una consulta MySQL, la transacción se revierte y el método devuelve `(None, False)`; si termina correctamente, devuelve `(id_compra, True)`.
 
-Devuelve `(id_compra, True)` si fue exitosa. Si ocurre un error MySQL, hace `rollback()` y retorna `(None, False)`.
+## Completar / confirmar la recepción
+
+La acción **Completar** abre el detalle en modo de recepción. El usuario ingresa la `cantidad_entregada` de cada ítem; se permiten enteros desde cero. El formulario envía a `POST /compras/completar`:
+
+- `id_compra`
+- una lista de `iditem_compra`
+- una lista alineada de `cantidad_recibida`
+
+Ejemplo de campos de formulario:
+
+```text
+id_compra=42
+iditem_compra=15
+cantidad_recibida=10
+iditem_compra=16
+cantidad_recibida=0
+```
+
+La ruta valida que el ID de compra sea positivo, que haya ítems, que las dos listas tengan igual longitud, que los IDs no se repitan y que las cantidades recibidas sean enteros no negativos. Si la validación falla, responde `400`.
+
+`Compra.completar_compra(id_compra, cantidad_entregada_por_item)` realiza lo siguiente dentro de una transacción:
+
+1. Bloquea la fila de la orden con `SELECT ... FOR UPDATE`.
+2. Rechaza órdenes inexistentes, anuladas o ya completas.
+3. Bloquea los ítems y comprueba que se haya enviado exactamente el conjunto de IDs de la orden (sin omisiones ni IDs ajenos).
+4. Actualiza `cantidad_entregada` para cada ítem.
+5. Suma al inventario la cantidad recibida de los tipos distintos de `servicio`.
+6. Marca la compra como `completo = 1` y confirma la transacción.
+
+El stock se actualiza una sola vez por orden: una solicitud repetida ya no pasa la validación de orden pendiente. Para los servicios se guarda la cantidad recibida, pero no se actualiza `cantidad_actual`.
+
+Respuesta exitosa (`200`):
+
+```json
+{
+  "exito": true,
+  "mensaje": "Compra completada exitosamente.",
+  "redireccion": "/compras"
+}
+```
+
+La ruta devuelve `500` si el método no puede completar la operación. El navegador informa el resultado y vuelve a cargar el listado.
+
+## Anular una orden
+
+La interfaz pide confirmación y luego llama a `POST /api/compras/anular/<id_compra>`.
+
+`Compra.anular(id_compra)`:
+
+1. Comprueba que la compra exista y que siga activa.
+2. Si está completa, obtiene `cantidad_entregada` de sus ítems y resta esas cantidades del stock para todos los tipos distintos de `servicio`.
+3. Si está incompleta, no cambia el stock.
+4. Marca `compra.activo = 0` y confirma la transacción.
+
+La anulación es lógica: la fila de la compra y sus ítems se conservan. No se puede volver a anular una compra ya anulada. La operación no comprueba que el stock actual alcance para restar lo recibido, por lo que la anulación de una orden completada puede dejar una cantidad negativa si ese stock ya fue consumido o ajustado por otros movimientos.
+
+Respuesta exitosa (`200`):
+
+```json
+{
+  "exito": true,
+  "mensaje": "La compra #42 fue anulada y el stock ajustado.",
+  "redireccion": "/compras"
+}
+```
+
+Si el método no puede anularla, la ruta responde `400`; ante una excepción no controlada, responde `500`.
+
+## Acceso a datos: resumen de métodos
 
 ### `Compra.obtener_compras_paginadas(...)`
 
-Construye una consulta dinámica con filtros combinados usando `WHERE` y parámetros SQL. Permite filtrar por:
-
-- texto libre
-- proveedor
-- rango de fechas
-- estado activo/anulado
-
-Además calcula:
-
-- total de compras
-- total de productos
-- total de páginas para la paginación
-
-El resultado final se entrega como diccionario con las claves:
-
-- `compras`
-- `paginacion`
-- `resumen`
-- `Exito`
+Aplica los filtros de estado activo, texto, estado de recepción y fecha. Obtiene métricas, limita la página y ordena las órdenes por fecha, hora e ID descendentes. Devuelve un diccionario con `compras`, `paginacion`, `resumen` y `Exito`.
 
 ### `Compra.obtener_por_id(id_compra)`
 
-Lee una compra y sus ítems asociados. La unión se hace con:
-
-- `compra` -> `proveedor`
-- `item_compra` -> `producto_servicio`
-
-Esta consulta es la base del modal de detalle del resumen de compra.
-
-### `Compra.anular(id_compra)`
-
-Realiza una baja lógica en la compra y deshace el ingreso de stock que se había realizado al registrar la compra.
+Consulta la cabecera de una orden, el nombre del proveedor y los ítems vinculados a `producto_servicio`. Devuelve `(compra, items, estado)`.
 
 ### `Compra.obtener_datos_inicio_compra()`
 
-Consulta los datos necesarios para poblar la pantalla de nueva compra:
+Consulta el catálogo, los tipos y los proveedores activos para renderizar la pantalla de creación. Devuelve `(productos, tipos, proveedores, estado)`.
 
-- productos activos
-- tipos distintos
-- proveedores activos
+### `Compra.completar_compra(id_compra, cantidad_entregada_por_item)`
 
-## Base de datos involucrada
+Registra las cantidades recibidas y actualiza el stock una vez. La actualización de stock excluye `tipo = 'servicio'`.
 
-### Tablas relevantes
+### `Compra.anular(id_compra)`
 
-- `compra`: almacena la cabecera de la operación
-- `item_compra`: guarda cada producto incluído en la orden
-- `producto_servicio`: se actualiza con el stock nuevo y luego se revierte al anular
-- `proveedor`: se usa para asociar la compra
+Marca la orden inactiva. Si estaba completa, revierte las unidades realmente recibidas, excluyendo servicios.
 
-### Campos principales
+## Tablas y campos utilizados
 
-#### `compra`
+| Tabla | Uso en el módulo |
+|---|---|
+| `compra` | Cabecera: fecha, hora, cantidad total pedida, proveedor, estado activo y estado completo. |
+| `item_compra` | Detalle: producto, cantidad pedida y cantidad entregada. |
+| `producto_servicio` | Catálogo y stock actual; se actualiza al completar o anular una orden completa, excepto para servicios. |
+| `proveedor` | Proveedor asociado a la orden y listado de proveedores activos. |
 
-- `idcompra`
-- `fecha`
-- `horas`
-- `cantidad_total`
-- `idproveedor`
-- `activo`
+Campos de compra consultados o escritos:
 
-#### `item_compra`
+- `compra`: `idcompra`, `fecha`, `horas`, `cantidad_total`, `idproveedor`, `activo`, `completo`
+- `item_compra`: `iditem_compra`, `idproducto_servicio`, `idcompra`, `cantidad_pedida`, `cantidad_entregada`
+- `producto_servicio`: `idproducto_servicio`, `nombre`, `tipo`, `medidas`, `imagen_producto`, `cantidad_actual`, `cantidad_minima`, `activo`
+- `proveedor`: `idproveedor`, `nombre`, `telefono`, `mail`, `activo`
 
-- `iditem_compra`
-- `idproducto_servicio`
-- `idcompra`
-- `cantidad`
-- `precio_unitario` (si está definido en el esquema)
+## Interfaz y funcionalidades aún no conectadas
 
-#### `producto_servicio`
+La plantilla de gestión incluye botones **Descargar PDF** e **Imprimir** en el modal de detalle. `compras.js` los oculta en el modo de completar, pero no registra manejadores para esos botones; actualmente no ejecutan una acción.
 
-- `idproducto_servicio`
-- `nombre`
-- `tipo`
-- `cantidad_actual`
-- `activo`
+El módulo no envía un costo unitario ni un importe total de compra en el payload y las consultas de detalle no obtienen precios. El resumen de la orden contabiliza unidades, no valores monetarios.
 
-## Consideraciones de implementación
+## Resumen del flujo de stock
 
-- El carrito de compra se mantiene en el navegador con `localStorage` usando la clave `ordenCompraCarrito`, lo que permite conservar el pedido entre recargas.
-- El registro de compra actualiza el stock sumando la cantidad comprada, pero la lógica de creación no calcula ni envía explícitamente un precio unitario para cada ítem en el payload. Esto debería revisarse si la aplicación necesita un costo asociado a cada compra en detalle.
-- La vista principal usa `GET /api/compras` con filtros y paginación, por lo que la interfaz queda desacoplada de la recarga completa de la página.
-- El módulo permite anular compras de manera lógica, pero no contempla aún un flujo de reactivación ni una consulta de compras anuladas con detalle histórico extendido.
-- La validación del lado del servidor se centra en campos básicos (proveedor, carrito no vacío, cantidades positivas), pero no incluye validaciones más profundas de negocio ni control de sesión explícito en estas rutas.
+| Operación | Orden completa | Efecto en stock para productos no `servicio` |
+|---|---:|---|
+| Registrar orden | No | Ninguno. |
+| Completar recepción | Pasa a completa | Suma `cantidad_entregada` por ítem. |
+| Anular orden incompleta | No | Ninguno. |
+| Anular orden completa | Sí | Resta `cantidad_entregada` por ítem. |
 
-## Resumen funcional
+Las cantidades pedidas se conservan como parte del detalle, pero el inventario sigue las cantidades efectivamente recibidas.
 
-El módulo de compras cubre estos casos de uso principales:
+## Revisión de duplicados
 
-- listar órdenes de compra
-- buscar y filtrar órdenes
-- ver el detalle de cada orden
-- registrar una nueva compra desde el catálogo de productos
-- ajustar el stock al registrar la compra
-- anular una compra y descontar el stock asociado
-
-Es un módulo central para la operación de inventario y compras del sistema, y actúa como puente entre la gestión de proveedores, productos y stock disponible.
+El alta de una compra inserta una cabecera y sus ítems, que referencian artículos existentes por `idproducto_servicio`; no inserta productos en el catálogo. La operación es transaccional, pero no recibe una clave de idempotencia ni comprueba si la solicitud ya fue procesada. Si se reenvía una solicitud de compra, puede crearse otra orden y volver a impactar el stock al confirmar su recepción. La protección actual contra productos de catálogo repetidos corresponde al alta desde inventario y no a las compras.
