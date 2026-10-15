@@ -1,4 +1,4 @@
-from flask import Flask, abort, render_template, request, redirect, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, session, flash, jsonify
 from config import Config
 from modulos.ventas_rutas import ventas_bp
 from modulos.empleados_rutas import empleados_bp
@@ -52,6 +52,9 @@ def proteger_rutas():
         flash("Debes iniciar sesión para acceder al sistema", "warning")
         return redirect("/iniciar_sesion")
 
+    if endpoint_actual in {"inicio", "api_datos_dashboard"}:
+        return
+
     tipo_usuario = str(session.get("tipo", "")).strip().upper()
     if tipo_usuario in {"AD", "DEV"}:
         return
@@ -59,13 +62,7 @@ def proteger_rutas():
     if tipo_usuario in {"EM", "EMPLEADO"} and endpoint_actual in ENDPOINTS_EMPLEADO:
         return
 
-    if request.path.startswith("/api/") or endpoint_actual.startswith("api_"):
-        return jsonify({
-            "exito": False,
-            "mensaje": "No tienes permisos para acceder a esta función."
-        }), 403
-
-    abort(403)
+    return redirect("/")
 
 # Ruta principal que sirve la vista
 @app.route("/")
@@ -101,10 +98,6 @@ app.register_blueprint(proveedores_bp)
 app.register_blueprint(inventario_bp)
 app.register_blueprint(clientes_bp)
 app.register_blueprint(compras_bp)
-
-@app.route("/clientes")
-def clientes():
-    return render_template("clientes.html")
 
 if __name__ == "__main__":
     app.run(debug=True)

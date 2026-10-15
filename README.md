@@ -85,9 +85,9 @@ La autorización se aplica en el servidor desde la protección central de `src/a
 | `AD` | Acceso total a las rutas protegidas. |
 | `DEV` | Acceso total a las rutas protegidas. |
 | `Empleado` / `EM` | Pantalla principal y ventas: listado, detalle, anulación y registro. También puede cerrar sesión. |
-| Otros roles | Sin acceso a rutas protegidas. Las API responden `403` y las páginas muestran acceso prohibido. |
+| Otros roles | Se redirigen a la pantalla principal (`/`); pueden acceder a ella, pero no a las demás rutas protegidas. |
 
-El inicio de sesión y el registro son públicos. Las páginas protegidas redirigen a iniciar sesión cuando no hay sesión; las API sin sesión responden `401`.
+El inicio de sesión y el registro son públicos. Las páginas protegidas redirigen a iniciar sesión cuando no hay sesión; las API sin sesión responden `401`. Si una sesión autenticada intenta acceder a una ruta no permitida por su rol, se la redirige a `/`.
 
 ## Códigos de respuesta HTTP
 
@@ -95,10 +95,9 @@ El inicio de sesión y el registro son públicos. Las páginas protegidas rediri
 |---|---|---|
 | `200 OK` | Solicitud procesada correctamente. | Consultas exitosas y operaciones que responden sin crear un recurso. |
 | `201 Created` | Recurso creado correctamente. | Alta de clientes o registro de una venta, según el endpoint. |
-| `302 Found` | Redirección temporal. | Usuario sin sesión que intenta abrir una página protegida; se redirige al login. |
+| `302 Found` | Redirección temporal. | Usuario sin sesión que intenta abrir una página protegida; se redirige al login. También se redirige a `/` a una sesión autenticada sin permiso para la ruta solicitada. |
 | `400 Bad Request` | Solicitud o datos inválidos. | Campos o cantidades no válidos, carrito vacío o transición de estado no permitida. |
 | `401 Unauthorized` | Falta una sesión válida o falla la autenticación. | API protegida sin sesión o credenciales de inicio de sesión incorrectas. |
-| `403 Forbidden` | La sesión existe, pero el rol no está autorizado. | Acceso de un rol Empleado u otro rol sin permisos a funciones administrativas. |
 | `404 Not Found` | Recurso o ruta inexistente. | Registro no encontrado o ruta que no existe. |
 | `409 Conflict` | Conflicto con un registro existente. | CUIT/DNI ya asignado a otro cliente o proveedor. |
 | `500 Internal Server Error` | Error del servidor o de persistencia. | Fallo de base de datos u otra excepción no controlada. |
