@@ -28,43 +28,71 @@ class Venta:
         try:
             with conexion.cursor() as cursor:
                 # Sanitización explícita de ítems
-                items_sanitizados = [
-                    {
-                        "idproducto_servicio": int(item["idproducto_servicio"]),
-                        "precio_unitario": float(item["precio_unitario"]),
-                        "cantidad": int(item["cantidad"])
-                    }
-                    for item in lista_items
-                ]
+                items_sanitizados = []
+                for item in lista_items:
+                    tipo_item = item.get("tipo_item", "producto")
+                    id_item = int(item["idproducto_servicio"])
+                    precio = float(item["precio_unitario"])
+                    cantidad = int(item["cantidad"])
+                    if tipo_item not in {"producto", "servicio"} or id_item <= 0:
+                        raise ValueError("Un artículo del carrito no es válido.")
+                    if precio < 0 or cantidad <= 0:
+                        raise ValueError("El precio y la cantidad deben ser válidos.")
+                    items_sanitizados.append({
+                        "idproducto_servicio": id_item,
+                        "tipo_item": tipo_item,
+                        "precio_unitario": precio,
+                        "cantidad": cantidad
+                    })
 
                 # 1. Validar stock disponible
-                ids_productos = [item["idproducto_servicio"] for item in items_sanitizados]
+                cantidades_productos = {}
+                for item in items_sanitizados:
+                    if item["tipo_item"] == "producto":
+                        id_producto = item["idproducto_servicio"]
+                        cantidades_productos[id_producto] = (
+                            cantidades_productos.get(id_producto, 0) + item["cantidad"]
+                        )
+                ids_productos = list(cantidades_productos)
+                ids_servicios = [
+                    item["idproducto_servicio"]
+                    for item in items_sanitizados
+                    if item["tipo_item"] == "servicio"
+                ]
 
                 if ids_productos:
                     format_strings = ",".join(["%s"] * len(ids_productos))
                     sql_check = f"""
-                        SELECT idproducto_servicio, nombre, cantidad_actual, tipo 
-                        FROM producto_servicio 
-                        WHERE idproducto_servicio IN ({format_strings});
+                        SELECT idproducto, nombre, cantidad_actual
+                        FROM producto
+                        WHERE activo = 1 AND idproducto IN ({format_strings})
+                        FOR UPDATE;
                     """
                     cursor.execute(sql_check, ids_productos)
                     productos_db = {
-                        p["idproducto_servicio"]: p for p in cursor.fetchall()
+                        p["idproducto"]: p for p in cursor.fetchall()
                     }
 
-                    for item in items_sanitizados:
-                        prod_id = item["idproducto_servicio"]
-                        cant_pedida = item["cantidad"]
+                    for prod_id, cant_pedida in cantidades_productos.items():
+                        if prod_id not in productos_db:
+                            raise ValueError("Uno de los productos ya no está disponible.")
+                        prod = productos_db[prod_id]
+                        if prod["cantidad_actual"] < cant_pedida:
+                            raise ValueError(
+                                f"Stock insuficiente para '{prod['nombre']}'. Disponibles: {prod['cantidad_actual']}, Solicitados: {cant_pedida}"
+                            )
 
-                        if prod_id in productos_db:
-                            prod = productos_db[prod_id]
-                            if (
-                                prod["tipo"] == "producto"
-                                and prod["cantidad_actual"] < cant_pedida
-                            ):
-                                raise ValueError(
-                                    f"Stock insuficiente para '{prod['nombre']}'. Disponibles: {prod['cantidad_actual']}, Solicitados: {cant_pedida}"
-                                )
+                if ids_servicios:
+                    marcadores = ",".join(["%s"] * len(ids_servicios))
+                    cursor.execute(
+                        f"SELECT idservicio FROM servicio WHERE activo = 1 AND idservicio IN ({marcadores})",
+                        ids_servicios,
+                    )
+                    servicios_validos = {
+                        servicio["idservicio"] for servicio in cursor.fetchall()
+                    }
+                    if not set(ids_servicios).issubset(servicios_validos):
+                        raise ValueError("Uno de los servicios ya no está disponible.")
 
                 # 2. Insertar la cabecera de la venta
                 sql_venta = """
@@ -91,13 +119,14 @@ class Venta:
                 # 3. Insertar ítems
                 sql_items = """
                     INSERT INTO item_venta (
-                        idventa, idproducto_servicio, precio_unitario, cantidad
-                    ) VALUES (%s, %s, %s, %s);
+                        idventa, idproducto, idservicio, precio_unitario, cantidad
+                    ) VALUES (%s, %s, %s, %s, %s);
                 """
                 valores_items = [
                     (
                         id_venta,
-                        item["idproducto_servicio"],
+                        item["idproducto_servicio"] if item["tipo_item"] == "producto" else None,
+                        item["idproducto_servicio"] if item["tipo_item"] == "servicio" else None,
                         item["precio_unitario"],
                         item["cantidad"],
                     )
@@ -107,15 +136,16 @@ class Venta:
 
                 # 4. Descontar stock
                 sql_stock = """
-                    UPDATE producto_servicio 
+                    UPDATE producto
                     SET cantidad_actual = cantidad_actual - %s 
-                    WHERE idproducto_servicio = %s AND tipo != 'servicio';
+                    WHERE idproducto = %s AND activo = 1;
                 """
                 valores_stock = [
-                    (item["cantidad"], item["idproducto_servicio"])
-                    for item in items_sanitizados
+                    (cantidad, id_producto)
+                    for id_producto, cantidad in cantidades_productos.items()
                 ]
-                cursor.executemany(sql_stock, valores_stock)
+                if valores_stock:
+                    cursor.executemany(sql_stock, valores_stock)
 
                 # 5. Insertar en historial_pago (Coincidiendo con la estructura de la imagen)
                 sql_pago = """
@@ -320,10 +350,12 @@ class Venta:
                         iv.id_item_venta,
                         iv.cantidad,
                         iv.precio_unitario,
-                        ps.nombre AS producto_nombre,
-                        ps.imagen_producto
+                        COALESCE(p.nombre, s.nombre) AS producto_nombre,
+                        p.imagen_producto,
+                        CASE WHEN iv.idservicio IS NULL THEN 'producto' ELSE 'servicio' END AS tipo_item
                     FROM item_venta AS iv
-                    INNER JOIN producto_servicio AS ps ON iv.idproducto_servicio = ps.idproducto_servicio
+                    LEFT JOIN producto AS p ON iv.idproducto = p.idproducto
+                    LEFT JOIN servicio AS s ON iv.idservicio = s.idservicio
                     WHERE iv.idventa = %s;
                 """
                 cursor.execute(sql_items, (id_venta,))
@@ -357,20 +389,20 @@ class Venta:
                     return False
 
                 sql_obtener_items = """
-                    SELECT idproducto_servicio, cantidad 
+                    SELECT idproducto, cantidad
                     FROM item_venta 
-                    WHERE idventa = %s;
+                    WHERE idventa = %s AND idproducto IS NOT NULL;
                 """
                 cursor.execute(sql_obtener_items, (id_venta,))
                 items = cursor.fetchall()
 
                 sql_restituir_stock = """
-                    UPDATE producto_servicio 
+                    UPDATE producto
                     SET cantidad_actual = cantidad_actual + %s 
-                    WHERE idproducto_servicio = %s AND tipo != 'servicio';
+                    WHERE idproducto = %s;
                 """
                 valores_stock = [
-                    (item["cantidad"], item["idproducto_servicio"]) for item in items
+                    (item["cantidad"], item["idproducto"]) for item in items
                 ]
 
                 if valores_stock:
@@ -396,10 +428,30 @@ class Venta:
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
-                cursor.execute("SELECT p.idproducto_servicio, p.nombre, p.medidas, p.tipo, p.precio, p.imagen_producto, p.cantidad_actual FROM producto_servicio AS p WHERE activo = 1;")
+                cursor.execute(
+                    """
+                    SELECT p.idproducto AS idproducto_servicio, p.nombre,
+                           p.medidas, t.nombre AS tipo, p.precio,
+                           p.imagen_producto, p.cantidad_actual,
+                           'producto' AS tipo_item
+                    FROM producto AS p
+                    INNER JOIN tipos AS t ON t.idtipo = p.idtipo
+                    WHERE p.activo = 1
+                    UNION ALL
+                    SELECT s.idservicio AS idproducto_servicio, s.nombre,
+                           NULL AS medidas, t.nombre AS tipo, s.precio,
+                           NULL AS imagen_producto, 0 AS cantidad_actual,
+                           'servicio' AS tipo_item
+                    FROM servicio AS s
+                    INNER JOIN tipos AS t ON t.idtipo = s.idtipo
+                    WHERE s.activo = 1
+                    """
+                )
                 productos = cursor.fetchall()
 
-                cursor.execute("SELECT DISTINCT tipo FROM producto_servicio WHERE activo = 1;")
+                cursor.execute(
+                    "SELECT nombre AS tipo FROM tipos WHERE activo = 1 ORDER BY nombre"
+                )
                 tipos = cursor.fetchall()
                 
                 cursor.execute("SELECT idcliente, nombre, apellido FROM cliente WHERE activo = 1")
