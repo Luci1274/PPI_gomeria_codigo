@@ -62,6 +62,7 @@ class Producto:
         """ 
         Buscar los productos utilizando unos parametros de busqueda, en caso de que los parametros sean None devuelve todos, limitados cada 10        
         """
+        conexion = Config.conectar_db()
         condiciones = []
         parametros = []
         where_sql = ""
@@ -83,6 +84,7 @@ class Producto:
         if condiciones:
             where_sql += " WHERE " + " AND " .join(condiciones)
 
+        
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
@@ -147,7 +149,7 @@ class Producto:
                     tipo = %s,
                     marca = %s,
                     medidas = %s,
-                    imagen_producto = COALESCE(%s, imagen_producto),
+                    imagen_producto = %s,
                     cantidad_actual = %s,
                     cantidad_minima = %s,
                     precio = %s

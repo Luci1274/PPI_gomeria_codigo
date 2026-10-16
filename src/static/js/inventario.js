@@ -107,16 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- FUNCIONES PRINCIPALES Y PAGINACIÓN ---
 
-    function mostrarErrorCarga(mensaje) {
-        if (valorMetrica) valorMetrica.textContent = '0';
-        if (tablaBody) {
-            tablaBody.innerHTML = `<tr><td colspan="8" class="texto-centro">${mensaje}</td></tr>`;
-        }
-        paginaActual = 1;
-        totalPaginas = 1;
-        actualizarPaginacionUI();
-    }
-
     async function cargarProductos() {
         try {
             let estadoValor = '';
@@ -138,11 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await respuesta.json();
 
             if (!respuesta.ok || !data.exito) {
-                mostrarErrorCarga('Error al cargar los datos del inventario.');
-                mostrarNotificacion(
-                    'Error de datos',
-                    data.mensaje || data.Mensaje || 'Error al obtener los datos del inventario.'
-                );
+                mostrarNotificacion('Error de datos', data.mensaje || 'Error al obtener los datos del inventario.');
                 if (data.redireccion) window.location.href = data.redireccion;
                 return;
             }
@@ -158,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Error al cargar productos:', error);
-            mostrarErrorCarga('Error de conexión al cargar datos.');
+            tablaBody.innerHTML = `<tr><td colspan="8" class="texto-centro">Error de conexión al cargar datos.</td></tr>`;
         }
     }
 
@@ -221,9 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function desactivarProducto(id) {
         try {
-            const respuesta = await fetch(`/api/inventario/${id}/desactivar`, {
-                method: 'POST'
-            });
+            const respuesta = await fetch(`/api/inventario/${id}/desactivar`);
             const data = await respuesta.json();
 
             if (respuesta.ok && data.exito) {

@@ -199,9 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function desactivarProveedor(id) {
         try {
-            const respuesta = await fetch(`/proveedores/${id}/desactivar`, {
-                method: 'POST'
-            });
+            const respuesta = await fetch(`/proveedores/${id}/desactivar`);
             const data = await respuesta.json();
 
             if (respuesta.ok && data.exito) {
@@ -349,10 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cerrarModal();
                 cargarProveedores();
             } else {
-                mostrarNotificacion(
-                    respuesta.status === 409 ? 'CUIT duplicado' : 'Error al guardar',
-                    data.mensaje || 'No se pudieron guardar los datos del proveedor. Intente nuevamente.'
-                );
+                mostrarNotificacion('Error al guardar', 'No se pudieron guardar los datos del proveedor. Intente nuevamente.');
             }
         } catch (error) {
             console.error('Error al guardar proveedor:', error);
@@ -447,10 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cerrarModalEditar();
                 cargarProveedores();
             } else {
-                mostrarNotificacion(
-                    respuesta.status === 409 ? 'CUIT duplicado' : 'Error al actualizar',
-                    data.mensaje || 'Error al actualizar el proveedor.'
-                );
+                mostrarNotificacion('Error al actualizar', data.mensaje || 'Error al actualizar el proveedor.');
             }
         } catch (error) {
             console.error('Error al actualizar proveedor:', error);

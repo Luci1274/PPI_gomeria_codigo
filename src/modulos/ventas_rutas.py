@@ -1,5 +1,3 @@
-import math
-
 from flask import Blueprint, render_template, request, jsonify, session
 from modulos.comandos_db.comandos_db_venta import Venta
 ventas_bp = Blueprint("ventas", __name__)
@@ -133,21 +131,16 @@ def vista_realizar_venta():
 def api_procesar_venta():
     """Recibe la solicitud del carrito y registra la transacción mediante Venta.registrar."""
     try:
-        datos = request.get_json(silent=True)
-        if not isinstance(datos, dict):
-            return jsonify({
-                "exito": False,
-                "mensaje": "Los datos de la venta no son válidos."
-            }), 400
-
+        datos = request.get_json() or {}
         carrito = datos.get("carrito", [])
 
-        if not isinstance(carrito, list) or not carrito:
+        if not carrito:
             return jsonify({
                 "exito": False, 
-                "mensaje": "El carrito de venta no puede estar vacío."
+                "mensaje": "El carrito de compra no puede estar vacío."
             }), 400
 
+        # 1. Obtener id_empleado de forma segura evitando KeyError
         id_empleado_actual = session.get("id_usuario")
         if not id_empleado_actual:
             return jsonify({
@@ -156,62 +149,24 @@ def api_procesar_venta():
                 "redireccion": "/registrarse"
             }), 401
 
-        items_validados = []
-        for item in carrito:
-            if not isinstance(item, dict):
-                raise ValueError("Cada artículo del carrito debe ser un objeto válido.")
-
-            id_producto = item.get("idproducto_servicio")
-            cantidad = item.get("cantidad")
-            if (
-                isinstance(id_producto, bool)
-                or isinstance(cantidad, bool)
-                or isinstance(id_producto, float) and not id_producto.is_integer()
-                or isinstance(cantidad, float) and not cantidad.is_integer()
-            ):
-                raise ValueError("Los identificadores y cantidades deben ser números enteros positivos.")
-
-            id_producto = int(id_producto)
-            cantidad = int(cantidad)
-            if id_producto <= 0 or cantidad <= 0:
-                raise ValueError("Los identificadores y cantidades deben ser números enteros positivos.")
-
-            items_validados.append({
-                "idproducto_servicio": id_producto,
-                "cantidad": cantidad
-            })
-
+        # 2. Extraer cliente y método de pago
         id_cliente = datos.get("id_cliente", 1)
-        id_metodo_pago = datos.get("id_metodo_pago", 1)
-        if (
-            isinstance(id_cliente, bool)
-            or isinstance(id_metodo_pago, bool)
-            or isinstance(id_cliente, float) and not id_cliente.is_integer()
-            or isinstance(id_metodo_pago, float) and not id_metodo_pago.is_integer()
-        ):
-            raise ValueError("El cliente y el método de pago deben ser identificadores enteros.")
-        id_cliente = int(id_cliente)
-        id_metodo_pago = int(id_metodo_pago)
-        try:
-            descuento_valor = float(datos.get("descuento", 0.0))
-        except (TypeError, ValueError):
-            raise ValueError("El descuento debe ser un número válido.")
+        id_metodo_pago = datos.get("id_metodo_pago", 1)  # <-- Extraer el ID enviado por JS
 
-        if (
-            id_cliente <= 0
-            or id_metodo_pago <= 0
-            or not math.isfinite(descuento_valor)
-            or descuento_valor < 0
-        ):
-            raise ValueError("El cliente, el método de pago y el descuento deben ser válidos.")
+        descuento_valor = float(datos.get("descuento", 0.0))
+        total_productos = calcular_total_productos(carrito)
+        precio_total = calcular_precio_total(carrito, descuento_valor)
 
+        # 3. Guardar venta en DB pasando id_metodo_pago
         id_nueva_venta = Venta.registrar(
             id_cliente=id_cliente,
             id_empleado=int(id_empleado_actual),
-            lista_items=items_validados,
+            lista_items=carrito,
             id_metodo_pago=int(id_metodo_pago),  # <-- Pasamos la variable a Venta.registrar
             numero_factura=1,
             descuento=descuento_valor,
+            precio_total=precio_total,
+            total_productos=total_productos
         )
 
         if id_nueva_venta:
@@ -227,7 +182,37 @@ def api_procesar_venta():
             "mensaje": "Error al registrar la venta en la base de datos."
         }), 500
 
-    except ValueError as e:
-        return jsonify({"exito": False, "mensaje": str(e)}), 400
     except Exception as e:
         return jsonify({"exito": False, "error": str(e)}), 500
+
+
+# ------------------------------------------
+# Funciones Auxiliares                     #
+# ------------------------------------------
+
+def calcular_total_productos(carrito):
+    """Calcula la cantidad total de unidades dentro del carrito."""
+    return sum(int(item.get("cantidad", 0)) for item in carrito)
+
+
+def calcular_precio_total(carrito, descuento=0.0):
+    """
+    Calcula el precio subtotal del carrito, restando el descuento enviado.
+    Asegura que el precio nunca sea negativo y lo redondea a 2 decimales 
+    para cumplir con tipos de columna DECIMAL(10, 2) en la BD.
+    """
+    subtotal = sum(
+        float(item.get("precio_unitario", 0.0)) * int(item.get("cantidad", 0))
+        for item in carrito
+    )
+
+    try:
+        descuento_valor = float(descuento)
+        if descuento_valor < 0:
+            descuento_valor = 0.0
+    except (ValueError, TypeError):
+        descuento_valor = 0.0
+
+    precio_final = max(0.0, subtotal - descuento_valor)
+
+    return round(precio_final, 2)

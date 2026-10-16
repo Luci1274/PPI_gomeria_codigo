@@ -26,7 +26,7 @@ El formulario recibe el nombre completo en un solo campo y el JavaScript lo divi
 | `POST /api/clientes/crear` | `api_crear_cliente` | Crea un cliente a partir de un cuerpo JSON. |
 | `GET /clientes/<id>/editar` | `api_obtener_cliente` | Devuelve los datos de un cliente activo para cargar el formulario. |
 | `POST /api/clientes/<id>/editar` | `api_modificar_cliente` | Actualiza los datos del cliente a partir de un cuerpo JSON. |
-| `POST /clientes/<id>/desactivar` | `desactivar_cliente` | Desactiva lógicamente al cliente. |
+| `GET /clientes/<id>/desactivar` | `desactivar_cliente` | Desactiva lógicamente al cliente. |
 
 ### `GET /api/clientes`
 
@@ -57,7 +57,7 @@ Ante un error al consultar la base de datos responde `500` con `exito: false`, u
 
 ### `POST /api/clientes/crear`
 
-Recibe un JSON con `nombre`, `apellido`, `cuit`, `numero_tel`, `mail`, `ciudad` y `direccion`. El CUIT/DNI es obligatorio en la API y debe ser numérico una vez quitados espacios, puntos y guiones. Se conserva en la base el formato original recibido.
+Recibe un JSON con `nombre`, `apellido`, `cuit`, `numero_tel`, `mail`, `ciudad` y `direccion`.
 
 Si se crea correctamente devuelve `201`:
 
@@ -69,7 +69,7 @@ Si se crea correctamente devuelve `201`:
 }
 ```
 
-Si el CUIT/DNI ya pertenece a otro cliente, devuelve `409`; si falta o tiene caracteres no admitidos, devuelve `400`. La interfaz muestra el mensaje de la API. Si falla la operación en la base de datos devuelve `500`, `exito: false` y un mensaje de error.
+Si falla la operación en la base de datos devuelve `500`, `exito: false` y un mensaje de error.
 
 ### `GET /clientes/<id>/editar`
 
@@ -77,9 +77,9 @@ Devuelve `200` con `exito: true` y el objeto `cliente`, incluidos sus datos y la
 
 ### `POST /api/clientes/<id>/editar`
 
-Recibe los mismos campos de datos que la creación, excepto que el identificador se toma de la URL. Comprueba que el CUIT/DNI normalizado no pertenezca a otro cliente; permite conservar el CUIT/DNI propio al editar. La comprobación incluye clientes inactivos. Responde `409` si ya está asignado a otro cliente, `400` si falta o no es válido, `200` si se actualiza correctamente y `500` ante un error de base de datos.
+Recibe los mismos campos de datos que la creación, excepto que el identificador se toma de la URL. Responde `200` si la actualización termina correctamente o `500` si falla.
 
-### `POST /clientes/<id>/desactivar`
+### `GET /clientes/<id>/desactivar`
 
 Actualiza el estado del cliente a inactivo. Responde `200` con `exito: true` cuando la operación informa éxito; en caso contrario, responde `400` con `exito: false`.
 
@@ -87,7 +87,7 @@ Actualiza el estado del cliente a inactivo. Responde `200` con `exito: true` cua
 
 ### `Cliente.crear_cliente(...)`
 
-Inserta un cliente con `activo = 1`. Normaliza nombre, apellido, ciudad y dirección convirtiéndolos a formato título. Antes del `INSERT`, compara el CUIT/DNI sin espacios, puntos ni guiones contra todos los clientes, activos o inactivos. Lanza `ClienteCuitDuplicadoError` si ya está registrado y `ClienteCuitInvalidoError` si falta o no es numérico; devuelve el identificador generado (`lastrowid`) o `None` ante un error de MySQL.
+Inserta un cliente con `activo = 1`. Normaliza nombre, apellido, ciudad y dirección convirtiéndolos a formato título. Devuelve el identificador generado (`lastrowid`) o `None` ante un error de MySQL.
 
 ### `Cliente.leer_clientes(pagina=1, por_pagina=10, buscar=None, cuit=None, ciudad=None, activo=1)`
 
@@ -101,7 +101,7 @@ Busca un cliente activo por `idcliente` y calcula su deuda con el mismo criterio
 
 ### `Cliente.modificar_cliente(id, ...)`
 
-Actualiza nombre, apellido, CUIT, teléfono, correo, ciudad y dirección. Normaliza nombre y apellido; ciudad y dirección vacías se guardan como `NULL`. No modifica el campo `activo`. Bloquea la fila del cliente y comprueba que el CUIT/DNI no pertenezca a otro registro. Lanza `ClienteCuitDuplicadoError` o `ClienteCuitInvalidoError` en caso de duplicado o dato inválido; devuelve `True` ante una actualización válida y `False` si no existe el registro o falla la consulta.
+Actualiza nombre, apellido, CUIT, teléfono, correo, ciudad y dirección. Normaliza nombre y apellido; ciudad y dirección vacías se guardan como `NULL`. No modifica el campo `activo`. Devuelve `True` si la consulta termina correctamente y `False` si falla.
 
 ### `Cliente.eliminar_cliente(id)`
 
@@ -111,6 +111,5 @@ Realiza la baja lógica mediante `UPDATE cliente SET activo = 0`. Devuelve `True
 
 - La API acepta el filtro `ciudad` y devuelve ciudades, pero `clientes.html` no contiene actualmente un selector con el identificador `select-ciudad-filtro`; por eso el filtro de ciudad del JavaScript no se muestra ni se utiliza desde esta pantalla.
 - El formulario de edición incluye un selector de estado, pero `clientes.js` no envía ese valor y `Cliente.modificar_cliente` tampoco actualiza `activo`. El selector no cambia el estado del cliente.
-- La desactivación lógica se solicita con `POST`; el método de acceso a datos cambia `activo` a `0`.
+- La ruta de desactivación está implementada como `GET`; para una modificación de datos, convendría usar un método HTTP de escritura, como `POST` o `PATCH`.
 - Las rutas mostradas no realizan validaciones de campos ni comprueban una sesión antes de ejecutar las operaciones. La base de datos o validaciones adicionales deberían proteger los datos requeridos.
-- La aplicación previene duplicados de CUIT/DNI normalizando espacios, puntos y guiones, y considerando también clientes inactivos. La base de datos no declara una restricción única para el dato; la comprobación previa no garantiza evitar una carrera entre solicitudes concurrentes. Para una garantía también a nivel de base hace falta limpiar duplicados existentes y agregar un índice único sobre un valor canónico.
