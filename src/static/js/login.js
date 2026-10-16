@@ -12,9 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let ojoCerrado = document.querySelector('.eye');
     const passInput = document.getElementById('password_input');
     // Mensaje de avisos
-    const cajaMensaje = document.getElementById('caja-mensaje');
-    const parrafoMensaje = document.getElementById('parrafo-mensaje');
-    const tituloMensaje = document.getElementById('titulo-mensaje');
+    const cartelEmergente = document.getElementById('cartel-emergente');
+    const cartelMensaje = document.getElementById('cartel-mensaje');
+    const cartelTitulo = document.getElementById('cartel-titulo');
 
     // Comportamiento al hacer clic en "Crear usuario"
     btnRegistro.addEventListener('click', (e) => {
@@ -53,9 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function mostrarNotificacion(titulo, mensaje, tiempo = 1000) {
         clearTimeout(timerNotificacion);
 
-        tituloMensaje.textContent = titulo;
-        parrafoMensaje.textContent = mensaje;
-        cajaMensaje.style.display = 'block';
+        cartelTitulo.textContent = titulo;
+        cartelMensaje.textContent = mensaje;
+        cartelEmergente.style.display = 'block';
 
         if (tiempo > 0) {
             timerNotificacion = setTimeout(() => {
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function ocultarNotificacion() {
-        cajaMensaje.style.display = 'none';
+        cartelEmergente.style.display = 'none';
     }
 
     
@@ -96,8 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const datos = await respuesta.json();
 
             if (datos.exito) {
-                window.location.href = datos.redireccion;
-                mostrarNotificacion('inicio exitoso', 'ingresando', 1000)
+                mostrarNotificacion('Inicio exitoso', 'Ingresando...', 1500);
+                setTimeout(() => {
+                    window.location.href = datos.redireccion;
+                }, 1000);
             } else {
                 mostrarNotificacion('Intente nuevamente', datos.mensaje, 2000);
             }
@@ -135,8 +137,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const datos = await respuesta.json();
 
             if (datos.exito) {
-                alert(datos.mensaje);
-                window.location.href = datos.redireccion;
+                mostrarNotificacion('Registro exitoso', datos.mensaje, 1500);
+                setTimeout(() => {
+                    window.location.href = datos.redireccion;
+                }, 1000);
             } else {
                 mostrarNotificacion('Error', datos.mensaje, 1000);
             }
