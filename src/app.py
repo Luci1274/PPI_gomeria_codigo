@@ -12,6 +12,31 @@ app = Flask(__name__)
 
 app.config.from_object(Config)
 
+ENDPOINTS_EMPLEADO = {
+    "inicio",
+    "api_datos_dashboard",
+    "vista_gestion_ventas",
+    "api_ventas",
+    "vista_detalle_venta",
+    "api_anular_venta",
+    "vista_realizar_venta",
+    "api_procesar_venta",
+    "cerrar_sesion",
+}
+
+ENDPOINTS_JSON = {
+    "vista_detalle_venta",
+    "vista_detalle_compra",
+}
+
+
+def es_solicitud_api(endpoint_actual):
+    return (
+        request.path.startswith("/api/")
+        or endpoint_actual.startswith("api_")
+        or endpoint_actual in ENDPOINTS_JSON
+    )
+
 # ---------------------------------------------------------------------------------------------
 # 🛡️ GUARDIA DE SEGURIDAD (Control de Sesiones y Roles)
 # ---------------------------------------------------------------------------------------------
@@ -31,7 +56,7 @@ def proteger_rutas():
     # 3. Validar si existe la sesión
     if "id_usuario" not in session:
         # Si la petición viene de un fetch/AJAX (como las APIs), respondemos JSON 401 en lugar de redirigir
-        if request.path.startswith("/api/"):
+        if es_solicitud_api(endpoint_actual):
             return jsonify({
                 "exito": False,
                 "mensaje": "Sesión expirada o no autorizada"
@@ -39,6 +64,24 @@ def proteger_rutas():
 
         flash("Debes iniciar sesión para acceder al sistema", "warning")
         return redirect("/iniciar_sesion")
+
+    if endpoint_actual in {"inicio", "api_datos_dashboard"}:
+        return
+
+    tipo_usuario = str(session.get("tipo", "")).strip().upper()
+    if tipo_usuario in {"AD", "DEV"}:
+        return
+
+    if tipo_usuario in {"EM", "EMPLEADO"} and endpoint_actual in ENDPOINTS_EMPLEADO:
+        return
+
+    if es_solicitud_api(endpoint_actual):
+        return jsonify({
+            "exito": False,
+            "mensaje": "No tienes permisos para acceder a este recurso"
+        }), 403
+
+    return redirect("/")
 
 # Ruta principal que sirve la vista
 @app.route("/")
@@ -74,17 +117,6 @@ app.register_blueprint(proveedores_bp)
 app.register_blueprint(inventario_bp)
 app.register_blueprint(clientes_bp)
 app.register_blueprint(compras_bp)
-
-@app.route("/resumen_orden_compra")
-def resumen_orden_compra():
-    return render_template("resumen_orden_compra.html")
-@app.route("/gestion")
-def gestion():
-    return render_template("plantilla_base_gestion.html")
-
-@app.route("/clientes")
-def clientes():
-    return render_template("clientes.html")
 
 if __name__ == "__main__":
     app.run(debug=True)

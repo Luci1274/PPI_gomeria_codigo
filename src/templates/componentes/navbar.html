@@ -14,10 +14,11 @@
         <img src="{{ url_for('static', filename='image/Icono_app.png') }}" alt="icono-app" class="logo-app">
         <h2>Sistema Gomería</h2>
     </div>
+    {% set tipo_usuario = session.get("tipo", "")|trim|upper %}
     <nav class="menu-navegacion">
-        {% if session.get("tipo") == "AD" %}
         <a href="/" class="enl-nav">
             <i class="fa-solid fa-house"></i> Principal</a>
+        {% if tipo_usuario in ["AD", "DEV"] %}
         <a href="/ventas" class="enl-nav">
             <i class="fa-solid fa-cart-shopping"></i> Ventas</a>
         <a href="/compras" class="enl-nav">
@@ -29,23 +30,13 @@
         <a href="/proveedores" class="enl-nav">
             <i class="fa-solid fa-address-book"></i> Proveedores</a>
         <a href="/empleados" class="enl-nav">
-            <i class="fa-solid fa-user-gear"></i> Empleados
-        </a>
-        <a href="/cerrar_sesion" class="enl-nav"> 
-            <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
-
-        {% else %}
-        <a href="/" class="enl-nav">
-            <i class="fa-solid fa-house"></i> Principal</a>
+            <i class="fa-solid fa-user-gear"></i> Empleados</a>
+        {% elif tipo_usuario in ["EM", "EMPLEADO"] %}
         <a href="/ventas" class="enl-nav">
             <i class="fa-solid fa-cart-shopping"></i> Ventas</a>
-        <a href="/empleados" class="enl-nav">
-            <i class="fa-solid fa-user-gear"></i> Empleados</a>
+        {% endif %}
         <a href="/cerrar_sesion" class="enl-nav">
             <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
-
-        {% endif %}
-
     </nav>
     <div class="menu-pie">
         <div class="usuario-info">

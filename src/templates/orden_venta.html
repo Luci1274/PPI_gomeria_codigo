@@ -50,7 +50,10 @@
 {% endblock %}
 
 {% block accion_secundaria %}
+    {% set tipo_usuario = session.get("tipo", "")|trim|upper %}
+    {% if tipo_usuario in ["AD", "DEV"] %}
     <button type="button" class="btn btn-clientes" id="btn-clientes">Clientes</button>
+    {% endif %}
 {% endblock %}
 
 {% block titulo_modal %}Resumen Orden de Venta{% endblock %}
