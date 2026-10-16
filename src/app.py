@@ -24,6 +24,19 @@ ENDPOINTS_EMPLEADO = {
     "cerrar_sesion",
 }
 
+ENDPOINTS_JSON = {
+    "vista_detalle_venta",
+    "vista_detalle_compra",
+}
+
+
+def es_solicitud_api(endpoint_actual):
+    return (
+        request.path.startswith("/api/")
+        or endpoint_actual.startswith("api_")
+        or endpoint_actual in ENDPOINTS_JSON
+    )
+
 # ---------------------------------------------------------------------------------------------
 # 🛡️ GUARDIA DE SEGURIDAD (Control de Sesiones y Roles)
 # ---------------------------------------------------------------------------------------------
@@ -43,7 +56,7 @@ def proteger_rutas():
     # 3. Validar si existe la sesión
     if "id_usuario" not in session:
         # Si la petición viene de un fetch/AJAX (como las APIs), respondemos JSON 401 en lugar de redirigir
-        if request.path.startswith("/api/") or endpoint_actual.startswith("api_"):
+        if es_solicitud_api(endpoint_actual):
             return jsonify({
                 "exito": False,
                 "mensaje": "Sesión expirada o no autorizada"
@@ -61,6 +74,12 @@ def proteger_rutas():
 
     if tipo_usuario in {"EM", "EMPLEADO"} and endpoint_actual in ENDPOINTS_EMPLEADO:
         return
+
+    if es_solicitud_api(endpoint_actual):
+        return jsonify({
+            "exito": False,
+            "mensaje": "No tienes permisos para acceder a este recurso"
+        }), 403
 
     return redirect("/")
 

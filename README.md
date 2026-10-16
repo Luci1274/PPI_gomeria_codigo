@@ -267,6 +267,10 @@ Aquí tienes la documentación técnica actualizada para el módulo de empleados
 | 404 Not Found | No encontrado | Consulta de datos para modificar un empleado cuyo ID no existe en la BD. |
 | 500 Internal Error | Error interno del servidor | Base de datos fuera de línea o excepción no controlada en las consultas SQL. |
 
+### Autorización por roles
+
+Las rutas privadas requieren una sesión iniciada. Los roles `AD` y `DEV` pueden acceder a todas las secciones; `EM` y `EMPLEADO` solo pueden acceder al inicio, al dashboard y a las funciones de ventas permitidas por la lista `ENDPOINTS_EMPLEADO` en `src/app.py`. Las demás rutas redirigen al inicio, y las solicitudes API denegadas responden con HTTP `403`. La interfaz oculta a los empleados los enlaces y acciones que conducen a secciones restringidas; esta presentación no reemplaza la autorización del servidor.
+
 ### Clase `Usuario` (Capa de Base de Datos / Repositorio)
 
 #### 1. `Usuario.__init__(nombre=None, correo=None, telefono=None, contrasena=None, tipo="Empleado", id_usuario=None)`

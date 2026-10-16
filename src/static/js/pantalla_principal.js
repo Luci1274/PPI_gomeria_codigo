@@ -6,6 +6,9 @@ document.addEventListener("DOMContentLoaded", () => {
     setInterval(obtenerDatosDashboard, 10000);
 });
 
+const puedeGestionarCompras =
+    document.body.dataset.puedeGestionarCompras === "true";
+
 // 1. Muestra la fecha actual formateada
 function inicializarFecha() {
     const contenedorFecha = document.getElementById("fecha-actual");
@@ -99,7 +102,7 @@ function actualizarTablaStock(productos) {
         fila.innerHTML = `
             <td>${prod.nombre}</td>
             <td>${prod.cantidad_actual}</td>
-            <td><button class="btn-accion"> <a href="/compras/realizar" class="accion-rapida"> Reponer</a></button></td>
+            ${puedeGestionarCompras ? '<td><a href="/compras/realizar" class="accion-rapida">Reponer</a></td>' : ""}
         `;
         tbody.appendChild(fila);
     });
