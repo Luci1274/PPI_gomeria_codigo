@@ -1,5 +1,6 @@
 import pymysql
 from config import Config
+from modulos.comandos_db.comando_db_genericos import GenericosDB
 
 
 class ProductoDuplicadoError(ValueError):
@@ -15,26 +16,24 @@ class Producto:
                 activo, cantidad_actual, cantidad_minima, precio
                 ) VALUES (%s, %s, %s, %s,%s, 1, %s, %s, %s)
             """
-        nombre = (nombre or "").strip()
-        tipo = (tipo or "").strip()
-        marca = (marca or "").strip()
-        medidas = (medidas or "").strip()
+        nombre = GenericosDB.normalizar_texto(nombre)
+        tipo = GenericosDB.normalizar_texto(tipo)
+        marca = GenericosDB.normalizar_texto(marca)
+        medidas = GenericosDB.normalizar_texto(medidas)
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
-                cursor.execute(
-                    """
-                    SELECT idproducto_servicio
-                    FROM producto_servicio
-                    WHERE LOWER(TRIM(nombre)) = LOWER(%s)
-                      AND LOWER(TRIM(tipo)) = LOWER(%s)
-                      AND LOWER(TRIM(COALESCE(marca, ''))) = LOWER(%s)
-                      AND LOWER(TRIM(COALESCE(medidas, ''))) = LOWER(%s)
-                    LIMIT 1
-                    """,
-                    (nombre, tipo, marca, medidas),
-                )
-                if cursor.fetchone():
+                if GenericosDB.existe_registro(
+                    cursor,
+                    "producto_servicio",
+                    {
+                        "nombre": nombre,
+                        "tipo": tipo,
+                        "marca": marca,
+                        "medidas": medidas,
+                    },
+                    columnas_normalizadas=("nombre", "tipo", "marca", "medidas"),
+                ):
                     raise ProductoDuplicadoError(
                         "Ya existe un producto con el mismo nombre, tipo, marca y medidas."
                     )
@@ -65,12 +64,10 @@ class Producto:
         conexion = Config.conectar_db()
         condiciones = []
         parametros = []
-        where_sql = ""
         
-        if buscar:
-            condiciones.append("nombre LIKE %s")
-            term = f"%{buscar}%"
-            parametros.extend([term])
+        GenericosDB.agregar_filtro_busqueda(
+            condiciones, parametros, ("nombre",), buscar
+        )
         if tipo:
             condiciones.append("tipo LIKE %s")
             parametros.append(tipo)
@@ -81,8 +78,7 @@ class Producto:
             condiciones.append("activo = %s")
             parametros.append(estado)
             
-        if condiciones:
-            where_sql += " WHERE " + " AND " .join(condiciones)
+        where_sql = GenericosDB.construir_where(condiciones)
 
         
         conexion = Config.conectar_db()
