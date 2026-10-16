@@ -270,19 +270,4 @@ td {
         transform: rotate(-45deg) translate(6px, -6px);
         background-color: #ffffff;
     }
-
-    .cuadricula-metricas {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .cuadricula-acceso {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .panel-inferior {
-        display: flex;
-        flex-direction: column;
-    }
 }
