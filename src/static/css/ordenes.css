@@ -82,7 +82,8 @@ body {
 
 .contenedor-busqueda input,
 .filtros-categoria select,
-.campo-pos select {
+.campo-pos select,
+.campo-pos input {
     min-height: 44px;
     border: 1px solid var(--color-borde);
     border-radius: 8px;
@@ -100,7 +101,8 @@ body {
 
 .contenedor-busqueda input:focus,
 .filtros-categoria select:focus,
-.campo-pos select:focus {
+.campo-pos select:focus,
+.campo-pos input:focus {
     border-color: var(--primario-claro);
     box-shadow: 0 0 0 3px rgba(22, 53, 93, 0.1);
 }
@@ -260,7 +262,8 @@ button.tarjeta-producto {
     font-weight: 650;
 }
 
-.campo-pos select {
+.campo-pos select,
+.campo-pos input {
     width: 100%;
     padding: 9px 11px;
 }
@@ -369,6 +372,26 @@ button.tarjeta-producto {
     justify-content: space-between;
     gap: 12px;
     margin-bottom: 16px;
+}
+
+.resumen-importes {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 12px;
+}
+
+.linea-importe {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--texto-atenuado);
+    font-size: 13px;
+}
+
+.linea-importe span:last-child {
+    color: var(--texto-principal);
+    font-weight: 650;
 }
 
 .monto-total-pos span {

@@ -3,12 +3,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartelTitulo = document.getElementById('cartel-titulo');
     const cartelMensaje = document.getElementById('cartel-mensaje');
     const claveCarrito = 'ordenVentaCarrito';
+    const claveDescuento = 'ordenVentaDescuento';
     let timerNotificacion;
 
     // ==========================================
     // 1. INICIALIZACIÓN Y FECHA ACTUAL
     // ==========================================
     const selectCliente = document.getElementById('select-cliente');
+    const inputDescuento = document.getElementById('input-descuento');
     const spanFecha = document.getElementById('fecha-actual');
     const btnCarrito = document.getElementById('btn-carrito-pos');
     const overlayResumen = document.getElementById('overlay-resumen-pos');
@@ -169,15 +171,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function actualizarResumen() {
         const contenedorLista = document.getElementById('lista-resumen');
         const totalElemento = document.getElementById('monto-total');
+        const subtotalElemento = document.getElementById('monto-subtotal');
+        const descuentoElemento = document.getElementById('monto-descuento');
         
         if (!contenedorLista) return;
 
         contenedorLista.innerHTML = '';
-        let total = 0;
+        let subtotal = 0;
 
         carrito.forEach((item, index) => {
-            const subtotal = item.precio_unitario * item.cantidad;
-            total += subtotal;
+            const importeItem = item.precio_unitario * item.cantidad;
 
             const itemPedido = document.createElement('div');
             itemPedido.className = 'item-pedido';
@@ -190,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cantidad.textContent = `Cant: ${item.cantidad}`;
             const precio = document.createElement('span');
             precio.className = 'precio-item';
-            precio.textContent = `$${subtotal.toFixed(2)}`;
+            precio.textContent = `$${importeItem.toFixed(2)}`;
             const btnEliminar = document.createElement('button');
             btnEliminar.type = 'button';
             btnEliminar.className = 'btn-eliminar';
@@ -201,9 +204,24 @@ document.addEventListener('DOMContentLoaded', () => {
             contenedorLista.appendChild(itemPedido);
         });
 
-        if (totalElemento) {
-            totalElemento.textContent = `$${total.toFixed(2)}`;
+        subtotal = redondearDinero(carrito.reduce(
+            (acumulado, item) => acumulado + item.precio_unitario * item.cantidad,
+            0
+        ));
+        if (inputDescuento) {
+            inputDescuento.max = subtotal.toFixed(2);
+            const descuentoIngresado = Number(inputDescuento.value);
+            if (!Number.isFinite(descuentoIngresado) || descuentoIngresado < 0) {
+                inputDescuento.value = '0';
+            } else if (descuentoIngresado > subtotal) {
+                inputDescuento.value = subtotal.toFixed(2);
+            }
         }
+        const descuento = obtenerDescuento();
+        const total = redondearDinero(Math.max(0, subtotal - descuento));
+        if (subtotalElemento) subtotalElemento.textContent = `$${subtotal.toFixed(2)}`;
+        if (descuentoElemento) descuentoElemento.textContent = `$${descuento.toFixed(2)}`;
+        if (totalElemento) totalElemento.textContent = `$${total.toFixed(2)}`;
 
         contenedorLista.querySelectorAll('.btn-eliminar').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -213,6 +231,19 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    function redondearDinero(valor) {
+        return Math.round((valor + Number.EPSILON) * 100) / 100;
+    }
+
+    function obtenerDescuento() {
+        const descuento = Number(inputDescuento?.value || 0);
+        return Number.isFinite(descuento) && descuento >= 0
+            ? redondearDinero(descuento)
+            : 0;
+    }
+
+    inputDescuento?.addEventListener('input', actualizarResumen);
 
     function eliminarDelCarrito(index) {
         carrito.splice(index, 1);
@@ -252,13 +283,24 @@ document.addEventListener('DOMContentLoaded', () => {
             modalCliente.textContent = selectCliente.options[selectCliente.selectedIndex].text;
         }
 
+        const subtotal = redondearDinero(carrito.reduce(
+            (acumulado, item) => acumulado + item.precio_unitario * item.cantidad,
+            0
+        ));
+        const descuento = obtenerDescuento();
+        const totalFinal = redondearDinero(Math.max(0, subtotal - descuento));
+        const modalSubtotal = document.getElementById('modal-subtotal');
+        const modalDescuento = document.getElementById('modal-descuento');
+        const modalTotalFinal = document.getElementById('modal-total-final');
+        if (modalSubtotal) modalSubtotal.textContent = `$${subtotal.toFixed(2)}`;
+        if (modalDescuento) modalDescuento.textContent = `$${descuento.toFixed(2)}`;
+        if (modalTotalFinal) modalTotalFinal.textContent = `$${totalFinal.toFixed(2)}`;
+
         if (modalTablaBody) {
             modalTablaBody.innerHTML = '';
-            let totalModal = 0;
 
             carrito.forEach(item => {
                 const subtotal = item.precio_unitario * item.cantidad;
-                totalModal += subtotal;
 
                 const fila = document.createElement('tr');
                 const celdaNombre = document.createElement('td');
@@ -270,21 +312,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 fila.append(celdaNombre, celdaCantidad, celdaSubtotal);
                 modalTablaBody.appendChild(fila);
             });
-
-            const filaTotal = document.createElement('tr');
-            const celdaEtiquetaTotal = document.createElement('td');
-            celdaEtiquetaTotal.colSpan = 2;
-            celdaEtiquetaTotal.className = 'total-table';
-            const etiquetaTotal = document.createElement('strong');
-            etiquetaTotal.textContent = 'Total';
-            celdaEtiquetaTotal.appendChild(etiquetaTotal);
-            const celdaMontoTotal = document.createElement('td');
-            celdaMontoTotal.className = 'total-table';
-            const montoTotal = document.createElement('strong');
-            montoTotal.textContent = `$${totalModal.toFixed(2)}`;
-            celdaMontoTotal.appendChild(montoTotal);
-            filaTotal.append(celdaEtiquetaTotal, celdaMontoTotal);
-            modalTablaBody.appendChild(filaTotal);
         }
 
         if (modal) modal.style.display = 'flex';
@@ -307,6 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     cantidad
                 }))
             ));
+            localStorage.setItem(claveDescuento, obtenerDescuento().toFixed(2));
             window.location.href = destino;
         } catch (error) {
             console.error(`No se pudo guardar el pedido antes de abrir ${descripcion}:`, error);
@@ -339,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const payload = {
                 id_cliente: idCliente,
                 id_metodo_pago: idMetodoPago,
-                descuento: 0.0,
+                descuento: obtenerDescuento(),
                 carrito: carrito
             };
 
@@ -358,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (respuesta.ok && resultado.exito) {
                     try {
                         localStorage.removeItem(claveCarrito);
+                        localStorage.removeItem(claveDescuento);
                     } catch (error) {
                         console.error('No se pudo borrar el carrito guardado después de registrar la venta:', error);
                         mostrarNotificacion('Venta registrada', 'La venta se registró, pero no se pudo borrar el pedido guardado.', 4000);
@@ -386,6 +415,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     restaurarCarrito();
+    if (inputDescuento) {
+        try {
+            const descuentoGuardado = localStorage.getItem(claveDescuento);
+            if (descuentoGuardado !== null) {
+                const descuento = Number(descuentoGuardado);
+                if (Number.isFinite(descuento) && descuento >= 0) {
+                    inputDescuento.value = descuento.toFixed(2);
+                } else {
+                    localStorage.removeItem(claveDescuento);
+                    mostrarNotificacion('Aviso', 'El descuento guardado no era válido y se restableció a cero.');
+                }
+            }
+        } catch (error) {
+            console.error('No se pudo recuperar el descuento guardado:', error);
+            mostrarNotificacion('Aviso', 'No se pudo recuperar el descuento guardado.');
+        }
+    }
     actualizarResumen();
 
     function mostrarNotificacion(titulo, mensaje, tiempo = 3000) {

@@ -1,3 +1,6 @@
+import math
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+
 from flask import Blueprint, render_template, request, jsonify, session
 from modulos.comandos_db.comandos_db_venta import Venta
 ventas_bp = Blueprint("ventas", __name__)
@@ -153,7 +156,39 @@ def api_procesar_venta():
         id_cliente = datos.get("id_cliente", 1)
         id_metodo_pago = datos.get("id_metodo_pago", 1)  # <-- Extraer el ID enviado por JS
 
-        descuento_valor = float(datos.get("descuento", 0.0))
+        try:
+            descuento_decimal = Decimal(str(datos.get("descuento", 0.0))).quantize(
+                Decimal("0.01"),
+                rounding=ROUND_HALF_UP,
+            )
+        except (InvalidOperation, ValueError):
+            return jsonify({
+                "exito": False,
+                "mensaje": "El descuento debe ser un importe válido."
+            }), 400
+
+        if not descuento_decimal.is_finite():
+            return jsonify({
+                "exito": False,
+                "mensaje": "El descuento debe ser un importe válido."
+            }), 400
+
+        descuento_valor = float(descuento_decimal)
+        subtotal = sum(
+            float(item.get("precio_unitario", 0.0)) * int(item.get("cantidad", 0))
+            for item in carrito
+        )
+        subtotal = round(subtotal, 2)
+        if (
+            not math.isfinite(descuento_valor)
+            or descuento_valor < 0
+            or descuento_valor > subtotal
+        ):
+            return jsonify({
+                "exito": False,
+                "mensaje": "El descuento debe ser mayor o igual a cero y no puede superar el subtotal."
+            }), 400
+
         total_productos = calcular_total_productos(carrito)
         precio_total = calcular_precio_total(carrito, descuento_valor)
 
@@ -198,8 +233,7 @@ def calcular_total_productos(carrito):
 def calcular_precio_total(carrito, descuento=0.0):
     """
     Calcula el precio subtotal del carrito, restando el descuento enviado.
-    Asegura que el precio nunca sea negativo y lo redondea a 2 decimales 
-    para cumplir con tipos de columna DECIMAL(10, 2) en la BD.
+    Valida que el descuento no supere el subtotal y redondea el total a dos decimales.
     """
     subtotal = sum(
         float(item.get("precio_unitario", 0.0)) * int(item.get("cantidad", 0))
@@ -208,10 +242,15 @@ def calcular_precio_total(carrito, descuento=0.0):
 
     try:
         descuento_valor = float(descuento)
-        if descuento_valor < 0:
-            descuento_valor = 0.0
     except (ValueError, TypeError):
-        descuento_valor = 0.0
+        raise ValueError("El descuento debe ser un importe válido.") from None
+
+    if (
+        not math.isfinite(descuento_valor)
+        or descuento_valor < 0
+        or descuento_valor > subtotal
+    ):
+        raise ValueError("El descuento debe estar entre cero y el subtotal.")
 
     precio_final = max(0.0, subtotal - descuento_valor)
 
