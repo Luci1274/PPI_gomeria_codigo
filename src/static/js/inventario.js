@@ -26,12 +26,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCerrarModalNuevo = document.getElementById('btn-cerrar-modal');
     const btnCancelarModalNuevo = document.getElementById('btn-cancelar-modal');
     const formNuevoProducto = document.getElementById('form-nuevo-producto');
+    const selectTipoProducto = document.getElementById('select-tipo-producto');
+    const inputTipoProducto = document.getElementById('input-tipo');
+
+    // Modal Nuevo Servicio
+    const modalNuevoServicio = document.getElementById('modal-nuevo-servicio');
+    const btnNuevoServicio = document.getElementById('btn-nuevo-servicio');
+    const formNuevoServicio = document.getElementById('form-nuevo-servicio');
+    const selectTipoServicio = document.getElementById('select-tipo-servicio');
+    const inputTipoServicio = document.getElementById('input-tipo-servicio');
 
     // Modal Editar Producto
     const modalEditarProducto = document.getElementById('modal-editar-producto');
     const formEditarProducto = document.getElementById('form-editar-producto');
     const btnCerrarModalEditar = document.getElementById('btn-cerrar-modal-editar');
     const btnCancelarModalEditar = document.getElementById('btn-cancelar-modal-editar');
+    const selectEditarTipo = document.getElementById('select-editar-tipo');
+    const inputEditarTipo = document.getElementById('input-editar-tipo');
+
+    // Modal Editar Servicio
+    const modalEditarServicio = document.getElementById('modal-editar-servicio');
+    const formEditarServicio = document.getElementById('form-editar-servicio');
+    const selectEditarTipoServicio = document.getElementById('select-editar-tipo-servicio');
+    const inputEditarTipoServicio = document.getElementById('input-editar-tipo-servicio');
 
     // Cartel Emergente / Notificaciones
     const cartelEmergente = document.getElementById('cartel-emergente');
@@ -178,40 +195,90 @@ document.addEventListener('DOMContentLoaded', () => {
                 tr.classList.add('desactivado');
             }
             
-            const esActivo = prod.activo === undefined || prod.activo === 1 || prod.activo === true;
-            const estadoHTML = `<span class="badge ${esActivo ? 'activo' : 'inactivo'}">${esActivo ? 'Activo' : 'Inactivo'}</span>`;
-
+            const esActivo = prod.activo === undefined
+                || ![0, '0', false].includes(prod.activo);
             const precioFormateado = prod.precio !== undefined && prod.precio !== null 
                 ? `$${parseFloat(prod.precio).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
                 : '-';
+            const esServicio = prod.tipo_item === 'servicio';
+            const tipoItem = esServicio ? 'servicio' : 'producto';
 
-            tr.innerHTML = `
-                <td>${prod.idproducto_servicio}</td>
-                <td><strong>${prod.nombre || '-'}</strong> ${prod.medidas ? `<br><small style="color: #666;">${prod.medidas}</small>` : ''}</td>
-                <td>${prod.tipo || '-'}</td>
-                <td>${prod.marca || '-'}</td>
-                <td class="texto-derecha">${precioFormateado}</td>
-                <td class="texto-centro"><strong>${prod.cantidad_actual !== undefined ? prod.cantidad_actual : 0} u.</strong></td>
-                <td class="texto-centro">${estadoHTML}</td>
-                <td class="texto-centro">
-                    <div class="botones-accion">
-                        <button class="btn-accion btn-editar" data-id="${prod.idproducto_servicio}" title="Editar">Modificar</button>
-                        <button class="btn-accion borrar btn-eliminar" data-id="${prod.idproducto_servicio}" title="Eliminar">Eliminar</button>
-                    </div>
-                </td>
-            `;
+            const crearCelda = (contenido, className = '') => {
+                const td = document.createElement('td');
+                td.className = className;
+                td.textContent = contenido;
+                return td;
+            };
+            tr.appendChild(crearCelda(prod.idproducto_servicio));
+
+            const celdaNombre = document.createElement('td');
+            const nombre = document.createElement('strong');
+            nombre.textContent = prod.nombre || '-';
+            celdaNombre.appendChild(nombre);
+            if (prod.medidas) {
+                celdaNombre.appendChild(document.createElement('br'));
+                const medidas = document.createElement('small');
+                medidas.style.color = '#666';
+                medidas.textContent = prod.medidas;
+                celdaNombre.appendChild(medidas);
+            }
+            tr.appendChild(celdaNombre);
+
+            const celdaTipo = document.createElement('td');
+            celdaTipo.append(document.createTextNode(prod.tipo || '-'), ' ');
+            const etiquetaTipo = document.createElement('small');
+            etiquetaTipo.textContent = `(${esServicio ? 'Servicio' : 'Producto'})`;
+            celdaTipo.appendChild(etiquetaTipo);
+            tr.appendChild(celdaTipo);
+            tr.appendChild(crearCelda(prod.marca || '-'));
+            tr.appendChild(crearCelda(precioFormateado, 'texto-derecha'));
+            const stock = document.createElement('strong');
+            stock.textContent = esServicio ? 'No aplica' : `${prod.cantidad_actual ?? 0} u.`;
+            const celdaStock = crearCelda('');
+            celdaStock.classList.add('texto-centro');
+            celdaStock.appendChild(stock);
+            tr.appendChild(celdaStock);
+
+            const estado = document.createElement('span');
+            estado.className = `badge ${esActivo ? 'activo' : 'inactivo'}`;
+            estado.textContent = esActivo ? 'Activo' : 'Inactivo';
+            const celdaEstado = crearCelda('');
+            celdaEstado.classList.add('texto-centro');
+            celdaEstado.appendChild(estado);
+            tr.appendChild(celdaEstado);
+
+            const acciones = document.createElement('div');
+            acciones.className = 'botones-accion';
+            const btnEditar = document.createElement('button');
+            btnEditar.className = 'btn-accion btn-editar';
+            btnEditar.dataset.id = prod.idproducto_servicio;
+            btnEditar.dataset.tipoItem = tipoItem;
+            btnEditar.title = 'Editar';
+            btnEditar.textContent = 'Modificar';
+            const btnEliminar = document.createElement('button');
+            btnEliminar.className = 'btn-accion borrar btn-eliminar';
+            btnEliminar.dataset.id = prod.idproducto_servicio;
+            btnEliminar.dataset.tipoItem = tipoItem;
+            btnEliminar.title = 'Eliminar';
+            btnEliminar.textContent = 'Eliminar';
+            acciones.append(btnEditar, btnEliminar);
+            const celdaAcciones = crearCelda('');
+            celdaAcciones.classList.add('texto-centro');
+            celdaAcciones.appendChild(acciones);
+            tr.appendChild(celdaAcciones);
 
             tablaBody.appendChild(tr);
         });
     }
 
-    async function desactivarProducto(id) {
+    async function desactivarProducto(id, tipoItem) {
         try {
-            const respuesta = await fetch(`/api/inventario/${id}/desactivar`);
+            const params = new URLSearchParams({ tipo_item: tipoItem });
+            const respuesta = await fetch(`/api/inventario/${id}/desactivar?${params}`);
             const data = await respuesta.json();
 
             if (respuesta.ok && data.exito) {
-                mostrarNotificacion('Producto desactivado', data.mensaje || 'El producto fue desactivado correctamente.');
+                mostrarNotificacion('Artículo desactivado', data.mensaje || 'El artículo fue desactivado correctamente.');
                 cargarProductos();
             } else {
                 mostrarNotificacion('Error', data.mensaje || 'Error al desactivar el producto.');
@@ -229,33 +296,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (btnEliminar) {
             const id = btnEliminar.dataset.id;
+            const tipoItem = btnEliminar.dataset.tipoItem;
             
             const confirmado = await pedirConfirmacion(
-                'Desactivar Producto',
-                '¿Estás seguro de que deseas desactivar este producto del inventario?'
+                `Desactivar ${tipoItem === 'servicio' ? 'Servicio' : 'Producto'}`,
+                `¿Estás seguro de que deseas desactivar este ${tipoItem} del inventario?`
             );
 
             if (confirmado) {
-                desactivarProducto(id);
+                desactivarProducto(id, tipoItem);
             }
         }
 
         if (btnEditar) {
             const id = btnEditar.dataset.id;
-            abrirModalEditarProducto(id);
+            if (btnEditar.dataset.tipoItem === 'servicio') {
+                abrirModalEditarServicio(id);
+            } else {
+                abrirModalEditarProducto(id);
+            }
         }
     });
 
+    function poblarSelectTipos(select, tipos) {
+        if (!select || !tipos) return;
+        const seleccionado = select.value;
+        select.replaceChildren(new Option('Seleccionar tipo existente', ''));
+        tipos.forEach(item => {
+            if (item.tipo) select.add(new Option(item.tipo, item.tipo));
+        });
+        if ([...select.options].some(option => option.value === seleccionado)) {
+            select.value = seleccionado;
+        }
+    }
+
     function poblarSelectsFiltro(tipos, marcas) {
-        if (tipos && filtroTipo.children.length <= 1) {
+        if (tipos) {
+            const filtroSeleccionado = filtroTipo.value;
+            filtroTipo.replaceChildren(new Option('Tipo: Todos', 'todos'));
             tipos.forEach(item => {
-                if (item.tipo) {
-                    const option = document.createElement('option');
-                    option.value = item.tipo;
-                    option.textContent = item.tipo;
-                    filtroTipo.appendChild(option);
-                }
+                if (item.tipo) filtroTipo.add(new Option(item.tipo, item.tipo));
             });
+            if ([...filtroTipo.options].some(option => option.value === filtroSeleccionado)) {
+                filtroTipo.value = filtroSeleccionado;
+            }
+            [selectTipoProducto, selectTipoServicio, selectEditarTipo, selectEditarTipoServicio]
+                .forEach(select => poblarSelectTipos(select, tipos));
         }
 
         if (marcas && filtroMarca.children.length <= 1) {
@@ -333,7 +419,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData();
         formData.append('nombre', document.getElementById('input-producto').value.trim());
-        formData.append('tipo', document.getElementById('input-tipo').value.trim());
+        const tipo = inputTipoProducto.value.trim() || selectTipoProducto.value;
+        if (!tipo) {
+            mostrarNotificacion('Tipo requerido', 'Selecciona un tipo existente o ingresa uno nuevo.');
+            if (btnGuardarProducto) btnGuardarProducto.disabled = false;
+            return;
+        }
+        formData.append('tipo', tipo);
         formData.append('marca', document.getElementById('input-marca').value.trim());
         formData.append('medidas', document.getElementById('input-medidas').value.trim());
         formData.append('cantidad', parseInt(document.getElementById('input-cant-producto').value) || 0);
@@ -393,6 +485,76 @@ document.addEventListener('DOMContentLoaded', () => {
     btnCerrarModalEditar.addEventListener('click', cerrarModalEditar);
     btnCancelarModalEditar.addEventListener('click', cerrarModalEditar);
 
+    function resolverTipo(select, input) {
+        return input.value.trim() || select.value;
+    }
+
+    [selectTipoProducto, selectTipoServicio, selectEditarTipo, selectEditarTipoServicio]
+        .forEach(select => select?.addEventListener('change', () => {
+            const inputPorSelect = new Map([
+                [selectTipoProducto, inputTipoProducto],
+                [selectTipoServicio, inputTipoServicio],
+                [selectEditarTipo, inputEditarTipo],
+                [selectEditarTipoServicio, inputEditarTipoServicio]
+            ]);
+            const input = inputPorSelect.get(select);
+            if (input && select.value) input.value = select.value;
+        }));
+
+    function abrirModalServicio() {
+        modalNuevoServicio.classList.add('activo');
+        modalNuevoServicio.style.display = 'flex';
+    }
+
+    function cerrarModalServicio() {
+        modalNuevoServicio.classList.remove('activo');
+        modalNuevoServicio.style.display = 'none';
+        formNuevoServicio.reset();
+    }
+
+    btnNuevoServicio?.addEventListener('click', abrirModalServicio);
+    document.getElementById('btn-cerrar-modal-servicio')?.addEventListener('click', cerrarModalServicio);
+    document.getElementById('btn-cancelar-modal-servicio')?.addEventListener('click', cerrarModalServicio);
+    modalNuevoServicio?.addEventListener('click', e => {
+        if (e.target === modalNuevoServicio) cerrarModalServicio();
+    });
+
+    formNuevoServicio?.addEventListener('submit', async e => {
+        e.preventDefault();
+        const tipo = resolverTipo(selectTipoServicio, inputTipoServicio);
+        if (!tipo) {
+            mostrarNotificacion('Tipo requerido', 'Selecciona un tipo existente o ingresa uno nuevo.');
+            return;
+        }
+
+        const btnGuardar = formNuevoServicio.querySelector('button[type="submit"]');
+        btnGuardar.disabled = true;
+        try {
+            const respuesta = await fetch('/api/inventario/servicios', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombre: document.getElementById('input-servicio').value.trim(),
+                    tipo,
+                    precio: Number(document.getElementById('input-precio-servicio').value)
+                })
+            });
+            const data = await respuesta.json();
+            if (!respuesta.ok || !data.exito) {
+                mostrarNotificacion(respuesta.status === 409 ? 'Servicio duplicado' : 'Error', data.mensaje || 'No se pudo guardar el servicio.');
+                return;
+            }
+            mostrarNotificacion('Servicio guardado', data.mensaje);
+            cerrarModalServicio();
+            await cargarProductos();
+        } catch (error) {
+            console.error('Error al guardar servicio:', error);
+            mostrarNotificacion('Error de red', 'No se pudo guardar el servicio.');
+        } finally {
+            btnGuardar.disabled = false;
+        }
+    });
+
     window.addEventListener('click', (e) => {
         if (e.target === modalEditarProducto) cerrarModalEditar();
     });
@@ -401,7 +563,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             mostrarNotificacion('Cargando datos', 'Por favor espere...', 0);
 
-            const respuesta = await fetch(`/inventario/${id}/modificar`);
+            const respuesta = await fetch(`/inventario/${id}/modificar?tipo_item=producto`);
             const data = await respuesta.json();
 
             if (!respuesta.ok || !data.exito) {
@@ -422,6 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             setValor('input-editar-producto', prod.nombre);
+            selectEditarTipo.value = [...selectEditarTipo.options].some(option => option.value === prod.tipo) ? prod.tipo : '';
             setValor('input-editar-tipo', prod.tipo);
             setValor('input-editar-marca', prod.marca);
             setValor('input-editar-medidas', prod.medidas);
@@ -444,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData();
 
         formData.append('nombre', document.getElementById('input-editar-producto').value.trim());
-        formData.append('tipo', document.getElementById('input-editar-tipo').value.trim());
+        formData.append('tipo', resolverTipo(selectEditarTipo, inputEditarTipo));
         formData.append('marca', document.getElementById('input-editar-marca').value.trim());
         formData.append('medidas', document.getElementById('input-editar-medidas').value.trim());
         formData.append('cantidad', parseInt(document.getElementById('input-editar-cant-producto').value) || 0);
@@ -457,11 +620,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const respuesta = await fetch(`/api/inventario/${id}/modificar`, {
+            const respuesta = await fetch(`/api/inventario/${id}/modificar?tipo_item=producto`, {
                 method: 'POST',
                 body: formData
             });
-
             const data = await respuesta.json();
 
             if (respuesta.ok && data.exito) {
@@ -474,6 +636,76 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error al actualizar producto:', error);
             mostrarNotificacion('Error de red', 'Ocurrió un error de red al actualizar el producto.');
+        }
+    });
+
+    async function abrirModalEditarServicio(id) {
+        formEditarServicio.dataset.id = id;
+        formEditarServicio.reset();
+        modalEditarServicio.classList.add('activo');
+        modalEditarServicio.style.display = 'flex';
+        try {
+            const respuesta = await fetch(`/inventario/${id}/modificar?tipo_item=servicio`);
+            const data = await respuesta.json();
+            if (!respuesta.ok || !data.exito) {
+                throw new Error(data.mensaje || 'No se pudo cargar el servicio.');
+            }
+            const servicio = data.producto;
+            document.getElementById('input-editar-servicio').value = servicio.nombre || '';
+            selectEditarTipoServicio.value = [...selectEditarTipoServicio.options]
+                .some(option => option.value === servicio.tipo) ? servicio.tipo : '';
+            inputEditarTipoServicio.value = servicio.tipo || '';
+            document.getElementById('input-editar-precio-servicio').value = servicio.precio ?? '';
+        } catch (error) {
+            console.error('Error al cargar el servicio:', error);
+            mostrarNotificacion('Error', error.message);
+            cerrarModalEditarServicio();
+        }
+    }
+
+    function cerrarModalEditarServicio() {
+        modalEditarServicio.classList.remove('activo');
+        modalEditarServicio.style.display = 'none';
+        formEditarServicio.reset();
+        delete formEditarServicio.dataset.id;
+    }
+
+    document.getElementById('btn-cerrar-modal-editar-servicio')
+        ?.addEventListener('click', cerrarModalEditarServicio);
+    document.getElementById('btn-cancelar-modal-editar-servicio')
+        ?.addEventListener('click', cerrarModalEditarServicio);
+    modalEditarServicio?.addEventListener('click', e => {
+        if (e.target === modalEditarServicio) cerrarModalEditarServicio();
+    });
+
+    formEditarServicio?.addEventListener('submit', async e => {
+        e.preventDefault();
+        const id = formEditarServicio.dataset.id;
+        const tipo = resolverTipo(selectEditarTipoServicio, inputEditarTipoServicio);
+        if (!tipo) {
+            mostrarNotificacion('Tipo requerido', 'Selecciona un tipo existente o ingresa uno nuevo.');
+            return;
+        }
+        const formData = new FormData();
+        formData.append('nombre', document.getElementById('input-editar-servicio').value.trim());
+        formData.append('tipo', tipo);
+        formData.append('precio', document.getElementById('input-editar-precio-servicio').value);
+        try {
+            const respuesta = await fetch(`/api/inventario/${id}/modificar?tipo_item=servicio`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await respuesta.json();
+            if (!respuesta.ok || !data.exito) {
+                mostrarNotificacion('Error', data.mensaje || 'No se pudo actualizar el servicio.');
+                return;
+            }
+            cerrarModalEditarServicio();
+            mostrarNotificacion('Servicio actualizado', data.mensaje);
+            await cargarProductos();
+        } catch (error) {
+            console.error('Error al actualizar el servicio:', error);
+            mostrarNotificacion('Error de red', 'No se pudo actualizar el servicio.');
         }
     });
 

@@ -1,13 +1,14 @@
 import pymysql
 from config import Config
+from modulos.comandos_db.comando_db_genericos import GenericosDB
 
 class Proveedor:
     
 #----------------------------------------------------------------------------
     def crear_proveedor(nombre, cuit, direccion, mail, ciudad, telefono, rubro):
         """Crea un nuevo proveedor en la base de datos."""
-        ciudad = ciudad.strip().title()
-        rubro = rubro.strip().title()
+        ciudad = GenericosDB.normalizar_texto(ciudad, estilo="titulo")
+        rubro = GenericosDB.normalizar_texto(rubro, estilo="titulo")
         
         sql = """INSERT INTO proveedor (nombre, cuit, direccion, mail, ciudad, telefono, rubro, activo) VALUES (%s, %s, %s, %s, %s, %s, %s, 1)"""
         conexion = Config.conectar_db()
@@ -37,12 +38,10 @@ class Proveedor:
         conexion = Config.conectar_db()
         condiciones = []
         parametros = []
-        where_sql = ""
         
-        if buscar:
-            condiciones.append("(nombre LIKE %s OR cuit LIKE %s)")
-            term = f"%{buscar}%"
-            parametros.extend([term, term])
+        GenericosDB.agregar_filtro_busqueda(
+            condiciones, parametros, ("nombre", "cuit"), buscar
+        )
         if rubro:
             condiciones.append("rubro = %s")
             parametros.append(rubro)
@@ -53,8 +52,7 @@ class Proveedor:
             condiciones.append("ciudad = %s")
             parametros.append(ciudad)
         
-        if condiciones:
-            where_sql += " WHERE " + " AND " .join(condiciones)
+        where_sql = GenericosDB.construir_where(condiciones)
             
         try:
             with conexion.cursor() as cursor:
@@ -106,8 +104,8 @@ class Proveedor:
 #----------------------------------------------------------------------------
     def modificar_proveedor(id, nombre, cuit, direccion, mail, ciudad, telefono, rubro):
         """Modifica los datos de un proveedor existente en la base de datos."""
-        ciudad = ciudad.strip().title()
-        rubro = rubro.strip().title()
+        ciudad = GenericosDB.normalizar_texto(ciudad, estilo="titulo")
+        rubro = GenericosDB.normalizar_texto(rubro, estilo="titulo")
         
         conexion = Config.conectar_db()
         try:

@@ -1,5 +1,6 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
+from modulos.comandos_db.comando_db_genericos import GenericosDB
 import pymysql
 
 class Usuario:
@@ -47,6 +48,7 @@ class Usuario:
                 self.__id_usuario = cursor.lastrowid
                 return self.__id_usuario
         except pymysql.MySQLError as e:
+            conexion.rollback()
             print(f"Error al crear el usuario: {e}")
             return None
         finally:
@@ -55,18 +57,19 @@ class Usuario:
     @staticmethod
     def existe_usuario(nombre_usuario):
         """Comprueba si un usuario ya existe en la base de datos."""
-        conexion = Config.conectar_db()
+        conexion = None
         try:
+            conexion = Config.conectar_db()
             with conexion.cursor() as cursor:
-                sql = "SELECT nombre_usuario FROM empleado WHERE nombre_usuario = %s"
-                cursor.execute(sql, (nombre_usuario,))
-                resultado = cursor.fetchone()
-                return True if resultado else False
+                return GenericosDB.existe_registro(
+                    cursor, "empleado", {"nombre_usuario": nombre_usuario}
+                )
         except pymysql.MySQLError as e:
             print(f"Error al verificar existencia del usuario: {e}")
-            return False
+            return None
         finally:
-            conexion.close()
+            if conexion:
+                conexion.close()
 
 # Gestion empleados
     @staticmethod
@@ -79,15 +82,14 @@ class Usuario:
         conexion = Config.conectar_db()
         condiciones = []
         parametros = []
-        where_sql = ""
 
         # Filtro de búsqueda general (Nombre, Email o Teléfono)
-        if buscar:
-            condiciones.append(
-                "(nombre_usuario LIKE %s OR mail LIKE %s OR telefono LIKE %s)"
-            )
-            term = f"%{buscar}%"
-            parametros.extend([term, term, term])
+        GenericosDB.agregar_filtro_busqueda(
+            condiciones,
+            parametros,
+            ("nombre_usuario", "mail", "telefono"),
+            buscar,
+        )
 
         # Filtro opcional por Rol / Tipo
         if rol:
@@ -99,8 +101,7 @@ class Usuario:
             condiciones.append("activo = %s")
             parametros.append(activo)
 
-        if condiciones:
-            where_sql = " WHERE " + " AND ".join(condiciones)
+        where_sql = GenericosDB.construir_where(condiciones)
 
         try:
             with conexion.cursor() as cursor:
@@ -180,10 +181,12 @@ class Usuario:
         id_empleado, nombre, email, telefono, rol, contrasena=None
     ):
         """Modifica los datos de un empleado existente."""
-        nombre = nombre.strip().title() if nombre else ""
-        email = email.strip().lower() if email else ""
-        telefono = telefono.strip() if telefono else ""
-        rol = rol.strip().title() if rol else "Empleado"
+        nombre = GenericosDB.normalizar_texto(nombre, estilo="titulo")
+        email = GenericosDB.normalizar_texto(email, estilo="minusculas")
+        telefono = GenericosDB.normalizar_texto(telefono)
+        rol = GenericosDB.normalizar_texto(
+            rol, estilo="titulo", predeterminado="Empleado"
+        )
 
         conexion = Config.conectar_db()
         try:

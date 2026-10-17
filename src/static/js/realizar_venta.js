@@ -92,15 +92,31 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        if (carritoGuardado.some(item =>
+            !['producto', 'servicio'].includes(item?.tipo_item)
+        )) {
+            try {
+                localStorage.removeItem(claveCarrito);
+            } catch (error) {
+                console.error('No se pudo borrar el pedido obsoleto guardado:', error);
+            }
+            mostrarNotificacion(
+                'Pedido anterior no restaurado',
+                'El pedido guardado no identifica productos y servicios por separado; comienza uno nuevo.'
+            );
+            return;
+        }
+
         const tarjetasPorId = new Map(
             Array.from(document.querySelectorAll('.tarjeta-producto'))
-                .map(tarjeta => [Number(tarjeta.dataset.id), tarjeta])
+                .map(tarjeta => [`${tarjeta.dataset.tipoItem}:${Number(tarjeta.dataset.id)}`, tarjeta])
         );
 
         carrito = carritoGuardado.reduce((items, guardado) => {
             const id = Number(guardado?.idproducto_servicio);
+            const tipoItem = guardado.tipo_item;
             const cantidad = Number(guardado?.cantidad);
-            const tarjeta = tarjetasPorId.get(id);
+            const tarjeta = tarjetasPorId.get(`${tipoItem}:${id}`);
             const precio = Number(tarjeta?.dataset.precio);
 
             if (!tarjeta || !Number.isSafeInteger(cantidad) || cantidad <= 0 || !Number.isFinite(precio)) {
@@ -109,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             items.push({
                 idproducto_servicio: id,
+                tipo_item: tipoItem,
                 nombre: tarjeta.dataset.nombre || 'Producto',
                 precio_unitario: precio,
                 cantidad
@@ -124,16 +141,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.tarjeta-producto').forEach(tarjeta => {
         tarjeta.addEventListener('click', () => {
             const id = parseInt(tarjeta.dataset.id);
+            const tipoItem = tarjeta.dataset.tipoItem;
             const nombre = tarjeta.dataset.nombre;
             const precio = parseFloat(tarjeta.dataset.precio);
 
-            const productoExistente = carrito.find(item => item.idproducto_servicio === id);
+            const productoExistente = carrito.find(item =>
+                item.idproducto_servicio === id && item.tipo_item === tipoItem
+            );
 
             if (productoExistente) {
                 productoExistente.cantidad += 1;
             } else {
                 carrito.push({
                     idproducto_servicio: id,
+                    tipo_item: tipoItem,
                     nombre: nombre,
                     precio_unitario: precio,
                     cantidad: 1
@@ -158,17 +179,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const subtotal = item.precio_unitario * item.cantidad;
             total += subtotal;
 
-            const itemHTML = `
-                <div class="item-pedido">
-                    <div class="detalles-item">
-                        <strong>${item.nombre}</strong>
-                        <span class="cant-item">Cant: ${item.cantidad}</span>
-                        <span class="precio-item">$${subtotal.toFixed(2)}</span>
-                        <button type="button" class="btn-eliminar" data-index="${index}">✕</button>
-                    </div>
-                </div>
-            `;
-            contenedorLista.insertAdjacentHTML('beforeend', itemHTML);
+            const itemPedido = document.createElement('div');
+            itemPedido.className = 'item-pedido';
+            const detalles = document.createElement('div');
+            detalles.className = 'detalles-item';
+            const nombre = document.createElement('strong');
+            nombre.textContent = item.nombre;
+            const cantidad = document.createElement('span');
+            cantidad.className = 'cant-item';
+            cantidad.textContent = `Cant: ${item.cantidad}`;
+            const precio = document.createElement('span');
+            precio.className = 'precio-item';
+            precio.textContent = `$${subtotal.toFixed(2)}`;
+            const btnEliminar = document.createElement('button');
+            btnEliminar.type = 'button';
+            btnEliminar.className = 'btn-eliminar';
+            btnEliminar.dataset.index = index;
+            btnEliminar.textContent = '✕';
+            detalles.append(nombre, cantidad, precio, btnEliminar);
+            itemPedido.appendChild(detalles);
+            contenedorLista.appendChild(itemPedido);
         });
 
         if (totalElemento) {
@@ -197,6 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCerrarModal = document.getElementById('btn-cerrar-modal');
     const btnCancelarModal = document.getElementById('btn-cancelar');
     const btnClientes = document.getElementById('btn-clientes');
+    const btnInventario = document.getElementById('btn-inventario');
 
     function abrirModal() {
         const selectPagoEl = document.getElementById('select-met-pago');
@@ -229,23 +260,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 const subtotal = item.precio_unitario * item.cantidad;
                 totalModal += subtotal;
 
-                const fila = `
-                    <tr>
-                        <td>${item.nombre}</td>
-                        <td>${item.cantidad} unidad(es)</td>
-                        <td>$${subtotal.toFixed(2)}</td>
-                    </tr>
-                `;
-                modalTablaBody.insertAdjacentHTML('beforeend', fila);
+                const fila = document.createElement('tr');
+                const celdaNombre = document.createElement('td');
+                celdaNombre.textContent = item.nombre;
+                const celdaCantidad = document.createElement('td');
+                celdaCantidad.textContent = `${item.cantidad} unidad(es)`;
+                const celdaSubtotal = document.createElement('td');
+                celdaSubtotal.textContent = `$${subtotal.toFixed(2)}`;
+                fila.append(celdaNombre, celdaCantidad, celdaSubtotal);
+                modalTablaBody.appendChild(fila);
             });
 
-            const filaTotal = `
-                <tr>
-                    <td colspan="2" class="total-table"><strong>Total</strong></td>
-                    <td class="total-table"><strong>$${totalModal.toFixed(2)}</strong></td>
-                </tr>
-            `;
-            modalTablaBody.insertAdjacentHTML('beforeend', filaTotal);
+            const filaTotal = document.createElement('tr');
+            const celdaEtiquetaTotal = document.createElement('td');
+            celdaEtiquetaTotal.colSpan = 2;
+            celdaEtiquetaTotal.className = 'total-table';
+            const etiquetaTotal = document.createElement('strong');
+            etiquetaTotal.textContent = 'Total';
+            celdaEtiquetaTotal.appendChild(etiquetaTotal);
+            const celdaMontoTotal = document.createElement('td');
+            celdaMontoTotal.className = 'total-table';
+            const montoTotal = document.createElement('strong');
+            montoTotal.textContent = `$${totalModal.toFixed(2)}`;
+            celdaMontoTotal.appendChild(montoTotal);
+            filaTotal.append(celdaEtiquetaTotal, celdaMontoTotal);
+            modalTablaBody.appendChild(filaTotal);
         }
 
         if (modal) modal.style.display = 'flex';
@@ -259,22 +298,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnOpenModal) btnOpenModal.addEventListener('click', abrirModal);
     if (btnCerrarModal) btnCerrarModal.addEventListener('click', cerrarModal);
     if (btnCancelarModal) btnCancelarModal.addEventListener('click', cerrarModal);
-    if (btnClientes) {
-        btnClientes.addEventListener('click', () => {
-            try {
-                localStorage.setItem(claveCarrito, JSON.stringify(
-                    carrito.map(({ idproducto_servicio, cantidad }) => ({
-                        idproducto_servicio,
-                        cantidad
-                    }))
-                ));
-                window.location.href = '/clientes';
-            } catch (error) {
-                console.error('No se pudo guardar el pedido antes de abrir clientes:', error);
-                mostrarNotificacion('Error', 'No se pudo guardar el pedido. No se abrió la página de clientes.', 4000);
-            }
-        });
+    function guardarCarritoYRedirigir(destino, descripcion) {
+        try {
+            localStorage.setItem(claveCarrito, JSON.stringify(
+                carrito.map(({ idproducto_servicio, tipo_item, cantidad }) => ({
+                    idproducto_servicio,
+                    tipo_item,
+                    cantidad
+                }))
+            ));
+            window.location.href = destino;
+        } catch (error) {
+            console.error(`No se pudo guardar el pedido antes de abrir ${descripcion}:`, error);
+            mostrarNotificacion('Error', `No se pudo guardar el pedido. No se abrió ${descripcion}.`, 4000);
+        }
     }
+
+    btnClientes?.addEventListener('click', () => guardarCarritoYRedirigir('/clientes', 'clientes'));
+    btnInventario?.addEventListener('click', () =>
+        guardarCarritoYRedirigir('/inventario?volver=venta', 'productos')
+    );
 
     // ==========================================
     // 5. ENVÍO DE LA VENTA AL BACKEND

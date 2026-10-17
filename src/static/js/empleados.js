@@ -306,7 +306,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Cierre de modales haciendo clic fuera del contenido
     window.addEventListener('click', (e) => {
-        if (e.target === modalNuevoEmpleado) cerrarModalNuevo();
         if (e.target === modalEditarEmpleado) cerrarModalEditar();
     });
 

@@ -33,6 +33,7 @@ def api_iniciar_sesion():
         session["id_usuario"] = datos_devueltos[0]
         session["nombre_usuario"] = datos_devueltos[2]
         session["tipo"] = datos_devueltos[1]
+        recordar = str(recordar).strip().lower() in {"1", "true", "on", "yes"}
         if recordar:
             session.permanent = True
         else:
@@ -67,7 +68,14 @@ def api_registrarse():
     telefono = datos.get("tel_input")
     contrasena = datos.get("password_registro")
 
-    if Usuario.existe_usuario(nombre):
+    existe_usuario = Usuario.existe_usuario(nombre)
+    if existe_usuario is None:
+        return jsonify({
+            "exito": False,
+            "mensaje": "No se pudo validar el nombre de usuario"
+        }), 500
+
+    if existe_usuario:
         return jsonify({
             "exito": False,
             "mensaje": "El usuario que intentó registrar ya existe, por favor ingrese otro"

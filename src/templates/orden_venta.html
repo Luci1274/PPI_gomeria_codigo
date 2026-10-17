@@ -7,6 +7,7 @@
     {% for p in listado_productos %}
     <div class="tarjeta-producto"
         data-id="{{ p.idproducto_servicio }}"
+        data-tipo-item="{{ p.tipo_item }}"
         data-nombre="{{ p.nombre }}"
         data-precio="{{ p.precio }}"
         data-tipo="{{ p.tipo }}">
@@ -53,6 +54,7 @@
     {% set tipo_usuario = session.get("tipo", "")|trim|upper %}
     {% if tipo_usuario in ["AD", "DEV"] %}
     <button type="button" class="btn btn-clientes" id="btn-clientes">Clientes</button>
+    <button type="button" class="btn btn-clientes" id="btn-inventario">Productos</button>
     {% endif %}
 {% endblock %}
 

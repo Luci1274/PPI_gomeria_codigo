@@ -23,7 +23,7 @@ SET @@SESSION.SQL_LOG_BIN= 0;
 
 SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ '1b60d2d3-8f76-11f1-8541-e6f0651671a1:1-119,
 6907ba4b-94bf-11f1-972d-1ef0a6ac4bea:1-97,
-78d7f13c-ba6b-11f1-9a76-be97c8a213a1:1-42,
+78d7f13c-ba6b-11f1-9a76-be97c8a213a1:1-70,
 8aaee54c-7d5e-11f1-9f3d-5aed042dc655:1-48,
 f122064f-7bea-11f1-ae00-c27b75c3b46a:1-71';
 
@@ -44,7 +44,8 @@ CREATE TABLE `cliente` (
   `ciudad` varchar(50) DEFAULT NULL,
   `direccion` varchar(60) DEFAULT NULL,
   `activo` tinyint NOT NULL DEFAULT '1',
-  PRIMARY KEY (`idcliente`)
+  PRIMARY KEY (`idcliente`),
+  UNIQUE KEY `cuit_UNIQUE` (`cuit`)
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -84,8 +85,9 @@ CREATE TABLE `empleado` (
   `tipo` varchar(45) NOT NULL,
   `activo` tinyint NOT NULL DEFAULT '1',
   `telefono` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`idempleado`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`idempleado`),
+  UNIQUE KEY `nombre_usuario_UNIQUE` (`nombre_usuario`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -113,7 +115,7 @@ CREATE TABLE `historial_pago_cliente` (
   KEY `idmetodos_pago_idx` (`idmetodos_pago`),
   CONSTRAINT `idmetodos_pago` FOREIGN KEY (`idmetodos_pago`) REFERENCES `metodos_pago` (`idmetodos_pago`),
   CONSTRAINT `idventa` FOREIGN KEY (`idventa`) REFERENCES `venta` (`idventa`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -125,15 +127,14 @@ DROP TABLE IF EXISTS `item_compra`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `item_compra` (
   `iditem_compra` int NOT NULL AUTO_INCREMENT,
-  `idproducto_servicio` int NOT NULL,
+  `idproducto` int NOT NULL,
   `idcompra` int NOT NULL,
   `cantidad_pedida` int DEFAULT NULL COMMENT 'Al proveedor',
   `cantidad_entregada` int DEFAULT NULL COMMENT 'Por el proveedor',
   PRIMARY KEY (`iditem_compra`),
   KEY `fk_productos_has_compras_compras1_idx` (`idcompra`),
-  KEY `fk_productos_has_compras_productos_idx` (`idproducto_servicio`),
-  CONSTRAINT `fk_productos_has_compras_compras1` FOREIGN KEY (`idcompra`) REFERENCES `compra` (`idcompra`),
-  CONSTRAINT `fk_productos_has_compras_productos` FOREIGN KEY (`idproducto_servicio`) REFERENCES `producto_servicio` (`idproducto_servicio`)
+  KEY `fk_productos_has_compras_productos_idx` (`idproducto`),
+  CONSTRAINT `fk_item_compra_producto` FOREIGN KEY (`idproducto`) REFERENCES `producto` (`idproducto`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -146,16 +147,18 @@ DROP TABLE IF EXISTS `item_venta`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `item_venta` (
   `id_item_venta` int NOT NULL AUTO_INCREMENT,
-  `idproducto_servicio` int NOT NULL,
+  `idproducto` int DEFAULT NULL,
+  `idservicio` int DEFAULT NULL,
   `precio_unitario` decimal(10,2) NOT NULL,
   `cantidad` int NOT NULL,
   `idventa` int NOT NULL,
   PRIMARY KEY (`id_item_venta`),
-  KEY `fk_productos_has_ventas_productos1_idx` (`idproducto_servicio`),
+  KEY `fk_productos_has_ventas_productos1_idx` (`idproducto`),
   KEY `fk_idventa_idx` (`idventa`),
-  CONSTRAINT `fk_idventa` FOREIGN KEY (`idventa`) REFERENCES `venta` (`idventa`),
-  CONSTRAINT `fk_productos_has_ventas_productos1` FOREIGN KEY (`idproducto_servicio`) REFERENCES `producto_servicio` (`idproducto_servicio`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `fk_item_venta_servicio` (`idservicio`),
+  CONSTRAINT `fk_item_venta_producto` FOREIGN KEY (`idproducto`) REFERENCES `producto` (`idproducto`),
+  CONSTRAINT `fk_item_venta_servicio` FOREIGN KEY (`idservicio`) REFERENCES `servicio` (`idservicio`)
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -174,16 +177,16 @@ CREATE TABLE `metodos_pago` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `producto_servicio`
+-- Table structure for table `producto`
 --
 
-DROP TABLE IF EXISTS `producto_servicio`;
+DROP TABLE IF EXISTS `producto`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `producto_servicio` (
-  `idproducto_servicio` int NOT NULL AUTO_INCREMENT,
+CREATE TABLE `producto` (
+  `idproducto` int NOT NULL AUTO_INCREMENT,
   `nombre` varchar(45) NOT NULL,
-  `tipo` varchar(45) NOT NULL,
+  `idtipo` int NOT NULL,
   `marca` varchar(45) DEFAULT NULL,
   `medidas` varchar(45) DEFAULT NULL,
   `imagen_producto` varchar(255) DEFAULT NULL,
@@ -191,7 +194,10 @@ CREATE TABLE `producto_servicio` (
   `cantidad_actual` int NOT NULL,
   `cantidad_minima` int DEFAULT NULL,
   `precio` decimal(10,2) NOT NULL,
-  PRIMARY KEY (`idproducto_servicio`)
+  PRIMARY KEY (`idproducto`),
+  UNIQUE KEY `uq_producto_unicidad` (`nombre`,`idtipo`,`marca`,`medidas`),
+  KEY `fk_producto_tipos` (`idtipo`),
+  CONSTRAINT `fk_producto_tipos` FOREIGN KEY (`idtipo`) REFERENCES `tipos` (`idtipo`)
 ) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -212,8 +218,46 @@ CREATE TABLE `proveedor` (
   `telefono` varchar(45) DEFAULT NULL,
   `rubro` varchar(75) NOT NULL,
   `activo` tinyint NOT NULL DEFAULT '1',
-  PRIMARY KEY (`idproveedor`)
+  PRIMARY KEY (`idproveedor`),
+  UNIQUE KEY `cuit_UNIQUE` (`cuit`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `servicio`
+--
+
+DROP TABLE IF EXISTS `servicio`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `servicio` (
+  `idservicio` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(45) NOT NULL,
+  `idtipo` int NOT NULL,
+  `precio` decimal(10,2) DEFAULT NULL,
+  `activo` tinyint NOT NULL DEFAULT '1',
+  PRIMARY KEY (`idservicio`),
+  UNIQUE KEY `nombre_UNIQUE` (`nombre`),
+  UNIQUE KEY `uq_servicio_unicidad` (`nombre`,`idtipo`),
+  KEY `fk_servicio_tipos` (`idtipo`),
+  CONSTRAINT `fk_servicio_tipos` FOREIGN KEY (`idtipo`) REFERENCES `tipos` (`idtipo`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tipos`
+--
+
+DROP TABLE IF EXISTS `tipos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tipos` (
+  `idtipo` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(45) NOT NULL,
+  `activo` tinyint NOT NULL DEFAULT '1',
+  PRIMARY KEY (`idtipo`),
+  UNIQUE KEY `uq_tipo_nombre` (`nombre`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -242,7 +286,7 @@ CREATE TABLE `venta` (
   KEY `idx_cliente` (`idcliente`),
   CONSTRAINT `fk_ventas_clientes1` FOREIGN KEY (`idcliente`) REFERENCES `cliente` (`idcliente`),
   CONSTRAINT `fk_ventas_empleados1` FOREIGN KEY (`idempleado`) REFERENCES `empleado` (`idempleado`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -255,4 +299,4 @@ SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-14 19:20:48
+-- Dump completed on 2026-10-16 19:35:20

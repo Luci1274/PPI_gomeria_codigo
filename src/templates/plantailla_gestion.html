@@ -100,13 +100,7 @@
         </main>
     </div>
 
-    {% block cartel_emergente %}
-    <!-- Cartel emergente de avisos -->
-    <div class="cartel-emergente" id="cartel-emergente">
-        <h2 id="cartel-titulo"></h2>
-        <p id="cartel-mensaje"></p>
-    </div>
-    {% endblock %}
+    {% include "componentes/cartel_emergente.html" %}
 
     {% block modales %}
     <!--Ventana emergente para registro-->
