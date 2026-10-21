@@ -7,6 +7,7 @@
     {% for p in listado_productos %}
     <div class="tarjeta-producto"
         data-id="{{ p.idproducto_servicio }}"
+        data-tipo-item="{{ p.tipo_item }}"
         data-nombre="{{ p.nombre }}"
         data-precio="{{ p.precio }}"
         data-tipo="{{ p.tipo }}">
@@ -40,17 +41,35 @@
             {% endfor %}
         </select>
     </div>
+    <div class="campo-pos">
+        <label for="input-descuento">Descuento ($)</label>
+        <input type="number" id="input-descuento" name="descuento" min="0" step="0.01" value="0" inputmode="decimal">
+    </div>
 {% endblock %}
 
 {% block total_resumen %}
+    <div class="resumen-importes">
+        <div class="linea-importe">
+            <span>Subtotal:</span>
+            <span id="monto-subtotal">$0.00</span>
+        </div>
+        <div class="linea-importe">
+            <span>Descuento:</span>
+            <span id="monto-descuento">$0.00</span>
+        </div>
+    </div>
     <div class="monto-total-pos">
-        <span>Total:</span>
+        <span>Total a pagar:</span>
         <strong id="monto-total">$0.00</strong>
     </div>
 {% endblock %}
 
 {% block accion_secundaria %}
+    {% set tipo_usuario = session.get("tipo", "")|trim|upper %}
+    {% if tipo_usuario in ["AD", "DEV"] %}
     <button type="button" class="btn btn-clientes" id="btn-clientes">Clientes</button>
+    <button type="button" class="btn btn-clientes" id="btn-inventario">Productos</button>
+    {% endif %}
 {% endblock %}
 
 {% block titulo_modal %}Resumen Orden de Venta{% endblock %}
@@ -77,6 +96,23 @@
         <th>Cantidad</th>
         <th>Precio</th>
     </tr>
+{% endblock %}
+
+{% block pie_modal_tabla %}
+    <tfoot>
+        <tr>
+            <td colspan="2" class="total-table">Subtotal</td>
+            <td class="total-table" id="modal-subtotal">$0.00</td>
+        </tr>
+        <tr>
+            <td colspan="2" class="total-table">Descuento</td>
+            <td class="total-table" id="modal-descuento">$0.00</td>
+        </tr>
+        <tr>
+            <td colspan="2" class="total-table"><strong>Total a pagar</strong></td>
+            <td class="total-table"><strong id="modal-total-final">$0.00</strong></td>
+        </tr>
+    </tfoot>
 {% endblock %}
 
 {% block acciones_modal %}

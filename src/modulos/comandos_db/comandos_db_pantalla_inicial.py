@@ -2,7 +2,7 @@ from config import Config
 import pymysql
 
 def contar_cantidad_productos():
-    return "SELECT COUNT(idproducto_servicio) AS total FROM producto_servicio WHERE activo = 1"
+    return "SELECT COUNT(idproducto) AS total FROM producto WHERE activo = 1"
 
 def contar_total_clientes():
     return "SELECT COUNT(idcliente) AS total FROM cliente WHERE activo = 1"
@@ -28,7 +28,7 @@ def obtener_ultimas_ventas():
     """
 
 def obtener_stock_bajo():
-    return "SELECT idproducto_servicio, nombre, cantidad_actual FROM producto_servicio WHERE activo = 1 AND cantidad_actual < cantidad_minima;"
+    return "SELECT idproducto AS idproducto_servicio, nombre, cantidad_actual FROM producto WHERE activo = 1 AND cantidad_actual < cantidad_minima;"
 
 def mostrar():
     conexion = Config.conectar_db()

@@ -43,7 +43,7 @@ class Compra:
                 id_compra = cursor.lastrowid
 
                 sql_item_compra = """
-                    INSERT INTO item_compra (idproducto_servicio, idcompra, cantidad_pedida)
+                    INSERT INTO item_compra (idproducto, idcompra, cantidad_pedida)
                     VALUES (%s, %s, %s)
                 """
                 valores_items = [
@@ -159,9 +159,10 @@ class Compra:
                         c.horas,
                         IFNULL(p.nombre, 'Sin Proveedor') AS proveedor,
                         (
-                            SELECT GROUP_CONCAT(DISTINCT ps.tipo SEPARATOR ', ')
+                            SELECT GROUP_CONCAT(DISTINCT t.nombre SEPARATOR ', ')
                             FROM item_compra AS ic
-                            INNER JOIN producto_servicio AS ps ON ic.idproducto_servicio = ps.idproducto_servicio
+                            INNER JOIN producto AS p ON ic.idproducto = p.idproducto
+                            INNER JOIN tipos AS t ON p.idtipo = t.idtipo
                             WHERE ic.idcompra = c.idcompra
                         ) AS tipo,
                         IFNULL(c.cantidad_total, 0) AS total_productos,
@@ -254,12 +255,13 @@ class Compra:
                 sql_items = """
                     SELECT 
                         ic.iditem_compra,
-                        ps.nombre AS producto_nombre,
-                        ps.tipo AS producto_tipo,
+                        p.nombre AS producto_nombre,
+                        t.nombre AS producto_tipo,
                         ic.cantidad_pedida,
                         ic.cantidad_entregada
                     FROM item_compra AS ic
-                    INNER JOIN producto_servicio AS ps ON ic.idproducto_servicio = ps.idproducto_servicio
+                    INNER JOIN producto AS p ON ic.idproducto = p.idproducto
+                    INNER JOIN tipos AS t ON p.idtipo = t.idtipo
                     WHERE ic.idcompra = %s;
                 """
                 cursor.execute(sql_items, (id_compra,))
@@ -298,7 +300,7 @@ class Compra:
 
                 if compra["completo"]:
                     sql_obtener_items = """
-                        SELECT idproducto_servicio, cantidad_entregada
+                        SELECT idproducto, cantidad_entregada
                         FROM item_compra
                         WHERE idcompra = %s;
                     """
@@ -306,12 +308,12 @@ class Compra:
                     items = cursor.fetchall()
 
                     sql_revertir_stock = """
-                        UPDATE producto_servicio
+                        UPDATE producto
                         SET cantidad_actual = cantidad_actual - %s
-                        WHERE idproducto_servicio = %s AND tipo != 'servicio';
+                        WHERE idproducto = %s;
                     """
                     valores_stock = [
-                        (item["cantidad_entregada"] or 0, item["idproducto_servicio"])
+                        (item["cantidad_entregada"] or 0, item["idproducto"])
                         for item in items
                     ]
 
@@ -339,10 +341,22 @@ class Compra:
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
-                cursor.execute("SELECT p.idproducto_servicio, p.nombre, p.medidas, p.tipo, p.imagen_producto, p.cantidad_actual, p.cantidad_minima FROM producto_servicio AS p WHERE activo = 1 ORDER BY p.cantidad_actual ASC;")
+                cursor.execute(
+                    """
+                    SELECT p.idproducto AS idproducto_servicio, p.nombre,
+                           p.medidas, t.nombre AS tipo, p.imagen_producto,
+                           p.cantidad_actual, p.cantidad_minima
+                    FROM producto AS p
+                    INNER JOIN tipos AS t ON t.idtipo = p.idtipo
+                    WHERE p.activo = 1
+                    ORDER BY p.cantidad_actual ASC
+                    """
+                )
                 productos = cursor.fetchall()
 
-                cursor.execute("SELECT DISTINCT tipo FROM producto_servicio WHERE activo = 1;")
+                cursor.execute(
+                    "SELECT nombre AS tipo FROM tipos WHERE activo = 1 ORDER BY nombre"
+                )
                 tipos = cursor.fetchall()
 
                 cursor.execute("SELECT idproveedor, nombre, telefono, mail FROM proveedor WHERE activo = 1")
@@ -379,10 +393,9 @@ class Compra:
 
                 cursor.execute(
                     """
-                    SELECT ic.iditem_compra, ic.idproducto_servicio, ps.tipo
+                    SELECT ic.iditem_compra, ic.idproducto
                     FROM item_compra AS ic
-                    INNER JOIN producto_servicio AS ps
-                        ON ps.idproducto_servicio = ic.idproducto_servicio
+                    INNER JOIN producto AS p ON p.idproducto = ic.idproducto
                     WHERE ic.idcompra = %s
                     FOR UPDATE;
                     """,
@@ -407,16 +420,15 @@ class Compra:
                     )
 
                 valores_stock = [
-                    (cantidad_entregada_por_item[item["iditem_compra"]], item["idproducto_servicio"])
+                    (cantidad_entregada_por_item[item["iditem_compra"]], item["idproducto"])
                     for item in items
-                    if item["tipo"] != "servicio"
                 ]
                 if valores_stock:
                     cursor.executemany(
                         """
-                        UPDATE producto_servicio
+                        UPDATE producto
                         SET cantidad_actual = cantidad_actual + %s
-                        WHERE idproducto_servicio = %s;
+                        WHERE idproducto = %s;
                         """,
                         valores_stock,
                     )

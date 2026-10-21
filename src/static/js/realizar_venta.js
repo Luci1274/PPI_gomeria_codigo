@@ -3,12 +3,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartelTitulo = document.getElementById('cartel-titulo');
     const cartelMensaje = document.getElementById('cartel-mensaje');
     const claveCarrito = 'ordenVentaCarrito';
+    const claveDescuento = 'ordenVentaDescuento';
     let timerNotificacion;
 
     // ==========================================
     // 1. INICIALIZACIÓN Y FECHA ACTUAL
     // ==========================================
     const selectCliente = document.getElementById('select-cliente');
+    const inputDescuento = document.getElementById('input-descuento');
     const spanFecha = document.getElementById('fecha-actual');
     const btnCarrito = document.getElementById('btn-carrito-pos');
     const overlayResumen = document.getElementById('overlay-resumen-pos');
@@ -92,15 +94,31 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        if (carritoGuardado.some(item =>
+            !['producto', 'servicio'].includes(item?.tipo_item)
+        )) {
+            try {
+                localStorage.removeItem(claveCarrito);
+            } catch (error) {
+                console.error('No se pudo borrar el pedido obsoleto guardado:', error);
+            }
+            mostrarNotificacion(
+                'Pedido anterior no restaurado',
+                'El pedido guardado no identifica productos y servicios por separado; comienza uno nuevo.'
+            );
+            return;
+        }
+
         const tarjetasPorId = new Map(
             Array.from(document.querySelectorAll('.tarjeta-producto'))
-                .map(tarjeta => [Number(tarjeta.dataset.id), tarjeta])
+                .map(tarjeta => [`${tarjeta.dataset.tipoItem}:${Number(tarjeta.dataset.id)}`, tarjeta])
         );
 
         carrito = carritoGuardado.reduce((items, guardado) => {
             const id = Number(guardado?.idproducto_servicio);
+            const tipoItem = guardado.tipo_item;
             const cantidad = Number(guardado?.cantidad);
-            const tarjeta = tarjetasPorId.get(id);
+            const tarjeta = tarjetasPorId.get(`${tipoItem}:${id}`);
             const precio = Number(tarjeta?.dataset.precio);
 
             if (!tarjeta || !Number.isSafeInteger(cantidad) || cantidad <= 0 || !Number.isFinite(precio)) {
@@ -109,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             items.push({
                 idproducto_servicio: id,
+                tipo_item: tipoItem,
                 nombre: tarjeta.dataset.nombre || 'Producto',
                 precio_unitario: precio,
                 cantidad
@@ -124,16 +143,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.tarjeta-producto').forEach(tarjeta => {
         tarjeta.addEventListener('click', () => {
             const id = parseInt(tarjeta.dataset.id);
+            const tipoItem = tarjeta.dataset.tipoItem;
             const nombre = tarjeta.dataset.nombre;
             const precio = parseFloat(tarjeta.dataset.precio);
 
-            const productoExistente = carrito.find(item => item.idproducto_servicio === id);
+            const productoExistente = carrito.find(item =>
+                item.idproducto_servicio === id && item.tipo_item === tipoItem
+            );
 
             if (productoExistente) {
                 productoExistente.cantidad += 1;
             } else {
                 carrito.push({
                     idproducto_servicio: id,
+                    tipo_item: tipoItem,
                     nombre: nombre,
                     precio_unitario: precio,
                     cantidad: 1
@@ -148,32 +171,57 @@ document.addEventListener('DOMContentLoaded', () => {
     function actualizarResumen() {
         const contenedorLista = document.getElementById('lista-resumen');
         const totalElemento = document.getElementById('monto-total');
+        const subtotalElemento = document.getElementById('monto-subtotal');
+        const descuentoElemento = document.getElementById('monto-descuento');
         
         if (!contenedorLista) return;
 
         contenedorLista.innerHTML = '';
-        let total = 0;
+        let subtotal = 0;
 
         carrito.forEach((item, index) => {
-            const subtotal = item.precio_unitario * item.cantidad;
-            total += subtotal;
+            const importeItem = item.precio_unitario * item.cantidad;
 
-            const itemHTML = `
-                <div class="item-pedido">
-                    <div class="detalles-item">
-                        <strong>${item.nombre}</strong>
-                        <span class="cant-item">Cant: ${item.cantidad}</span>
-                        <span class="precio-item">$${subtotal.toFixed(2)}</span>
-                        <button type="button" class="btn-eliminar" data-index="${index}">✕</button>
-                    </div>
-                </div>
-            `;
-            contenedorLista.insertAdjacentHTML('beforeend', itemHTML);
+            const itemPedido = document.createElement('div');
+            itemPedido.className = 'item-pedido';
+            const detalles = document.createElement('div');
+            detalles.className = 'detalles-item';
+            const nombre = document.createElement('strong');
+            nombre.textContent = item.nombre;
+            const cantidad = document.createElement('span');
+            cantidad.className = 'cant-item';
+            cantidad.textContent = `Cant: ${item.cantidad}`;
+            const precio = document.createElement('span');
+            precio.className = 'precio-item';
+            precio.textContent = `$${importeItem.toFixed(2)}`;
+            const btnEliminar = document.createElement('button');
+            btnEliminar.type = 'button';
+            btnEliminar.className = 'btn-eliminar';
+            btnEliminar.dataset.index = index;
+            btnEliminar.textContent = '✕';
+            detalles.append(nombre, cantidad, precio, btnEliminar);
+            itemPedido.appendChild(detalles);
+            contenedorLista.appendChild(itemPedido);
         });
 
-        if (totalElemento) {
-            totalElemento.textContent = `$${total.toFixed(2)}`;
+        subtotal = redondearDinero(carrito.reduce(
+            (acumulado, item) => acumulado + item.precio_unitario * item.cantidad,
+            0
+        ));
+        if (inputDescuento) {
+            inputDescuento.max = subtotal.toFixed(2);
+            const descuentoIngresado = Number(inputDescuento.value);
+            if (!Number.isFinite(descuentoIngresado) || descuentoIngresado < 0) {
+                inputDescuento.value = '0';
+            } else if (descuentoIngresado > subtotal) {
+                inputDescuento.value = subtotal.toFixed(2);
+            }
         }
+        const descuento = obtenerDescuento();
+        const total = redondearDinero(Math.max(0, subtotal - descuento));
+        if (subtotalElemento) subtotalElemento.textContent = `$${subtotal.toFixed(2)}`;
+        if (descuentoElemento) descuentoElemento.textContent = `$${descuento.toFixed(2)}`;
+        if (totalElemento) totalElemento.textContent = `$${total.toFixed(2)}`;
 
         contenedorLista.querySelectorAll('.btn-eliminar').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -183,6 +231,19 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    function redondearDinero(valor) {
+        return Math.round((valor + Number.EPSILON) * 100) / 100;
+    }
+
+    function obtenerDescuento() {
+        const descuento = Number(inputDescuento?.value || 0);
+        return Number.isFinite(descuento) && descuento >= 0
+            ? redondearDinero(descuento)
+            : 0;
+    }
+
+    inputDescuento?.addEventListener('input', actualizarResumen);
 
     function eliminarDelCarrito(index) {
         carrito.splice(index, 1);
@@ -197,6 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCerrarModal = document.getElementById('btn-cerrar-modal');
     const btnCancelarModal = document.getElementById('btn-cancelar');
     const btnClientes = document.getElementById('btn-clientes');
+    const btnInventario = document.getElementById('btn-inventario');
 
     function abrirModal() {
         const selectPagoEl = document.getElementById('select-met-pago');
@@ -221,31 +283,35 @@ document.addEventListener('DOMContentLoaded', () => {
             modalCliente.textContent = selectCliente.options[selectCliente.selectedIndex].text;
         }
 
+        const subtotal = redondearDinero(carrito.reduce(
+            (acumulado, item) => acumulado + item.precio_unitario * item.cantidad,
+            0
+        ));
+        const descuento = obtenerDescuento();
+        const totalFinal = redondearDinero(Math.max(0, subtotal - descuento));
+        const modalSubtotal = document.getElementById('modal-subtotal');
+        const modalDescuento = document.getElementById('modal-descuento');
+        const modalTotalFinal = document.getElementById('modal-total-final');
+        if (modalSubtotal) modalSubtotal.textContent = `$${subtotal.toFixed(2)}`;
+        if (modalDescuento) modalDescuento.textContent = `$${descuento.toFixed(2)}`;
+        if (modalTotalFinal) modalTotalFinal.textContent = `$${totalFinal.toFixed(2)}`;
+
         if (modalTablaBody) {
             modalTablaBody.innerHTML = '';
-            let totalModal = 0;
 
             carrito.forEach(item => {
                 const subtotal = item.precio_unitario * item.cantidad;
-                totalModal += subtotal;
 
-                const fila = `
-                    <tr>
-                        <td>${item.nombre}</td>
-                        <td>${item.cantidad} unidad(es)</td>
-                        <td>$${subtotal.toFixed(2)}</td>
-                    </tr>
-                `;
-                modalTablaBody.insertAdjacentHTML('beforeend', fila);
+                const fila = document.createElement('tr');
+                const celdaNombre = document.createElement('td');
+                celdaNombre.textContent = item.nombre;
+                const celdaCantidad = document.createElement('td');
+                celdaCantidad.textContent = `${item.cantidad} unidad(es)`;
+                const celdaSubtotal = document.createElement('td');
+                celdaSubtotal.textContent = `$${subtotal.toFixed(2)}`;
+                fila.append(celdaNombre, celdaCantidad, celdaSubtotal);
+                modalTablaBody.appendChild(fila);
             });
-
-            const filaTotal = `
-                <tr>
-                    <td colspan="2" class="total-table"><strong>Total</strong></td>
-                    <td class="total-table"><strong>$${totalModal.toFixed(2)}</strong></td>
-                </tr>
-            `;
-            modalTablaBody.insertAdjacentHTML('beforeend', filaTotal);
         }
 
         if (modal) modal.style.display = 'flex';
@@ -259,22 +325,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnOpenModal) btnOpenModal.addEventListener('click', abrirModal);
     if (btnCerrarModal) btnCerrarModal.addEventListener('click', cerrarModal);
     if (btnCancelarModal) btnCancelarModal.addEventListener('click', cerrarModal);
-    if (btnClientes) {
-        btnClientes.addEventListener('click', () => {
-            try {
-                localStorage.setItem(claveCarrito, JSON.stringify(
-                    carrito.map(({ idproducto_servicio, cantidad }) => ({
-                        idproducto_servicio,
-                        cantidad
-                    }))
-                ));
-                window.location.href = '/clientes';
-            } catch (error) {
-                console.error('No se pudo guardar el pedido antes de abrir clientes:', error);
-                mostrarNotificacion('Error', 'No se pudo guardar el pedido. No se abrió la página de clientes.', 4000);
-            }
-        });
+    function guardarCarritoYRedirigir(destino, descripcion) {
+        try {
+            localStorage.setItem(claveCarrito, JSON.stringify(
+                carrito.map(({ idproducto_servicio, tipo_item, cantidad }) => ({
+                    idproducto_servicio,
+                    tipo_item,
+                    cantidad
+                }))
+            ));
+            localStorage.setItem(claveDescuento, obtenerDescuento().toFixed(2));
+            window.location.href = destino;
+        } catch (error) {
+            console.error(`No se pudo guardar el pedido antes de abrir ${descripcion}:`, error);
+            mostrarNotificacion('Error', `No se pudo guardar el pedido. No se abrió ${descripcion}.`, 4000);
+        }
     }
+
+    btnClientes?.addEventListener('click', () => guardarCarritoYRedirigir('/clientes', 'clientes'));
+    btnInventario?.addEventListener('click', () =>
+        guardarCarritoYRedirigir('/inventario?volver=venta', 'productos')
+    );
 
     // ==========================================
     // 5. ENVÍO DE LA VENTA AL BACKEND
@@ -296,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const payload = {
                 id_cliente: idCliente,
                 id_metodo_pago: idMetodoPago,
-                descuento: 0.0,
+                descuento: obtenerDescuento(),
                 carrito: carrito
             };
 
@@ -315,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (respuesta.ok && resultado.exito) {
                     try {
                         localStorage.removeItem(claveCarrito);
+                        localStorage.removeItem(claveDescuento);
                     } catch (error) {
                         console.error('No se pudo borrar el carrito guardado después de registrar la venta:', error);
                         mostrarNotificacion('Venta registrada', 'La venta se registró, pero no se pudo borrar el pedido guardado.', 4000);
@@ -343,6 +415,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     restaurarCarrito();
+    if (inputDescuento) {
+        try {
+            const descuentoGuardado = localStorage.getItem(claveDescuento);
+            if (descuentoGuardado !== null) {
+                const descuento = Number(descuentoGuardado);
+                if (Number.isFinite(descuento) && descuento >= 0) {
+                    inputDescuento.value = descuento.toFixed(2);
+                } else {
+                    localStorage.removeItem(claveDescuento);
+                    mostrarNotificacion('Aviso', 'El descuento guardado no era válido y se restableció a cero.');
+                }
+            }
+        } catch (error) {
+            console.error('No se pudo recuperar el descuento guardado:', error);
+            mostrarNotificacion('Aviso', 'No se pudo recuperar el descuento guardado.');
+        }
+    }
     actualizarResumen();
 
     function mostrarNotificacion(titulo, mensaje, tiempo = 3000) {

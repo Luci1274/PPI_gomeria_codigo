@@ -4,12 +4,6 @@
 {% block titulo_pagina %}Gestión de Empleados{% endblock %}
 {% block descripcion_pagina %}Administra y consulta los empleados{% endblock %}
 
-{% block acciones_superiores %}
-<div class="barra-superior-accion">
-    <button class="btn btn-primario" id="btn-nuevo-empleado">Nuevo Empleado</button>
-</div>
-{% endblock %}
-
 {% block metricas %}
 <section class="cuadricula-metricas">
     <div class="tarjeta-metrica">
@@ -48,13 +42,6 @@
     <button id="btn-pag-anterior" class="btn-paginacion" disabled>&laquo; Anterior</button>
     <span id="info-paginacion" class="info-paginacion">Página 1 de 1</span>
     <button id="btn-pag-siguiente" class="btn-paginacion" disabled>Siguiente &raquo;</button>
-</div>
-{% endblock %}
-
-{% block cartel_emergente %}
-<div class="cartel-emergente" id="cartel-emergente">
-    <h2 id="cartel-titulo"></h2>
-    <p id="cartel-mensaje"></p>
 </div>
 {% endblock %}
 

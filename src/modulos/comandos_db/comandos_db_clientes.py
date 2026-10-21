@@ -1,5 +1,6 @@
 import pymysql
 from config import Config
+from modulos.comandos_db.comando_db_genericos import GenericosDB
 
 class Cliente:
 
@@ -7,10 +8,10 @@ class Cliente:
     @staticmethod
     def crear_cliente(nombre, apellido, cuit, numero_tel, mail, ciudad=None, direccion=None):
         """Crea un nuevo cliente en la base de datos."""
-        nombre = nombre.strip().title() if nombre else ""
-        apellido = apellido.strip().title() if apellido else ""
-        ciudad = ciudad.strip().title() if ciudad else ""
-        direccion = direccion.strip().title() if direccion else ""
+        nombre = GenericosDB.normalizar_texto(nombre, estilo="titulo")
+        apellido = GenericosDB.normalizar_texto(apellido, estilo="titulo")
+        ciudad = GenericosDB.normalizar_texto(ciudad, estilo="titulo")
+        direccion = GenericosDB.normalizar_texto(direccion, estilo="titulo")
         
         sql = """
             INSERT INTO cliente (nombre, apellido, cuit, numero_tel, mail, ciudad, direccion, activo) 
@@ -45,13 +46,11 @@ class Cliente:
         conexion = Config.conectar_db()
         condiciones = []
         parametros = []
-        where_sql = ""
 
         # Filtros dinámicos para la tabla cliente
-        if buscar:
-            condiciones.append("(c.nombre LIKE %s OR c.apellido LIKE %s OR c.cuit LIKE %s)")
-            term = f"%{buscar}%"
-            parametros.extend([term, term, term])
+        GenericosDB.agregar_filtro_busqueda(
+            condiciones, parametros, ("c.nombre", "c.apellido", "c.cuit"), buscar
+        )
         if cuit:
             condiciones.append("c.cuit = %s")
             parametros.append(cuit)
@@ -62,8 +61,7 @@ class Cliente:
             condiciones.append("c.activo = %s")
             parametros.append(activo)
 
-        if condiciones:
-            where_sql = " WHERE " + " AND ".join(condiciones)
+        where_sql = GenericosDB.construir_where(condiciones)
 
         try:
             with conexion.cursor() as cursor:
@@ -155,10 +153,14 @@ class Cliente:
     @staticmethod
     def modificar_cliente(id, nombre, apellido, cuit, numero_tel, mail, ciudad=None, direccion=None):
         """Modifica los datos de un cliente existente en la base de datos."""
-        nombre = nombre.strip().title() if nombre else ""
-        apellido = apellido.strip().title() if apellido else ""
-        ciudad = ciudad.strip().title() if ciudad else None
-        direccion = direccion.strip().title() if direccion else None
+        nombre = GenericosDB.normalizar_texto(nombre, estilo="titulo")
+        apellido = GenericosDB.normalizar_texto(apellido, estilo="titulo")
+        ciudad = GenericosDB.normalizar_texto(
+            ciudad, estilo="titulo", predeterminado=None
+        )
+        direccion = GenericosDB.normalizar_texto(
+            direccion, estilo="titulo", predeterminado=None
+        )
 
         conexion = Config.conectar_db()
         try:

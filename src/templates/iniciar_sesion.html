@@ -20,10 +20,6 @@
                     <img src="../static/image/Icono_app.png" alt="Icono app" class="logo-app">
                     <p>Gestión Gomería</p>
                 </div>
-                <div id="caja-mensaje">
-                    <h2 id="titulo-mensaje"></h2>
-                    <p id="parrafo-mensaje"></p>
-                </div>
             </div>
 
             <div id="caja_opciones">
@@ -37,10 +33,6 @@
 
             <!-- FORMULARIO DE LOGIN -->
             <form method="post" action="/login" id="form_login">
-                <div class="mensaje" id="caja_mensaje">
-                    <p id="parrafo_mensaje"></p>
-                </div>
-
                 <div class="ingresar_datos">
                     <div class="icono_input">
                         <i class="fa-solid fa-user"></i>
@@ -73,11 +65,6 @@
 
             <!-- FORMULARIO DE REGISTRO -->
             <form method="post" id="form_registro" class="formulario-oculto">
-
-                <div class="mensaje" id="caja_mensaje">
-                    <p id="parrafo_mensaje"></p>
-                </div>
-
                 <div class="ingresar_datos">
                     <div class="icono_input">
                         <i class="fa-solid fa-user"></i>
@@ -120,9 +107,11 @@
             
         </div>
     </div>
+
+    {% include "componentes/cartel_emergente.html" %}
     
     <!-- Script de JS -->
-    <script src="../static/js/login.js"></script>
+    <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 </body>
 
 </html>

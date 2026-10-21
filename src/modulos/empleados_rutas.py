@@ -33,6 +33,7 @@ def api_iniciar_sesion():
         session["id_usuario"] = datos_devueltos[0]
         session["nombre_usuario"] = datos_devueltos[2]
         session["tipo"] = datos_devueltos[1]
+        recordar = str(recordar).strip().lower() in {"1", "true", "on", "yes"}
         if recordar:
             session.permanent = True
         else:
@@ -67,7 +68,14 @@ def api_registrarse():
     telefono = datos.get("tel_input")
     contrasena = datos.get("password_registro")
 
-    if Usuario.existe_usuario(nombre):
+    existe_usuario = Usuario.existe_usuario(nombre)
+    if existe_usuario is None:
+        return jsonify({
+            "exito": False,
+            "mensaje": "No se pudo validar el nombre de usuario"
+        }), 500
+
+    if existe_usuario:
         return jsonify({
             "exito": False,
             "mensaje": "El usuario que intentó registrar ya existe, por favor ingrese otro"
@@ -147,49 +155,6 @@ def api_obtener_empleados():
         ),
         200,
     )
-
-
-# # ------------------------------------------
-# # API: Registrar Nuevo Empleado En gestion             #
-# # ------------------------------------------
-# @empleados_bp.route("/api/empleados/crear", methods=["POST"])
-# def api_crear_empleado():
-#     if not probar_conexion():
-#         return (
-#             jsonify({"exito": False, "mensaje": "Base de datos fuera de línea"}),
-#             500,
-#         )
-
-#     datos = request.get_json(silent=True) or request.form
-#     nombre = datos.get("nombre")
-#     email = datos.get("email")
-#     telefono = datos.get("telefono")
-#     rol = datos.get("rol", "Empleado")
-
-#     if not nombre or not email:
-#         return (
-#             jsonify(
-#                 {
-#                     "exito": False,
-#                     "mensaje": "El nombre y el email son campos obligatorios.",
-#                 }
-#             ),
-#             400,
-#         )
-
-#     if Usuario.crear_empleado(nombre, email, telefono, rol):
-#         return (
-#             jsonify(
-#                 {"exito": True, "mensaje": "Empleado registrado correctamente."}
-#             ),
-#             201,
-#         )
-
-#     return (
-#         jsonify({"exito": False, "mensaje": "No se pudo crear el empleado."}),
-#         500,
-#     )
-
 
 # ------------------------------------------
 # API: Obtener datos de un Empleado         #
