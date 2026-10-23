@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalFecha = document.getElementById('modal-fecha');
     const modalCliente = document.getElementById('modal-cliente');
     const modalTablaBody = document.getElementById('modal-tabla-body');
+    const modalSubtotal = document.getElementById('modal-subtotal');
+    const modalDescuento = document.getElementById('modal-descuento');
     const modalTotalMonto = document.getElementById('modal-total-monto');
 
     // --- ELEMENTOS DEL CARTEL EMERGENTE ---
@@ -279,7 +281,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (modalNumVenta) modalNumVenta.textContent = venta.idventa;
             if (modalFecha) modalFecha.textContent = venta.fecha || '-';
             if (modalCliente) modalCliente.textContent = venta.nombre_cliente?.trim() || 'Cliente General';
-            if (modalTotalMonto) modalTotalMonto.textContent = `$${Number(venta.precio_total || 0).toLocaleString()}`;
+            const totalFinal = Number(venta.precio_total || 0);
+            const descuento = Number(venta.descuento || 0);
+            const subtotal = totalFinal + descuento;
+            if (modalSubtotal) modalSubtotal.textContent = `$${subtotal.toFixed(2)}`;
+            if (modalDescuento) modalDescuento.textContent = `$${descuento.toFixed(2)}`;
+            if (modalTotalMonto) modalTotalMonto.textContent = `$${totalFinal.toFixed(2)}`;
 
             // Llenar la tabla de productos
             if (modalTablaBody) {
