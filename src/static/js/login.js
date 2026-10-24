@@ -16,6 +16,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartelMensaje = document.getElementById('cartel-mensaje');
     const cartelTitulo = document.getElementById('cartel-titulo');
 
+    // --- LÓGICA DE RECUPERACIÓN DE CONTRASEÑA ---
+    const btnOlvidastePass = document.querySelector('.recuperar_contraseña');
+    const modalRecuperar = document.getElementById('modal_recuperar');
+    const btnCerrarModal = document.getElementById('btn_cerrar_modal');
+
+    const paso1 = document.getElementById('paso_recuperar_1');
+    const paso2 = document.getElementById('paso_recuperar_2');
+    const paso3 = document.getElementById('paso_recuperar_3');
+
+    let idUsuarioRecuperacion = null;
+    let tokenValidado = null;
+
     // Comportamiento al hacer clic en "Crear usuario"
     btnRegistro.addEventListener('click', (e) => {
         e.preventDefault();
@@ -146,6 +158,114 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             mostrarNotificacion('Error', 'Error al conectar con el servidor', 1000);
+        }
+    });
+
+    // Abrir Modal
+    btnOlvidastePass.addEventListener('click', (e) => {
+        e.preventDefault();
+        paso1.style.display = 'block';
+        paso2.style.display = 'none';
+        paso3.style.display = 'none';
+        modalRecuperar.style.display = 'flex';
+    });
+
+    // Cerrar Modal
+    btnCerrarModal.addEventListener('click', () => {
+        modalRecuperar.style.display = 'none';
+    });
+
+    // PASO 1: Solicitar Código
+    document.getElementById('btn_solicitar_codigo').addEventListener('click', async () => {
+        const nombre_usuario = document.getElementById('rec_usuario').value.trim();
+        const contacto = document.getElementById('rec_contacto').value.trim();
+
+        if (!nombre_usuario || !contacto) {
+            mostrarNotificacion('Error', 'Completa ambos campos', 2000);
+            return;
+        }
+
+        try {
+            const resp = await fetch('/api/recuperar/solicitar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre_usuario, contacto })
+            });
+            const data = await resp.json();
+
+            if (data.exito) {
+                idUsuarioRecuperacion = data.id_usuario;
+                mostrarNotificacion('Aviso', data.mensaje, 2500);
+                paso1.style.display = 'none';
+                paso2.style.display = 'block';
+            } else {
+                mostrarNotificacion('Error', data.mensaje, 2000);
+            }
+        } catch (error) {
+            mostrarNotificacion('Error', 'Error al conectar con el servidor', 2000);
+        }
+    });
+
+    // PASO 2: Validar Código
+    document.getElementById('btn_validar_codigo').addEventListener('click', async () => {
+        const token = document.getElementById('rec_token').value.trim();
+
+        if (!token) {
+            mostrarNotificacion('Error', 'Ingresa el código', 2000);
+            return;
+        }
+
+        try {
+            const resp = await fetch('/api/recuperar/validar_token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_usuario: idUsuarioRecuperacion, token })
+            });
+            const data = await resp.json();
+
+            if (data.exito) {
+                tokenValidado = token;
+                mostrarNotificacion('Éxito', data.mensaje, 1500);
+                paso2.style.display = 'none';
+                paso3.style.display = 'block';
+            } else {
+                mostrarNotificacion('Error', data.mensaje, 2000);
+            }
+        } catch (error) {
+            mostrarNotificacion('Error', 'Error al conectar con el servidor', 2000);
+        }
+    });
+
+    // PASO 3: Cambiar Contraseña
+    document.getElementById('btn_cambiar_pass').addEventListener('click', async () => {
+        const nueva_contrasena = document.getElementById('rec_nueva_pass').value;
+        const confirmacion = document.getElementById('rec_confirmar_pass').value;
+
+        if (!nueva_contrasena || nueva_contrasena !== confirmacion) {
+            mostrarNotificacion('Error', 'Las contraseñas no coinciden', 2000);
+            return;
+        }
+
+        try {
+            const resp = await fetch('/api/recuperar/restablecer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id_usuario: idUsuarioRecuperacion,
+                    token: tokenValidado,
+                    nueva_contrasena
+                })
+            });
+            const data = await resp.json();
+
+            if (data.exito) {
+                mostrarNotificacion('Éxito', data.mensaje, 2000);
+                modalRecuperar.style.display = 'none';
+            } else {
+                mostrarNotificacion('Error', data.mensaje, 2000);
+            }
+        } catch (error) {
+            mostrarNotificacion('Error', 'Error al conectar con el servidor', 2000);
         }
     });
     

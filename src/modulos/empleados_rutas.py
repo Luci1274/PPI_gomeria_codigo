@@ -2,6 +2,7 @@ import math
 from flask import Blueprint, render_template, request, jsonify, session, redirect
 from modulos.comandos_db.conexion import probar_conexion
 from modulos.comandos_db.comandos_db_empleado import Usuario
+from modulos.servicios.notificaciones import generar_token, enviar_token_recuperacion
 
 empleados_bp = Blueprint("empleados", __name__)
 
@@ -252,3 +253,68 @@ def api_desactivar_empleado(id):
 def cerrar_sesion():
     session.clear()
     return redirect("/iniciar_sesion")
+
+
+# ------------------------------------------
+# Recuperación de Contraseña (Flujo Token)  #
+# ------------------------------------------
+
+@empleados_bp.route("/api/recuperar/solicitar", methods=["POST"])
+def api_solicitar_recuperacion():
+    if not probar_conexion():
+        return jsonify({"exito": False, "mensaje": "Base de datos fuera de línea"}), 500
+
+    datos = request.get_json(silent=True) or request.form
+    nombre_usuario = datos.get("nombre_usuario")
+    contacto = datos.get("contacto")
+
+    empleado = Usuario.buscar_por_usuario_y_contacto(nombre_usuario, contacto)
+
+    if not empleado:
+        # Mensaje ambiguo para evitar enumeración de usuarios por seguridad
+        return jsonify({
+            "exito": True, 
+            "mensaje": "Si los datos ingresados coinciden con un usuario registrado, recibirás un código de verificación."
+        }), 200
+
+    token = generar_token()
+    if Usuario.guardar_token_recuperacion(empleado["idempleado"], token):
+        try:
+            enviar_token_recuperacion(contacto, token)
+        except Exception as e:
+            print(f"Error al enviar mensaje: {e}")
+
+    return jsonify({
+        "exito": True,
+        "id_usuario": empleado["idempleado"],
+        "mensaje": "Si los datos ingresados coinciden con un usuario registrado, recibirás un código de verificación."
+    }), 200
+
+
+@empleados_bp.route("/api/recuperar/validar_token", methods=["POST"])
+def api_validar_token():
+    datos = request.get_json(silent=True) or request.form
+    id_usuario = datos.get("id_usuario")
+    token = datos.get("token")
+
+    if Usuario.verificar_token_recuperacion(id_usuario, token):
+        return jsonify({"exito": True, "mensaje": "Código validado correctamente."}), 200
+
+    return jsonify({"exito": False, "mensaje": "El código es incorrecto o ha expirado."}), 400
+
+
+@empleados_bp.route("/api/recuperar/restablecer", methods=["POST"])
+def api_restablecer_contrasena():
+    datos = request.get_json(silent=True) or request.form
+    id_usuario = datos.get("id_usuario")
+    token = datos.get("token")
+    nueva_contrasena = datos.get("nueva_contrasena")
+
+    # Volvemos a validar el token antes de cambiar la clave
+    if not Usuario.verificar_token_recuperacion(id_usuario, token):
+        return jsonify({"exito": False, "mensaje": "Token inválido o expirado."}), 400
+
+    if Usuario.actualizar_contrasena_por_id(id_usuario, nueva_contrasena):
+        return jsonify({"exito": True, "mensaje": "Contraseña actualizada exitosamente."}), 200
+
+    return jsonify({"exito": False, "mensaje": "Error al actualizar la contraseña."}), 500

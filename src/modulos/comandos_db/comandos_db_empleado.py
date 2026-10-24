@@ -1,6 +1,7 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
 from modulos.comandos_db.comando_db_genericos import GenericosDB
+from datetime import datetime, timedelta
 import pymysql
 
 class Usuario:
@@ -290,3 +291,91 @@ class Usuario:
 
 #         finally:
 #             conexion.close()
+
+# ------------------------------------------
+# Prueba de recuperacion                   #
+# ------------------------------------------
+
+# Agregar dentro de la clase Usuario:
+
+    @staticmethod
+    def buscar_por_usuario_y_contacto(nombre_usuario, contacto):
+        """Busca coincidencia por nombre de usuario Y (mail O teléfono)."""
+        conexion = Config.conectar_db()
+        try:
+            with conexion.cursor() as cursor:
+                sql = """
+                    SELECT idempleado, nombre_usuario, mail, telefono 
+                    FROM empleado 
+                    WHERE nombre_usuario = %s AND (mail = %s OR telefono = %s) AND activo = 1
+                """
+                cursor.execute(sql, (nombre_usuario, contacto, contacto))
+                return cursor.fetchone()
+        except pymysql.MySQLError as e:
+            print(f"Error al buscar usuario y contacto: {e}")
+            return None
+        finally:
+            conexion.close()
+
+    @staticmethod
+    def guardar_token_recuperacion(id_empleado, token, minutos_validez=15):
+        """Guarda el token de 6 dígitos y su tiempo límite de validez."""
+        conexion = Config.conectar_db()
+        try:
+            expiracion = datetime.now() + timedelta(minutes=minutos_validez)
+            with conexion.cursor() as cursor:
+                sql = """
+                    UPDATE empleado 
+                    SET token_recuperacion = %s, token_expiracion = %s 
+                    WHERE idempleado = %s
+                """
+                cursor.execute(sql, (token, expiracion, id_empleado))
+                conexion.commit()
+                return True
+        except pymysql.MySQLError as e:
+            conexion.rollback()
+            print(f"Error al guardar token: {e}")
+            return False
+        finally:
+            conexion.close()
+
+    @staticmethod
+    def verificar_token_recuperacion(id_empleado, token):
+        """Valida que el token ingresado sea correcto y no haya expirado."""
+        conexion = Config.conectar_db()
+        try:
+            with conexion.cursor() as cursor:
+                sql = """
+                    SELECT idempleado 
+                    FROM empleado 
+                    WHERE idempleado = %s AND token_recuperacion = %s AND token_expiracion > %s
+                """
+                cursor.execute(sql, (id_empleado, token, datetime.now()))
+                return cursor.fetchone() is not None
+        except pymysql.MySQLError as e:
+            print(f"Error al verificar token: {e}")
+            return False
+        finally:
+            conexion.close()
+
+    @staticmethod
+    def actualizar_contrasena_por_id(id_empleado, nueva_contrasena):
+        """Actualiza la contraseña del usuario y limpia el token de recuperación."""
+        conexion = Config.conectar_db()
+        try:
+            hash_pass = generate_password_hash(nueva_contrasena)
+            with conexion.cursor() as cursor:
+                sql = """
+                    UPDATE empleado 
+                    SET contrasena = %s, token_recuperacion = NULL, token_expiracion = NULL 
+                    WHERE idempleado = %s
+                """
+                cursor.execute(sql, (hash_pass, id_empleado))
+                conexion.commit()
+                return True
+        except pymysql.MySQLError as e:
+            conexion.rollback()
+            print(f"Error al actualizar contraseña: {e}")
+            return False
+        finally:
+            conexion.close()

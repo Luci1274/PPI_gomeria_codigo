@@ -109,6 +109,48 @@
     </div>
 
     {% include "componentes/cartel_emergente.html" %}
+
+    <!-- MODAL DE RECUPERACIÓN DE CONTRASEÑA -->
+    <div id="modal_recuperar" class="modal_oculto" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: #fff; padding: 25px; border-radius: 8px; max-width: 400px; width: 90%; text-align: center; position: relative;">
+            <button id="btn_cerrar_modal" style="position: absolute; right: 15px; top: 10px; background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+            
+            <!-- PASO 1: Pedir Usuario y Contacto -->
+            <div id="paso_recuperar_1">
+                <h2>Recuperar contraseña</h2>
+                <p style="font-size: 14px; margin-bottom: 15px;">Ingresa tu usuario y el correo o teléfono registrado.</p>
+                <div class="ingresar_datos">
+                    <input type="text" id="rec_usuario" placeholder="Nombre de usuario" required>
+                </div>
+                <div class="ingresar_datos" style="margin-top: 10px;">
+                    <input type="text" id="rec_contacto" placeholder="Correo o teléfono (+549...)" required>
+                </div>
+                <button type="button" id="btn_solicitar_codigo" style="margin-top: 15px; width: 100%;">Enviar código</button>
+            </div>
+
+            <!-- PASO 2: Ingresar Token -->
+            <div id="paso_recuperar_2" style="display: none;">
+                <h2>Ingresa el código</h2>
+                <p style="font-size: 14px; margin-bottom: 15px;">Introduce el código de 6 dígitos enviado a tu contacto.</p>
+                <div class="ingresar_datos">
+                    <input type="text" id="rec_token" placeholder="Ej: 123456" maxlength="6" required>
+                </div>
+                <button type="button" id="btn_validar_codigo" style="margin-top: 15px; width: 100%;">Verificar código</button>
+            </div>
+
+            <!-- PASO 3: Nueva Contraseña -->
+            <div id="paso_recuperar_3" style="display: none;">
+                <h2>Nueva contraseña</h2>
+                <div class="ingresar_datos">
+                    <input type="password" id="rec_nueva_pass" placeholder="Nueva contraseña" required>
+                </div>
+                <div class="ingresar_datos" style="margin-top: 10px;">
+                    <input type="password" id="rec_confirmar_pass" placeholder="Confirmar contraseña" required>
+                </div>
+                <button type="button" id="btn_cambiar_pass" style="margin-top: 15px; width: 100%;">Guardar nueva contraseña</button>
+            </div>
+        </div>
+    </div>
     
     <!-- Script de JS -->
     <script src="{{ url_for('static', filename='js/login.js') }}"></script>

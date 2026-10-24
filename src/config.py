@@ -60,3 +60,19 @@ class Config:
             api_secret=os.environ.get("TU_API_SECRET"),
             secure=True,
         )
+    
+    @staticmethod
+    def conectar_twilio():
+        from twilio.rest import Client
+        return Client(
+            os.environ.get("TWILIO_SID"),
+            os.environ.get("TWILIO_TOKEN"),
+            os.environ.get("TWILIO_WHATSAPP_NUMBER")
+        )
+    
+    @staticmethod
+    def obtener_credenciales_gmail():
+        return {
+            "user": os.environ.get("GMAIL_USER"),
+            "pass": os.environ.get("GMAIL_PASS")
+        }
