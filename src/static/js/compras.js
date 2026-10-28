@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const formCompletarCompra = document.getElementById('form-completar-compra');
     const formIdCompra = document.getElementById('form-id-compra');
     const btnDescargarPdf = document.getElementById('btn-descargar-pdf');
-    const btnImprimir = document.getElementById('btn-imprimir');
     const btnConfirmarCompletar = document.getElementById('btn-confirmar-completar');
     const modalContenido = document.querySelector('.modal-contenido');
     let compraActual = null;
