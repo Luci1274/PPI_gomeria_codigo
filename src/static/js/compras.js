@@ -30,6 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnDescargarPdf = document.getElementById('btn-descargar-pdf');
     const btnImprimir = document.getElementById('btn-imprimir');
     const btnConfirmarCompletar = document.getElementById('btn-confirmar-completar');
+    const modalContenido = document.querySelector('.modal-contenido');
+    let compraActual = null;
 
     let debounceTimer;
     let paginaActual = 1;
@@ -308,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const compra = data.compra;
+            compraActual = data.compra;
             const items = data.items || [];
 
             // Llenar datos de la cabecera del modal
@@ -318,12 +320,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? 'Ingresa la cantidad recibida de cada producto.'
                     : 'Detalles completos de la orden de compra';
             }
-            if (modalNumCompra) modalNumCompra.textContent = compra.idcompra || compra.id_orden;
-            if (modalFecha) modalFecha.textContent = compra.fecha || '-';
-            if (modalProveedor) modalProveedor.textContent = compra.nombre_proveedor?.trim() || compra.proveedor || 'Proveedor General';
-            if (formIdCompra) formIdCompra.value = compra.idcompra || compra.id_orden;
-            if (btnDescargarPdf) btnDescargarPdf.hidden = modoCompletar;
-            if (btnImprimir) btnImprimir.hidden = modoCompletar;
+            if (modalNumCompra) modalNumCompra.textContent = compraActual.idcompra || compraActual.id_orden;
+            if (modalFecha) modalFecha.textContent = compraActual.fecha || '-';
+            if (modalProveedor) modalProveedor.textContent = compraActual.nombre_proveedor?.trim() || compraActual.proveedor || 'Proveedor General';
+            if (formIdCompra) formIdCompra.value = compraActual.idcompra || compraActual.id_orden;
             if (btnConfirmarCompletar) btnConfirmarCompletar.hidden = !modoCompletar;
 
             // Llenar la tabla de productos del modal
@@ -466,6 +466,42 @@ document.addEventListener('DOMContentLoaded', () => {
         cargarCompras();
     });
 
+    
+    // --- REGISTRO ÚNICO DEL BOTÓN DE PDF (Fuera de verResumenCompra) ---
+    btnDescargarPdf?.addEventListener('click', async () => {
+        if (!modalContenido) return;
+        
+        const { jsPDF } = window.jspdf;
+        
+        // Ocultar temporalmente la botonera para que no salga en la captura
+        const botonera = modalContenido.querySelector('.btn-acciones');
+        if (botonera) botonera.style.display = 'none';
+
+        try {
+            // Renderizar solo el cuadro blanco del modal
+            const canvas = await html2canvas(modalContenido, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfAncho = pdf.internal.pageSize.getWidth();
+            // Calcular el alto proporcional manteniendo el aspecto
+            const pdfAlto = (canvas.height * pdfAncho) / canvas.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfAncho, pdfAlto);
+
+            const numOrden = compraActual?.idcompra || compraActual?.id_orden || 'orden';
+            const proveedor = compraActual?.nombre_proveedor || compraActual?.proveedor || 'proveedor';
+
+            pdf.save(`orden-compra-${numOrden}-${proveedor}.pdf`);
+        } catch (err) {
+            console.error("Error al generar PDF:", err);
+            mostrarNotificacion("Error", "No se pudo generar el documento PDF.", 4000);
+        } finally {
+            // Restaurar la visibilidad de los botones
+            if (botonera) botonera.style.display = 'flex';
+        }
+    });
+    
     // Carga inicial
     cargarCompras();
 });
