@@ -268,26 +268,33 @@ def api_solicitar_recuperacion():
     nombre_usuario = datos.get("nombre_usuario")
     contacto = datos.get("contacto")
 
+    if not nombre_usuario or not contacto:
+        return jsonify({"exito": False, "mensaje": "Completa todos los campos"}), 400
+
     empleado = Usuario.buscar_por_usuario_y_contacto(nombre_usuario, contacto)
 
     if not empleado:
-        # Mensaje ambiguo para evitar enumeración de usuarios por seguridad
         return jsonify({
-            "exito": True, 
-            "mensaje": "Si los datos ingresados coinciden con un usuario registrado, recibirás un código de verificación."
-        }), 200
+            "exito": False, 
+            "mensaje": "Los datos ingresados no coinciden con ningún usuario registrado."
+        }), 404
 
     token = generar_token()
-    if Usuario.guardar_token_recuperacion(empleado["idempleado"], token):
-        try:
-            enviar_token_recuperacion(contacto, token)
-        except Exception as e:
-            print(f"Error al enviar mensaje: {e}")
+    if not Usuario.guardar_token_recuperacion(empleado["idempleado"], token):
+        return jsonify({
+            "exito": False, 
+            "mensaje": "Error interno al generar el token."
+        }), 500
+
+    try:
+        enviar_token_recuperacion(contacto, token)
+    except Exception as e:
+        print(f"Error al enviar mensaje externo: {e}")
 
     return jsonify({
         "exito": True,
         "id_usuario": empleado["idempleado"],
-        "mensaje": "Si los datos ingresados coinciden con un usuario registrado, recibirás un código de verificación."
+        "mensaje": "Código generado. Revisa la terminal del servidor."
     }), 200
 
 
@@ -310,7 +317,6 @@ def api_restablecer_contrasena():
     token = datos.get("token")
     nueva_contrasena = datos.get("nueva_contrasena")
 
-    # Volvemos a validar el token antes de cambiar la clave
     if not Usuario.verificar_token_recuperacion(id_usuario, token):
         return jsonify({"exito": False, "mensaje": "Token inválido o expirado."}), 400
 

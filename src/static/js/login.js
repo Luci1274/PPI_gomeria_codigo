@@ -1,4 +1,3 @@
-// Esperar a que el HTML termine de cargar en el navegador
 document.addEventListener('DOMContentLoaded', () => {
     let timerNotificacion;
 
@@ -7,16 +6,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const formLogin = document.getElementById('form_login');
     const formRegistro = document.getElementById('form_registro');
     const tituloDinamico = document.getElementById('titulo_dinamico');
-    // Manipulacion de botón ojo
     const btnOjo = document.querySelector('.boton-ojo');
     let ojoCerrado = document.querySelector('.eye');
     const passInput = document.getElementById('password_input');
-    // Mensaje de avisos
+
     const cartelEmergente = document.getElementById('cartel-emergente');
     const cartelMensaje = document.getElementById('cartel-mensaje');
     const cartelTitulo = document.getElementById('cartel-titulo');
 
-    // --- LÓGICA DE RECUPERACIÓN DE CONTRASEÑA ---
+    // Inicializar intl-tel-input para el teléfono de registro
+    const telInputRegistro = document.getElementById('tel_input');
+    let itiRegistro = null;
+    if (telInputRegistro) {
+        itiRegistro = window.intlTelInput(telInputRegistro, {
+            initialCountry: "ar",
+            separateDialCode: true,
+            preferredCountries: ["ar", "uy", "cl", "br", "mx", "us"],
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/js/utils.js"
+        });
+    }
+
+    // Modal de Recuperación
     const btnOlvidastePass = document.querySelector('.recuperar_contraseña');
     const modalRecuperar = document.getElementById('modal_recuperar');
     const btnCerrarModal = document.getElementById('btn_cerrar_modal');
@@ -28,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let idUsuarioRecuperacion = null;
     let tokenValidado = null;
 
-    // Comportamiento al hacer clic en "Crear usuario"
     btnRegistro.addEventListener('click', (e) => {
         e.preventDefault();
         btnRegistro.classList.add('pestana-activa');
@@ -38,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
         tituloDinamico.textContent = 'Nuevo Usuario';
     });
 
-    // Comportamiento al hacer clic en "Iniciar sesión"
     btnLogin.addEventListener('click', (e) => {
         e.preventDefault();
         btnLogin.classList.add('pestana-activa');
@@ -48,23 +56,15 @@ document.addEventListener('DOMContentLoaded', () => {
         tituloDinamico.textContent = '¡Bienvenido!';
     });
 
-    // Mostrar y ocultar la contraseña en le Iniciar sesión
     btnOjo.addEventListener('click', (e) => {
         e.preventDefault();
-        
         ojoCerrado.classList.toggle('fa-eye');
         ojoCerrado.classList.toggle('fa-eye-slash');
-
-        if (passInput.type === 'password') {
-            passInput.type = 'text';
-        } else {
-            passInput.type = "password";
-        }
+        passInput.type = passInput.type === 'password' ? 'text' : 'password';
     });
 
-    function mostrarNotificacion(titulo, mensaje, tiempo = 1000) {
+    function mostrarNotificacion(titulo, mensaje, tiempo = 2000) {
         clearTimeout(timerNotificacion);
-
         cartelTitulo.textContent = titulo;
         cartelMensaje.textContent = mensaje;
         cartelEmergente.style.display = 'block';
@@ -74,23 +74,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 ocultarNotificacion();
             }, tiempo);
         }
-    };
+    }
 
     function ocultarNotificacion() {
         cartelEmergente.style.display = 'none';
     }
 
-    
-
-    // Comportamiento para ver la contraseña
-
-    // --- Petición de Iniciar Sesión ---
+    // Login Submit
     formLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
-
-        if (passInput.type === 'text'){
-            passInput.type = 'password';
-        }
+        if (passInput.type === 'text') passInput.type = 'password';
 
         const payload = {
             txt_input_nombre: document.getElementById('txt_input_nombre').value,
@@ -104,23 +97,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-
             const datos = await respuesta.json();
 
             if (datos.exito) {
                 mostrarNotificacion('Inicio exitoso', 'Ingresando...', 1500);
-                setTimeout(() => {
-                    window.location.href = datos.redireccion;
-                }, 1000);
+                setTimeout(() => { window.location.href = datos.redireccion; }, 1000);
             } else {
-                mostrarNotificacion('Intente nuevamente', datos.mensaje, 2000);
+                mostrarNotificacion('Intente nuevamente', datos.mensaje, 2500);
             }
         } catch (error) {
-            mostrarNotificacion('Error', 'Error al conectar con el servidor', 2000);
+            mostrarNotificacion('Error', 'Error al conectar con el servidor', 2500);
         }
     });
 
-    // --- Petición de Registro ---
+    // Registro Submit
     formRegistro.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -128,14 +118,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const confirmacion = formRegistro.querySelector('[name="password_registro-confirmacion"]').value;
 
         if (password !== confirmacion) {
-            mostrarNotificacion('Error', 'Las contraseñas no coinciden', 2000);
+            mostrarNotificacion('Error', 'Las contraseñas no coinciden', 2500);
             return;
         }
+
+        // Obtener teléfono completo con formato E.164 (+549...)
+        const telefonoCompleto = itiRegistro ? itiRegistro.getNumber() : formRegistro.querySelector('[name="tel_input"]').value;
 
         const payload = {
             input_nombre: formRegistro.querySelector('[name="input_nombre"]').value,
             txt_registro_email: formRegistro.querySelector('[name="txt_registro_email"]').value,
-            tel_input: formRegistro.querySelector('[name="tel_input"]').value,
+            tel_input: telefonoCompleto,
             password_registro: password
         };
 
@@ -145,21 +138,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-
             const datos = await respuesta.json();
 
             if (datos.exito) {
                 mostrarNotificacion('Registro exitoso', datos.mensaje, 1500);
-                setTimeout(() => {
-                    window.location.href = datos.redireccion;
-                }, 1000);
+                setTimeout(() => { window.location.href = datos.redireccion; }, 1000);
             } else {
-                mostrarNotificacion('Error', datos.mensaje, 1000);
+                mostrarNotificacion('Error', datos.mensaje, 2500);
             }
         } catch (error) {
-            mostrarNotificacion('Error', 'Error al conectar con el servidor', 1000);
+            mostrarNotificacion('Error', 'Error al conectar con el servidor', 2500);
         }
     });
+
+    // --- FLUJO DE MODALES DE RECUPERACIÓN ---
 
     // Abrir Modal
     btnOlvidastePass.addEventListener('click', (e) => {
@@ -193,16 +185,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await resp.json();
 
-            if (data.exito) {
+            // Transición SOLO si la respuesta del servidor es exitosa
+            if (resp.ok && data.exito) {
                 idUsuarioRecuperacion = data.id_usuario;
-                mostrarNotificacion('Aviso', data.mensaje, 2500);
+                mostrarNotificacion('Éxito', data.mensaje, 2500);
                 paso1.style.display = 'none';
                 paso2.style.display = 'block';
             } else {
-                mostrarNotificacion('Error', data.mensaje, 2000);
+                mostrarNotificacion('Error', data.mensaje || 'No se pudo enviar el código', 3000);
             }
         } catch (error) {
-            mostrarNotificacion('Error', 'Error al conectar con el servidor', 2000);
+            mostrarNotificacion('Error', 'Error al conectar con el servidor', 2500);
         }
     });
 
@@ -223,16 +216,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await resp.json();
 
-            if (data.exito) {
+            // Transición SOLO si el token es válido
+            if (resp.ok && data.exito) {
                 tokenValidado = token;
-                mostrarNotificacion('Éxito', data.mensaje, 1500);
+                mostrarNotificacion('Código Válido', data.mensaje, 1500);
                 paso2.style.display = 'none';
                 paso3.style.display = 'block';
             } else {
-                mostrarNotificacion('Error', data.mensaje, 2000);
+                mostrarNotificacion('Error', data.mensaje || 'Código incorrecto', 3000);
             }
         } catch (error) {
-            mostrarNotificacion('Error', 'Error al conectar con el servidor', 2000);
+            mostrarNotificacion('Error', 'Error al conectar con el servidor', 2500);
         }
     });
 
@@ -258,15 +252,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await resp.json();
 
-            if (data.exito) {
-                mostrarNotificacion('Éxito', data.mensaje, 2000);
+            if (resp.ok && data.exito) {
+                mostrarNotificacion('Éxito', data.mensaje, 2500);
                 modalRecuperar.style.display = 'none';
+                // Reset de campos
+                document.getElementById('rec_usuario').value = '';
+                document.getElementById('rec_contacto').value = '';
+                document.getElementById('rec_token').value = '';
+                document.getElementById('rec_nueva_pass').value = '';
+                document.getElementById('rec_confirmar_pass').value = '';
             } else {
-                mostrarNotificacion('Error', data.mensaje, 2000);
+                mostrarNotificacion('Error', data.mensaje || 'Error al cambiar la contraseña', 3000);
             }
         } catch (error) {
-            mostrarNotificacion('Error', 'Error al conectar con el servidor', 2000);
+            mostrarNotificacion('Error', 'Error al conectar con el servidor', 2500);
         }
     });
-    
 });
