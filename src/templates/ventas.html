@@ -118,14 +118,21 @@
             </table>
         </div>
         <div class="btn-acciones">
-            <button class="btn accion" type="button">Descargar PDF</button>
-            <button class="btn accion" type="button">Imprimir</button>
+            <button class="btn accion" id="btn-descargar-pdf" type="button">Descargar PDF</button>
+            <button class="btn accion" id="btn-imprimir" type="button">Imprimir</button>
             <button class="btn accion" id="btn-cerrar-modal-alt" type="button">Cerrar</button>
         </div>
     </div>
 </div>
+
+<!-- Contenedor fuera de pantalla para renderizar el ticket PDF -->
+<div id="contenedor-ticket-pdf" style="position: absolute; left: -9999px; top: -9999px; width: 280px; background: #ffffff; padding: 15px; font-family: 'Courier New', Courier, monospace; font-size: 12px; color: #000000;"></div>
 {% endblock %}
 
 {% block scripts_pagina %}
 <script src="{{ url_for('static', filename='js/ventas.js') }}"></script>
+<!-- html2canvas: convierte HTML en canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- jsPDF: convierte canvas a documento PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 {% endblock %}

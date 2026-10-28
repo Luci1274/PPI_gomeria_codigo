@@ -19,6 +19,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalDescuento = document.getElementById('modal-descuento');
     const modalTotalMonto = document.getElementById('modal-total-monto');
 
+    // Botones de acciones del Modal
+    const btnDescargarPdf = document.getElementById('btn-descargar-pdf');
+    const btnImprimir = document.getElementById('btn-imprimir');
+    const contenedorTicketPdf = document.getElementById('contenedor-ticket-pdf');
+
+    // Variables de estado de la venta activa
+    let ventaActual = null;
+    let itemsActuales = [];
+
     // --- ELEMENTOS DEL CARTEL EMERGENTE ---
     const cartelEmergente = document.getElementById('cartel-emergente');
     const cartelTitulo = document.getElementById('cartel-titulo');
@@ -274,15 +283,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const venta = data.venta;
-            const items = data.items || [];
+            // Almacenar referencias de la venta activa
+            ventaActual = data.venta;
+            itemsActuales = data.items || [];
 
             // Llenar datos de la cabecera del modal
-            if (modalNumVenta) modalNumVenta.textContent = venta.idventa;
-            if (modalFecha) modalFecha.textContent = venta.fecha || '-';
-            if (modalCliente) modalCliente.textContent = venta.nombre_cliente?.trim() || 'Cliente General';
-            const totalFinal = Number(venta.precio_total || 0);
-            const descuento = Number(venta.descuento || 0);
+            if (modalNumVenta) modalNumVenta.textContent = ventaActual.idventa;
+            if (modalFecha) modalFecha.textContent = ventaActual.fecha || '-';
+            if (modalCliente) modalCliente.textContent = ventaActual.nombre_cliente?.trim() || 'Cliente General';
+            const totalFinal = Number(ventaActual.precio_total || 0);
+            const descuento = Number(ventaActual.descuento || 0);
             const subtotal = totalFinal + descuento;
             if (modalSubtotal) modalSubtotal.textContent = `$${subtotal.toFixed(2)}`;
             if (modalDescuento) modalDescuento.textContent = `$${descuento.toFixed(2)}`;
@@ -292,10 +302,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (modalTablaBody) {
                 modalTablaBody.innerHTML = '';
 
-                if (items.length === 0) {
+                if (itemsActuales.length === 0) {
                     modalTablaBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No hay ítems registrados</td></tr>`;
                 } else {
-                    items.forEach(item => {
+                    itemsActuales.forEach(item => {
                         const tr = document.createElement('tr');
                         const precioUnitario = item.precio_unitario
                             ? `$${Number(item.precio_unitario).toLocaleString()}`
@@ -323,6 +333,144 @@ document.addEventListener('DOMContentLoaded', () => {
             mostrarNotificacion("Error", "No se pudo cargar la información de la venta.", 4000);
         }
     }
+
+    // --- GENERADOR DE HTML TICKET ---
+    function generarHTMLTicket(venta, items) {
+        const totalFinal = Number(venta.precio_total || 0);
+        const descuento = Number(venta.descuento || 0);
+        const subtotal = totalFinal + descuento;
+        const fecha = venta.fecha || '-';
+        const cliente = venta.nombre_cliente?.trim() || 'Cliente General';
+
+        const filasItems = items.map(item => {
+            const pUnit = Number(item.precio_unitario || 0);
+            const cant = Number(item.cantidad || 0);
+            const sub = cant * pUnit;
+            return `
+                <tr>
+                    <td colspan="3" style="padding-top: 4px; font-weight: bold;">${item.producto_nombre}</td>
+                </tr>
+                <tr>
+                    <td style="padding-bottom: 4px;">${cant} x $${pUnit.toLocaleString()}</td>
+                    <td></td>
+                    <td style="text-align: right; padding-bottom: 4px;">$${sub.toLocaleString()}</td>
+                </tr>
+            `;
+        }).join('');
+
+        return `
+            <div style="text-align: center;">
+                <h2 style="margin: 0; font-size: 16px;">SISTEMA GOMERÍA</h2>
+                <p style="margin: 3px 0; font-size: 11px;">Comprobante de Venta</p>
+                <p style="margin: 3px 0; font-weight: bold;">Ticket #${venta.idventa}</p>
+            </div>
+            <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
+            <div style="font-size: 11px;">
+                <p style="margin: 2px 0;"><strong>Fecha:</strong> ${fecha}</p>
+                <p style="margin: 2px 0;"><strong>Cliente:</strong> ${cliente}</p>
+            </div>
+            <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                <thead>
+                    <tr style="border-bottom: 1px solid #000;">
+                        <th style="text-align: left;">Cant x P.Unit</th>
+                        <th></th>
+                        <th style="text-align: right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${filasItems}
+                </tbody>
+            </table>
+            <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
+            <div style="font-size: 11px; text-align: right;">
+                <p style="margin: 2px 0;">Subtotal: $${subtotal.toFixed(2)}</p>
+                <p style="margin: 2px 0;">Descuento: $${descuento.toFixed(2)}</p>
+                <p style="margin: 4px 0; font-size: 13px; font-weight: bold;">Total: $${totalFinal.toFixed(2)}</p>
+            </div>
+            <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
+            <div style="text-align: center; font-size: 10px; margin-top: 8px;">
+                <p style="margin: 0;">¡Gracias por su compra!</p>
+            </div>
+        `;
+    }
+
+    // --- ACCIÓN: IMPRIMIR TICKET ---
+    btnImprimir?.addEventListener('click', () => {
+        if (!ventaActual) return;
+
+        // Crear un iframe temporal para lanzar el diálogo de impresión
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Ticket #${ventaActual.idventa}</title>
+                <style>
+                    @page { margin: 0; size: auto; }
+                    body {
+                        font-family: 'Courier New', Courier, monospace;
+                        width: 280px;
+                        margin: 10px auto;
+                        color: #000;
+                        background: #fff;
+                    }
+                </style>
+            </head>
+            <body>
+                ${generarHTMLTicket(ventaActual, itemsActuales)}
+            </body>
+            </html>
+        `);
+        doc.close();
+
+        iframe.contentWindow.focus();
+        setTimeout(() => {
+            iframe.contentWindow.print();
+            document.body.removeChild(iframe);
+        }, 300);
+    });
+
+    // --- ACCIÓN: DESCARGAR PDF TICKET ---
+    btnDescargarPdf?.addEventListener('click', async () => {
+        if (!ventaActual || !contenedorTicketPdf) return;
+
+        try {
+            // Llenar el contenedor invisible con la plantilla del ticket
+            contenedorTicketPdf.innerHTML = generarHTMLTicket(ventaActual, itemsActuales);
+
+            const { jsPDF } = window.jspdf;
+
+            // Renderizar la sección a imagen
+            const canvas = await html2canvas(contenedorTicketPdf, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+
+            // Formato de Ticket estándar: 80mm de ancho y alto dinámico
+            const pdfAncho = 80;
+            const pdfAlto = (canvas.height * pdfAncho) / canvas.width;
+
+            const pdf = new jsPDF('p', 'mm', [pdfAncho, pdfAlto]);
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfAncho, pdfAlto);
+
+            const clienteNombre = (ventaActual.nombre_cliente || 'cliente').replace(/[^a-zA-Z0-0]/g, '_');
+            pdf.save(`ticket-venta-${ventaActual.idventa}-${clienteNombre}.pdf`);
+
+            contenedorTicketPdf.innerHTML = '';
+        } catch (error) {
+            console.error("Error al generar PDF del ticket:", error);
+            mostrarNotificacion("Error", "No se pudo generar el ticket en PDF.", 4000);
+        }
+    });
 
     // 6. Anular / Eliminar Venta
     async function anularVenta(idVenta) {
