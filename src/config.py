@@ -37,7 +37,10 @@ class Config:
             "/iniciar_sesion", 
             "/registrarse", 
             "/api/iniciar_sesion", 
-            "/api/registrarse"
+            "/api/registrarse",
+            "/api/recuperar/solicitar",
+            "/api/recuperar/validar_token",
+            "/api/recuperar/restablecer"
         ]
 
     _roles_env = os.getenv("ROLES")
@@ -60,3 +63,19 @@ class Config:
             api_secret=os.environ.get("TU_API_SECRET"),
             secure=True,
         )
+    
+    @staticmethod
+    def obtener_credenciales_twilio():
+        from twilio.rest import Client
+        return {
+            "sid": os.environ.get("TWILIO_SID"),
+            "token": os.environ.get("TWILIO_TOKEN"),
+            "whatsapp_number": os.environ.get("TWILIO_WHATSAPP_NUMBER")
+        }
+    
+    @staticmethod
+    def obtener_credenciales_gmail():
+        return {
+            "user": os.environ.get("GMAIL_USER"),
+            "pass": os.environ.get("GMAIL_PASS")
+        }

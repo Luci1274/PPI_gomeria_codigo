@@ -300,6 +300,74 @@ button:active {
     }
 }
 
+/* Soporte para intl-tel-input */
+.contenedor_tel_input .iti {
+    width: 100%;
+}
+
+.contenedor_tel_input .iti__country-list {
+    color: #212529;
+    max-width: 300px;
+    z-index: 100;
+}
+
+/* Modal de Recuperación */
+.modal_fondo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+}
+
+.modal_contenido {
+    background: var(--color_tarjeta);
+    padding: 30px 25px;
+    border-radius: 12px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.modal_contenido h2 {
+    color: var(--color_texto);
+    font-size: 22px;
+    margin-bottom: 8px;
+}
+
+.modal_subtitulo {
+    font-size: 13px;
+    color: var(--color_texto_mutado);
+    margin-bottom: 20px;
+}
+
+.btn_cerrar {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--color_texto_mutado);
+    cursor: pointer;
+    width: auto;
+    padding: 0;
+    margin: 0;
+}
+
+.btn_cerrar:hover {
+    color: var(--color_texto_error);
+    background: none;
+}
+
 /*Movil*/
 @media (max-width: 480px) {
     body {

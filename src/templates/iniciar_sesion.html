@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Librería Internacional de Teléfonos -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/css/intlTelInput.css">
     <link rel="stylesheet" href="../static/css/iniciar_sesion.css">
     <title>Iniciar sesión</title>
 </head>
@@ -79,11 +81,9 @@
                     <input type="email" name="txt_registro_email" placeholder="Correo electrónico">
                 </div>
 
-                <div class="ingresar_datos">
-                    <div class="icono_input">
-                        <i class="fa-solid fa-phone"></i>
-                    </div>
-                    <input type="text" name="tel_input" placeholder="Telefono">
+                <!-- Input Teléfono con intl-tel-input -->
+                <div class="ingresar_datos contenedor_tel_input">
+                    <input type="tel" name="tel_input" id="tel_input" placeholder="Teléfono">
                 </div>
 
                 <div class="ingresar_datos">
@@ -109,8 +109,57 @@
     </div>
 
     {% include "componentes/cartel_emergente.html" %}
+
+    <!-- MODAL DE RECUPERACIÓN DE CONTRASEÑA -->
+    <div id="modal_recuperar" class="modal_fondo" style="display:none;">
+        <div class="modal_contenido">
+            <button id="btn_cerrar_modal" class="btn_cerrar">&times;</button>
+            
+            <!-- PASO 1: Pedir Usuario y Contacto -->
+            <div id="paso_recuperar_1">
+                <h2>Recuperar contraseña</h2>
+                <p class="modal_subtitulo">Ingresa tu usuario y el correo o teléfono registrado (+549...)</p>
+                <div class="ingresar_datos">
+                    <div class="icono_input"><i class="fa-solid fa-user"></i></div>
+                    <input type="text" id="rec_usuario" placeholder="Nombre de usuario" required>
+                </div>
+                <div class="ingresar_datos">
+                    <div class="icono_input"><i class="fa-solid fa-address-book"></i></div>
+                    <input type="text" id="rec_contacto" placeholder="Correo o teléfono (+549...)" required>
+                </div>
+                <button type="button" id="btn_solicitar_codigo">Enviar código</button>
+            </div>
+
+            <!-- PASO 2: Ingresar Token -->
+            <div id="paso_recuperar_2" style="display: none;">
+                <h2>Ingresa el código</h2>
+                <p class="modal_subtitulo">Introduce el código de 6 dígitos enviado a tu contacto.</p>
+                <div class="ingresar_datos">
+                    <div class="icono_input"><i class="fa-solid fa-key"></i></div>
+                    <input type="text" id="rec_token" placeholder="Ej: 123456" maxlength="6" required>
+                </div>
+                <button type="button" id="btn_validar_codigo">Verificar código</button>
+            </div>
+
+            <!-- PASO 3: Nueva Contraseña -->
+            <div id="paso_recuperar_3" style="display: none;">
+                <h2>Nueva contraseña</h2>
+                <p class="modal_subtitulo">Escribe tu nueva contraseña de acceso.</p>
+                <div class="ingresar_datos">
+                    <div class="icono_input"><i class="fa-solid fa-lock"></i></div>
+                    <input type="password" id="rec_nueva_pass" placeholder="Nueva contraseña" required>
+                </div>
+                <div class="ingresar_datos">
+                    <div class="icono_input"><i class="fa-solid fa-lock"></i></div>
+                    <input type="password" id="rec_confirmar_pass" placeholder="Confirmar contraseña" required>
+                </div>
+                <button type="button" id="btn_cambiar_pass">Guardar nueva contraseña</button>
+            </div>
+        </div>
+    </div>
     
-    <!-- Script de JS -->
+    <!-- Script intl-tel-input y JS principal -->
+    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/js/intlTelInput.min.js"></script>
     <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 </body>
 
