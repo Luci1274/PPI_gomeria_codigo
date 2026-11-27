@@ -62,6 +62,8 @@ La vista principal se renderiza con `compra.html` y muestra:
   - Proveedor
   - Tipos de producto
   - Total de productos
+  - Estado (activa o anulada)
+  - Entrega (completa o incompleta)
   - Acciones
 - paginación dinámica
 - cartel emergente para mensajes de éxito, error o confirmación
@@ -192,6 +194,8 @@ sql_revertir_stock = """
 ```
 
 Esto permite que el stock vuelva a su estado anterior cuando la compra es anulada.
+
+Las compras anuladas se resaltan en rojo y ya no muestran acciones para anular o completar. No existe una operación para reactivar compras.
 
 ### Respuesta
 

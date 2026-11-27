@@ -171,24 +171,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         proveedores.forEach(prov => {
             const tr = document.createElement('tr');
-            if (prov.activo === 0 || prov.activo === '0' || prov.activo === false) {
+            const esActivo = Number(prov.activo) === 1;
+            if (!esActivo) {
                 tr.classList.add('desactivado');
             }
-            const esActivo = prov.activo === 1 || prov.activo === true;
             const estadoHTML = `<span class="badge ${esActivo ? 'activo' : 'inactivo'}">${esActivo ? 'Activo' : 'Inactivo'}</span>`;
 
             tr.innerHTML = `
-                <td>${prov.idproveedor}</td>
-                <td><strong>${prov.nombre || '-'} - ${prov.rubro || '-'}</strong></td>
-                <td>${prov.cuit || '-'}</td>
-                <td class="texto-derecha"> ${prov.ciudad || '-'} - ${prov.direccion || '-'}</td>
+                <td class="texto-derecha">${prov.idproveedor}</td>
+                <td class="texto-izquierda"><strong>${prov.nombre || '-'} - ${prov.rubro || '-'}</strong></td>
+                <td class="texto-derecha">${prov.cuit || '-'}</td>
+                <td class="texto-izquierda"> ${prov.ciudad || '-'} - ${prov.direccion || '-'}</td>
                 <td class="texto-derecha"> <a href="https://wa.me/${prov.telefono || '-'}" target="_blank">${prov.telefono || '-'}</a></td>
                 <td class="texto-centro"> <a href="mailto:${prov.mail || '-'}" target="_blank">${prov.mail || '-'}</a></td>
                 <td class="texto-centro">${estadoHTML}</td>
                 <td class="texto-centro">
                     <div class="botones-accion">
-                        <button class="btn-accion btn-editar" data-id="${prov.idproveedor}" title="Editar">Modificar</button>
-                        <button class="btn-accion borrar btn-eliminar" data-id="${prov.idproveedor}" title="Eliminar">Eliminar</button>
+                        ${esActivo
+                            ? `<button class="btn-accion btn-editar" data-id="${prov.idproveedor}" title="Editar">Modificar</button>
+                               <button class="btn-accion borrar btn-eliminar" data-id="${prov.idproveedor}" title="Eliminar">Eliminar</button>`
+                            : `<button class="btn-accion btn-activar" data-id="${prov.idproveedor}" title="Reactivar">Reactivar</button>`}
                     </div>
                 </td>
             `;
@@ -214,10 +216,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function activarProveedor(id) {
+        try {
+            const respuesta = await fetch(`/api/proveedores/${id}/activar`, { method: 'POST' });
+            const data = await respuesta.json();
+
+            if (respuesta.ok && data.exito) {
+                mostrarNotificacion('Proveedor reactivado', data.mensaje || 'El proveedor fue reactivado correctamente.');
+                cargarProveedores();
+            } else {
+                mostrarNotificacion('Error', data.mensaje || 'Error al reactivar el proveedor.');
+            }
+        } catch (error) {
+            console.error('Error al reactivar proveedor:', error);
+            mostrarNotificacion('Error de conexión', 'Ocurrió un error al intentar reactivar el proveedor.');
+        }
+    }
+
     // Delegación de eventos en la tabla
     tablaBody.addEventListener('click', async (e) => {
         const btnEliminar = e.target.closest('.btn-eliminar');
         const btnEditar = e.target.closest('.btn-editar');
+        const btnActivar = e.target.closest('.btn-activar');
 
         if (btnEliminar) {
             const id = btnEliminar.dataset.id;
@@ -235,6 +255,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnEditar) {
             const id = btnEditar.dataset.id;
             abrirModalEditarProveedor(id);
+        }
+
+        if (btnActivar) {
+            activarProveedor(btnActivar.dataset.id);
         }
     });
 

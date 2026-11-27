@@ -1,5 +1,7 @@
 from datetime import datetime, date
 import math
+from typing import Optional
+
 import pymysql
 from config import Config
 
@@ -175,6 +177,7 @@ class Venta:
         fecha_fin=None,
         pagina=1,
         limite=20,
+        estado: Optional[int] = 1,
     ):
         """Lee el listado de ventas aplicando filtros dinámicos, paginación
 
@@ -185,8 +188,12 @@ class Venta:
             with conexion.cursor() as cursor:
 
                 # 1. Construcción dinámica de la cláusula WHERE y parámetros
-                condiciones = ["v.activa = 1"]
+                condiciones = []
                 parametros = []
+
+                if estado is not None:
+                    condiciones.append("v.activa = %s")
+                    parametros.append(estado)
 
                 # Filtro por texto (Buscador)
                 if busqueda and busqueda.strip():
@@ -226,7 +233,9 @@ class Venta:
                         "v.fecha_emision_factura >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
                     )
 
-                where_clause = " WHERE " + " AND ".join(condiciones)
+                where_clause = (
+                    " WHERE " + " AND ".join(condiciones) if condiciones else ""
+                )
 
                 # 2. Obtener métricas agregadas (sincronizadas con los filtros)
                 sql_totales = f"""
@@ -261,7 +270,8 @@ class Venta:
                         v.fecha_emision_factura AS fecha,
                         CONCAT(IFNULL(c.nombre, 'Consumidor'), ' ', IFNULL(c.apellido, 'Final')) AS cliente,
                         v.cantidad_total_productos,
-                        v.precio_total
+                        v.precio_total,
+                        v.activa
                     FROM venta AS v
                     LEFT JOIN cliente AS c ON v.idcliente = c.idcliente
                     {where_clause}

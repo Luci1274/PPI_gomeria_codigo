@@ -112,3 +112,19 @@ def desactivar_proveedor(id):
         "exito": False,
         "mensaje": "No se pudo desactivar al proveedor indicado."
             }), 400
+
+
+@proveedores_bp.route("/api/proveedores/<int:id>/activar", methods=["POST"])
+def activar_proveedor(id):
+    exito = Proveedor.activar_proveedor(id)
+
+    if exito:
+        return jsonify({
+            "exito": True,
+            "mensaje": f"El proveedor #{id} fue reactivado."
+        }), 200
+
+    return jsonify({
+        "exito": False,
+        "mensaje": "No se pudo reactivar al proveedor indicado."
+    }), 400

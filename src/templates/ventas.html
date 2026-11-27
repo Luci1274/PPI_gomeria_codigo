@@ -37,6 +37,13 @@
         <input type="text" id="input-busqueda" placeholder="Buscar por Cliente...">
     </div>
     <div class="accion-filtro">
+        <select class="filtro-seleccion" id="select-filtro-estado">
+            <option value="1">Activas</option>
+            <option value="0">Anuladas</option>
+            <option value="todos" selected>Todas</option>
+        </select>
+    </div>
+    <div class="accion-filtro">
         <select class="filtro-seleccion" id="select-filtro-fecha">
             <option value="hoy">Hoy</option>
             <option value="semana">Últimos 7 días</option>
@@ -50,11 +57,12 @@
 
 {% block cabecera_tabla %}
 <tr>
-    <th>N° Venta</th>
-    <th>Fecha</th>
-    <th>Cliente</th>
-    <th>Total Productos</th>
-    <th>Precio</th>
+    <th class="texto-derecha">N° Venta</th>
+    <th class="texto-izquierda">Fecha</th>
+    <th class="texto-izquierda">Cliente</th>
+    <th class="texto-derecha">Total Productos</th>
+    <th class="texto-derecha">Precio</th>
+    <th>Estado</th>
     <th>Acciones</th>
 </tr>
 {% endblock %}
@@ -95,9 +103,9 @@
             <table class="modal-table">
                 <thead>
                     <tr>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Precio Unitario</th>
+                        <th class="texto-izquierda">Producto</th>
+                        <th class="texto-derecha">Cantidad</th>
+                        <th class="texto-derecha">Precio Unitario</th>
                     </tr>
                 </thead>
                 <tbody id="modal-tabla-body"></tbody>

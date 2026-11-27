@@ -126,10 +126,11 @@ def api_obtener_empleados():
 
     pagina = request.args.get("pagina", 1, type=int)
     buscar = request.args.get("buscar", None, type=str)
+    activo = request.args.get("activo", 1)
     por_pagina = 10
 
     total_items, empleados, roles, ok = Usuario.leer_empleados(
-        pagina=pagina, por_pagina=por_pagina, buscar=buscar
+        pagina=pagina, por_pagina=por_pagina, buscar=buscar, activo=activo
     )
 
     if not ok:
@@ -244,6 +245,26 @@ def api_desactivar_empleado(id):
         ),
         400,
     )
+
+
+@empleados_bp.route("/api/empleados/<int:id>/activar", methods=["POST"])
+def api_activar_empleado(id):
+    if not probar_conexion():
+        return (
+            jsonify({"exito": False, "mensaje": "Base de datos fuera de línea"}),
+            500,
+        )
+
+    if Usuario.activar_empleado(id):
+        return jsonify({
+            "exito": True,
+            "mensaje": "El empleado fue reactivado correctamente.",
+        }), 200
+
+    return jsonify({
+        "exito": False,
+        "mensaje": "No se pudo reactivar al empleado indicado.",
+    }), 400
 
 
 # ------------------------------------------

@@ -176,7 +176,8 @@ body {
 }
 
 .contenedor-tabla {
-    overflow-x: auto;
+    max-width: 100%;
+    overflow: auto;
     border: 1px solid var(--color-borde);
     border-radius: 12px;
     background-color: var(--fondo-tarjeta);
@@ -221,6 +222,10 @@ body {
 
 .texto-derecha {
     text-align: right;
+}
+
+.texto-izquierda {
+    text-align: left;
 }
 
 .texto-centro {
@@ -312,6 +317,17 @@ body {
 .botones-accion .btn-eliminar:hover {
     border-color: #b91c1c;
     background-color: #b91c1c;
+}
+
+.btn-accion.btn-activar {
+    border-color: #15803d;
+    background-color: #15803d;
+    color: #ffffff;
+}
+
+.btn-accion.btn-activar:hover {
+    border-color: #166534;
+    background-color: #166534;
 }
 
 .resumen {
@@ -632,6 +648,9 @@ body {
 
     .filtro-seleccion {
         width: 100%;
+        min-height: 42px;
+        flex: 0 0 auto;
+        padding: 8px 12px;
     }
 
     .contenedor-paginacion,

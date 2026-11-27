@@ -10,9 +10,9 @@ La plantilla principal es `src/templates/clientes.html`; utiliza `src/static/js/
 
 - La tabla muestra nombre o razón social, CUIT/DNI, teléfono, correo, ciudad, dirección, deuda, estado y acciones.
 - La búsqueda se aplica por nombre, apellido o CUIT y espera 300 ms desde la última escritura antes de consultar.
-- El filtro de estado permite listar clientes activos, inactivos o ambos. Al abrir la pantalla se consultan los activos.
+- El filtro de estado permite listar clientes activos, inactivos o ambos; al abrir la pantalla se muestran todos.
 - La tabla pagina los resultados en grupos de 10.
-- El alta y la edición se realizan desde formularios modales. La baja es lógica: el cliente permanece en la base de datos con `activo = 0`.
+- El alta y la edición se realizan desde formularios modales. La baja es lógica: el cliente permanece en la base de datos con `activo = 0`. Las filas inactivas se resaltan en rojo, ocultan la opción de eliminar y permiten reactivar el registro.
 - Al cargar o guardar datos, el navegador muestra notificaciones. La pantalla utiliza una caja con mensajes emergentes para informar errores de validación o de la base de datos.
 
 El formulario recibe el nombre completo en un solo campo y el JavaScript lo divide: la primera palabra se envía como `nombre` y las restantes como `apellido`. Por ello, nombres compuestos no se separan necesariamente como espera cada persona.
@@ -27,6 +27,7 @@ El formulario recibe el nombre completo en un solo campo y el JavaScript lo divi
 | `GET /clientes/<id>/editar` | `api_obtener_cliente` | Devuelve los datos de un cliente activo para cargar el formulario. |
 | `POST /api/clientes/<id>/editar` | `api_modificar_cliente` | Actualiza los datos del cliente a partir de un cuerpo JSON. |
 | `GET /clientes/<id>/desactivar` | `desactivar_cliente` | Desactiva lógicamente al cliente. |
+| `POST /api/clientes/<id>/activar` | `activar_cliente` | Reactiva un cliente inactivo. |
 
 ### `GET /api/clientes`
 
@@ -83,6 +84,10 @@ Recibe los mismos campos de datos que la creación, excepto que el identificador
 
 Actualiza el estado del cliente a inactivo. Responde `200` con `exito: true` cuando la operación informa éxito; en caso contrario, responde `400` con `exito: false`.
 
+### `POST /api/clientes/<id>/activar`
+
+Cambia `activo` de `0` a `1`. Devuelve `200` si se reactivó un cliente inactivo y `400` si el identificador no corresponde a un cliente inactivo o si falla la operación.
+
 ## Clase `Cliente` (acceso a datos)
 
 ### `Cliente.crear_cliente(...)`
@@ -105,7 +110,11 @@ Actualiza nombre, apellido, CUIT, teléfono, correo, ciudad y dirección. Normal
 
 ### `Cliente.eliminar_cliente(id)`
 
-Realiza la baja lógica mediante `UPDATE cliente SET activo = 0`. Devuelve `True` si la operación termina correctamente y `False` si falla.
+Realiza la baja lógica mediante `UPDATE cliente SET activo = 0` solo para clientes activos. Devuelve `True` si modificó una fila y `False` si no había un cliente activo o si falla.
+
+### `Cliente.activar_cliente(id)`
+
+Reactiva un cliente inactivo mediante `UPDATE cliente SET activo = 1`. Devuelve `True` si modificó una fila y `False` si no había un cliente inactivo o si falla.
 
 ## Consideraciones de implementación
 

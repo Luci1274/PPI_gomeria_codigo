@@ -27,6 +27,8 @@ def api_ventas():
     filtro_fecha = request.args.get("filtro_fecha", "hoy")
     fecha_inicio = request.args.get("fecha_inicio", None)
     fecha_fin = request.args.get("fecha_fin", None)
+    estado_param = request.args.get("estado", "1")
+    estado = int(estado_param) if estado_param in {"0", "1"} else None
     pagina = int(request.args.get("pagina", 1))
     limite = int(request.args.get("limite", 20))
 
@@ -35,6 +37,7 @@ def api_ventas():
         filtro_fecha=filtro_fecha,
         fecha_inicio=fecha_inicio,
         fecha_fin=fecha_fin,
+        estado=estado,
         pagina=pagina,
         limite=limite,
     )

@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Error al cargar compras:", error);
             if (contenedorPaginacion) contenedorPaginacion.replaceChildren();
             if (tablaBody) {
-                tablaBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Error al cargar los datos</td></tr>`;
+                tablaBody.innerHTML = `<tr><td colspan="8" style="text-align:center;">Error al cargar los datos</td></tr>`;
             }
             mostrarNotificacion("Error", "No se pudieron obtener las compras del servidor.", 4000);
         }
@@ -182,28 +182,30 @@ document.addEventListener('DOMContentLoaded', () => {
         tablaBody.innerHTML = '';
 
         if (compras.length === 0) {
-            tablaBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No se encontraron órdenes de compra</td></tr>`;
+            tablaBody.innerHTML = `<tr><td colspan="8" style="text-align:center;">No se encontraron órdenes de compra</td></tr>`;
             return;
         }
 
         compras.forEach(c => {
             const tr = document.createElement('tr');
+            const estaActiva = Number(c.estado) === 1;
             tr.innerHTML = `
-                <td>#${c.idcompra || c.id_orden}</td>
-                <td>${c.fecha}</td>
-                <td>${c.proveedor || 'Proveedor General'}</td>
+                <td class="texto-derecha">#${c.idcompra || c.id_orden}</td>
+                <td class="texto-izquierda">${c.fecha}</td>
+                <td class="texto-izquierda">${c.proveedor || 'Proveedor General'}</td>
                 <td>${c.tipos_producto || 0} tipos</td>
-                <td>${c.total_productos || 0} unidades</td>
+                <td class="texto-derecha">${c.total_productos || 0} unidades</td>
+                <td><span class="badge ${estaActiva ? 'activo' : 'inactivo'}">${estaActiva ? 'Activa' : 'Anulada'}</span></td>
                 <td>${Number(c.completo) === 1 ? 'Completa' : 'Incompleta'}</td>
                 <td>
                     <div class="btn-acciones">
                         <button class="btn-accion resumen" data-id="${c.idcompra || c.id_orden}">Ver resumen</button>
-                        ${Number(c.completo) === 1 || Number(c.estado) === 0 ? '' : `<button class="btn-accion completar" data-id="${c.idcompra || c.id_orden}">Completar</button>`}
-                        ${Number(c.estado) === 0 ? '' : `<button class="btn-accion eliminar" data-id="${c.idcompra || c.id_orden}">Anular</button>`}
+                        ${Number(c.completo) === 1 || !estaActiva ? '' : `<button class="btn-accion completar" data-id="${c.idcompra || c.id_orden}">Completar</button>`}
+                        ${!estaActiva ? '' : `<button class="btn-accion eliminar" data-id="${c.idcompra || c.id_orden}">Anular</button>`}
                     </div>
                 </td>
             `;
-            if (c.estado === 0) {
+            if (!estaActiva) {
                 tr.classList.add('desactivado');
             }
             tablaBody.appendChild(tr);
@@ -340,13 +342,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             item.cantidad_pedida ?? '-',
                         ];
 
-                        celdas.forEach(valor => {
+                        celdas.forEach((valor, indice) => {
                             const td = document.createElement('td');
                             td.textContent = valor;
+                            if (indice === 0) td.classList.add('texto-izquierda');
+                            if (indice >= 2) td.classList.add('texto-derecha');
                             tr.appendChild(td);
                         });
 
                         const celdaRecibida = document.createElement('td');
+                        celdaRecibida.classList.add('texto-derecha');
                         if (modoCompletar) {
                             const idItem = document.createElement('input');
                             idItem.type = 'hidden';

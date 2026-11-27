@@ -2,7 +2,7 @@
 --
 -- Host: gestion-sotck-2-lucianogonzalez1274-bc78.i.aivencloud.com    Database: Gomeria
 -- ------------------------------------------------------
--- Server version	8.4.8
+-- Server version	8.4.11
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -23,8 +23,9 @@ SET @@SESSION.SQL_LOG_BIN= 0;
 
 SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ '1b60d2d3-8f76-11f1-8541-e6f0651671a1:1-119,
 6907ba4b-94bf-11f1-972d-1ef0a6ac4bea:1-97,
-78d7f13c-ba6b-11f1-9a76-be97c8a213a1:1-70,
+78d7f13c-ba6b-11f1-9a76-be97c8a213a1:1-138,
 8aaee54c-7d5e-11f1-9f3d-5aed042dc655:1-48,
+a17e88cf-e2fa-11f1-9596-a65765566a17:1-15,
 f122064f-7bea-11f1-ae00-c27b75c3b46a:1-71';
 
 --
@@ -77,7 +78,7 @@ CREATE TABLE `compra` (
   PRIMARY KEY (`idcompra`),
   KEY `fk_compras_proveedores1_idx` (`idproveedor`),
   CONSTRAINT `fk_compras_proveedores1` FOREIGN KEY (`idproveedor`) REFERENCES `proveedor` (`idproveedor`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -86,7 +87,7 @@ CREATE TABLE `compra` (
 
 LOCK TABLES `compra` WRITE;
 /*!40000 ALTER TABLE `compra` DISABLE KEYS */;
-INSERT INTO `compra` VALUES (1,'2026-10-04','20:31:14',2,2,1,1),(7,'2026-10-14','15:51:23',5,2,0,1);
+INSERT INTO `compra` VALUES (1,'2026-10-04','20:31:14',2,2,1,1),(7,'2026-10-14','15:51:23',5,2,0,1),(8,'2026-10-19','16:25:16',4,2,1,1);
 /*!40000 ALTER TABLE `compra` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -105,9 +106,11 @@ CREATE TABLE `empleado` (
   `tipo` varchar(45) NOT NULL,
   `activo` tinyint NOT NULL DEFAULT '1',
   `telefono` varchar(45) DEFAULT NULL,
+  `token_recuperacion` varchar(10) DEFAULT NULL,
+  `token_expiracion` datetime DEFAULT NULL,
   PRIMARY KEY (`idempleado`),
   UNIQUE KEY `nombre_usuario_UNIQUE` (`nombre_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -116,7 +119,7 @@ CREATE TABLE `empleado` (
 
 LOCK TABLES `empleado` WRITE;
 /*!40000 ALTER TABLE `empleado` DISABLE KEYS */;
-INSERT INTO `empleado` VALUES (1,'luci',NULL,'scrypt:32768:8:1$Y581GpTivPk2Nl65$91774a5ce183ee281de80ac66027b8bc26c9dc2feeff3b9208a1044c22d5cea21d08c1c2350903e577c02917527af824293a037624cfcad6bfcc5987160ac3ff','AD',1,NULL),(2,'diego','','scrypt:32768:8:1$5O8LCieIyNnwFAYV$d0277a7a81cbca62cb495b2c3c1c267b8dbd874faa9599b89a1b2adf88a36d6ee234e2cf7ca8ac4cbff432e73a6743926d99a38cafe54ed62f67a2d020af72e3','AD',1,''),(3,'l','','scrypt:32768:8:1$c8ygL5NBm2kt942C$14641527bf15f0f653a10f8934687bdb8ace5ec0c7b14f48fa14d8fa4dfffb832b0c9f9ada8a8a73f930cbab706f465261630644a3913a9c0462be1295e50458','Empleado',0,''),(4,'e','lu@gmail.com','scrypt:32768:8:1$jQ1JUaTZq0vHtmbR$beed6db02808c59aad3826e219b7e6cb1e60ebad94db26a0e5f95c1b7b864fe1fbc6609fa2404dd77f5ce1bb04c9a62761a1aea9f18efab3d05a8a50687e80e8','Empleado',1,'3416556449'),(5,'micha04','','scrypt:32768:8:1$aoBO4MiwwGXWDtbi$6869f4c46cb57ad4d9064c13337af36d65844f77617e90a5b3c502d3cf76d54cb5da78e7c91f9be27275ba9688451c3d1f2b3cce9aff5a7fed36a33156ba7d26','AD',1,''),(6,'Pacho','','scrypt:32768:8:1$Oc8DXdcYhVz6A9ur$7137e1a56af03db117cf272d3d0f930e0750b11d4709a1a39c1b6800c10eb68d6f5a1db9e5d099c499c937a81ffa5a9361446aad59a39677f3906074b29360b2','Empleado',1,''),(7,'Lu','','scrypt:32768:8:1$afYWv5jxLJT6L1DW$4ce7412beb2d9443bc847f3ece0c405dc911c4c7146d552fd6acec4e4a320105e166f25630115c8ecbc6ef7955f6707ef9b8fe1a99a48681a39e463c2fda39cf','Empleado',1,'');
+INSERT INTO `empleado` VALUES (1,'luci',NULL,'scrypt:32768:8:1$Y581GpTivPk2Nl65$91774a5ce183ee281de80ac66027b8bc26c9dc2feeff3b9208a1044c22d5cea21d08c1c2350903e577c02917527af824293a037624cfcad6bfcc5987160ac3ff','AD',1,NULL,NULL,NULL),(2,'diego','','scrypt:32768:8:1$5O8LCieIyNnwFAYV$d0277a7a81cbca62cb495b2c3c1c267b8dbd874faa9599b89a1b2adf88a36d6ee234e2cf7ca8ac4cbff432e73a6743926d99a38cafe54ed62f67a2d020af72e3','AD',1,'',NULL,NULL),(3,'l','','scrypt:32768:8:1$c8ygL5NBm2kt942C$14641527bf15f0f653a10f8934687bdb8ace5ec0c7b14f48fa14d8fa4dfffb832b0c9f9ada8a8a73f930cbab706f465261630644a3913a9c0462be1295e50458','Empleado',0,'',NULL,NULL),(4,'e','lu@gmail.com','scrypt:32768:8:1$jQ1JUaTZq0vHtmbR$beed6db02808c59aad3826e219b7e6cb1e60ebad94db26a0e5f95c1b7b864fe1fbc6609fa2404dd77f5ce1bb04c9a62761a1aea9f18efab3d05a8a50687e80e8','Empleado',1,'3416556449','829775','2026-10-24 19:04:03'),(5,'micha04','','scrypt:32768:8:1$aoBO4MiwwGXWDtbi$6869f4c46cb57ad4d9064c13337af36d65844f77617e90a5b3c502d3cf76d54cb5da78e7c91f9be27275ba9688451c3d1f2b3cce9aff5a7fed36a33156ba7d26','AD',1,'',NULL,NULL),(6,'Pacho','','scrypt:32768:8:1$Oc8DXdcYhVz6A9ur$7137e1a56af03db117cf272d3d0f930e0750b11d4709a1a39c1b6800c10eb68d6f5a1db9e5d099c499c937a81ffa5a9361446aad59a39677f3906074b29360b2','Empleado',0,'',NULL,NULL),(7,'Lu','','scrypt:32768:8:1$afYWv5jxLJT6L1DW$4ce7412beb2d9443bc847f3ece0c405dc911c4c7146d552fd6acec4e4a320105e166f25630115c8ecbc6ef7955f6707ef9b8fe1a99a48681a39e463c2fda39cf','Empleado',1,'',NULL,NULL),(8,'lucian','luciplay1217@gmail.com','scrypt:32768:8:1$3wGI8nOO6CTAozAg$00066657613b74c13ee6ca938acb0690d1447a4e10db6888784489ec8d8143daccf1a93ebf86d8124829d94f27eb117cdd4371648db0770efa27144dec8917f2','Empleado',1,'+5493416556449',NULL,NULL);
 /*!40000 ALTER TABLE `empleado` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -145,7 +148,7 @@ CREATE TABLE `historial_pago_cliente` (
   KEY `idmetodos_pago_idx` (`idmetodos_pago`),
   CONSTRAINT `idmetodos_pago` FOREIGN KEY (`idmetodos_pago`) REFERENCES `metodos_pago` (`idmetodos_pago`),
   CONSTRAINT `idventa` FOREIGN KEY (`idventa`) REFERENCES `venta` (`idventa`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -154,7 +157,7 @@ CREATE TABLE `historial_pago_cliente` (
 
 LOCK TABLES `historial_pago_cliente` WRITE;
 /*!40000 ALTER TABLE `historial_pago_cliente` DISABLE KEYS */;
-INSERT INTO `historial_pago_cliente` VALUES (1,'2026-09-06','23:38:09',290000.00,1,NULL,NULL,NULL,NULL,NULL,5),(2,'2026-09-07','18:16:14',290000.00,1,NULL,NULL,NULL,NULL,NULL,6),(3,'2026-09-07','21:21:27',145000.00,1,NULL,NULL,NULL,NULL,NULL,7),(4,'2026-09-08','18:53:45',145000.00,1,NULL,NULL,NULL,NULL,NULL,8),(5,'2026-09-08','20:02:56',145000.00,5,NULL,NULL,NULL,NULL,NULL,9),(6,'2026-09-09','19:17:16',120000.00,2,NULL,NULL,NULL,NULL,NULL,10),(7,'2026-09-09','19:19:18',120800.00,4,NULL,NULL,NULL,NULL,NULL,11),(8,'2026-09-09','19:36:55',1600.00,1,NULL,NULL,NULL,NULL,NULL,12),(9,'2026-09-09','19:40:34',8000.00,5,NULL,NULL,NULL,NULL,NULL,13),(10,'2026-09-17','22:18:54',53600.00,2,NULL,NULL,NULL,NULL,NULL,14),(11,'2026-09-29','20:35:27',97500.00,1,NULL,NULL,NULL,NULL,NULL,15),(12,'2026-10-15','19:58:07',315000.00,1,NULL,NULL,NULL,NULL,0,16);
+INSERT INTO `historial_pago_cliente` VALUES (1,'2026-09-06','23:38:09',290000.00,1,NULL,NULL,NULL,NULL,NULL,5),(2,'2026-09-07','18:16:14',290000.00,1,NULL,NULL,NULL,NULL,NULL,6),(3,'2026-09-07','21:21:27',145000.00,1,NULL,NULL,NULL,NULL,NULL,7),(4,'2026-09-08','18:53:45',145000.00,1,NULL,NULL,NULL,NULL,NULL,8),(5,'2026-09-08','20:02:56',145000.00,5,NULL,NULL,NULL,NULL,NULL,9),(6,'2026-09-09','19:17:16',120000.00,2,NULL,NULL,NULL,NULL,NULL,10),(7,'2026-09-09','19:19:18',120800.00,4,NULL,NULL,NULL,NULL,NULL,11),(8,'2026-09-09','19:36:55',1600.00,1,NULL,NULL,NULL,NULL,NULL,12),(9,'2026-09-09','19:40:34',8000.00,5,NULL,NULL,NULL,NULL,NULL,13),(10,'2026-09-17','22:18:54',53600.00,2,NULL,NULL,NULL,NULL,NULL,14),(11,'2026-09-29','20:35:27',97500.00,1,NULL,NULL,NULL,NULL,NULL,15),(12,'2026-10-15','19:58:07',315000.00,1,NULL,NULL,NULL,NULL,0,16),(13,'2026-10-19','19:23:56',17000.00,3,NULL,NULL,NULL,NULL,0,17);
 /*!40000 ALTER TABLE `historial_pago_cliente` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -175,7 +178,7 @@ CREATE TABLE `item_compra` (
   KEY `fk_productos_has_compras_compras1_idx` (`idcompra`),
   KEY `fk_productos_has_compras_productos_idx` (`idproducto`),
   CONSTRAINT `fk_item_compra_producto` FOREIGN KEY (`idproducto`) REFERENCES `producto` (`idproducto`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -184,7 +187,7 @@ CREATE TABLE `item_compra` (
 
 LOCK TABLES `item_compra` WRITE;
 /*!40000 ALTER TABLE `item_compra` DISABLE KEYS */;
-INSERT INTO `item_compra` VALUES (1,1,1,2,2),(2,28,7,5,1);
+INSERT INTO `item_compra` VALUES (1,1,1,2,2),(2,28,7,5,1),(3,21,8,1,1),(4,1,8,1,1),(5,5,8,1,0),(6,6,8,1,0);
 /*!40000 ALTER TABLE `item_compra` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -208,7 +211,7 @@ CREATE TABLE `item_venta` (
   KEY `fk_item_venta_servicio` (`idservicio`),
   CONSTRAINT `fk_item_venta_producto` FOREIGN KEY (`idproducto`) REFERENCES `producto` (`idproducto`),
   CONSTRAINT `fk_item_venta_servicio` FOREIGN KEY (`idservicio`) REFERENCES `servicio` (`idservicio`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -217,7 +220,7 @@ CREATE TABLE `item_venta` (
 
 LOCK TABLES `item_venta` WRITE;
 /*!40000 ALTER TABLE `item_venta` DISABLE KEYS */;
-INSERT INTO `item_venta` VALUES (1,1,NULL,145000.00,1,1),(2,1,NULL,145000.00,1,2),(3,1,NULL,145000.00,5,3),(4,1,NULL,145000.00,2,4),(5,1,NULL,145000.00,2,5),(6,1,NULL,145000.00,2,6),(7,1,NULL,145000.00,1,7),(8,1,NULL,145000.00,1,8),(9,1,NULL,145000.00,1,9),(10,11,NULL,800.00,2,10),(11,10,NULL,8200.00,2,10),(12,7,NULL,1500.00,2,10),(13,5,NULL,35000.00,2,10),(14,6,NULL,14500.00,2,10),(15,2,NULL,85000.00,1,11),(16,5,NULL,35000.00,1,11),(17,11,NULL,800.00,1,11),(18,11,NULL,800.00,2,12),(19,11,NULL,800.00,10,13),(20,6,NULL,14500.00,2,14),(21,10,NULL,8200.00,3,14),(22,3,NULL,12500.00,1,15),(23,2,NULL,85000.00,1,15),(24,1,NULL,145000.00,1,16),(25,2,NULL,85000.00,2,16);
+INSERT INTO `item_venta` VALUES (1,1,NULL,145000.00,1,1),(2,1,NULL,145000.00,1,2),(3,1,NULL,145000.00,5,3),(4,1,NULL,145000.00,2,4),(5,1,NULL,145000.00,2,5),(6,1,NULL,145000.00,2,6),(7,1,NULL,145000.00,1,7),(8,1,NULL,145000.00,1,8),(9,1,NULL,145000.00,1,9),(10,11,NULL,800.00,2,10),(11,10,NULL,8200.00,2,10),(12,7,NULL,1500.00,2,10),(13,5,NULL,35000.00,2,10),(14,6,NULL,14500.00,2,10),(15,2,NULL,85000.00,1,11),(16,5,NULL,35000.00,1,11),(17,11,NULL,800.00,1,11),(18,11,NULL,800.00,2,12),(19,11,NULL,800.00,10,13),(20,6,NULL,14500.00,2,14),(21,10,NULL,8200.00,3,14),(22,3,NULL,12500.00,1,15),(23,2,NULL,85000.00,1,15),(24,1,NULL,145000.00,1,16),(25,2,NULL,85000.00,2,16),(26,12,NULL,22000.00,1,17),(27,3,NULL,12500.00,2,17),(28,2,NULL,85000.00,2,17);
 /*!40000 ALTER TABLE `item_venta` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -277,7 +280,7 @@ CREATE TABLE `producto` (
 
 LOCK TABLES `producto` WRITE;
 /*!40000 ALTER TABLE `producto` DISABLE KEYS */;
-INSERT INTO `producto` VALUES (1,'Neumático Michelin 205/55 R16',1,'Michelin','205/55 R16','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980629/Neumatico_Michelin.jpg',1,24,5,145000.00),(2,'Llanta Aleación',2,'EB Wheels','15 pulgadas','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980629/llanta_aleacion.jpg',1,10,4,85000.00),(3,'Kit Reparación Neumáticos',3,'Slime','Universal','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980628/kit_reparacion_neumaticos.jpg',1,24,5,12500.00),(4,'Manómetro Digital',4,'Bremen','0-150 PSI','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980627/manometro.jpg',1,15,3,18000.00),(5,'Compresor Aire Portátil 12V',4,'Lüsqtoff','12V / 150 PSI','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980626/compresor_aire_portatil_12v.jpg',1,8,2,35000.00),(6,'Llave de Cruz para Ruedas',4,'Bremen','17-19-21-23 mm','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980626/llave_cruz_ruedas.jpg',1,8,2,14500.00),(7,'Picos Rueda Sin Cámara',3,'Generic','TR414','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980626/picos_para_ruedas_sin_camaras.jpg',1,100,20,1500.00),(8,'Gato Hidráulico Carrito',4,'Bremen','2 Toneladas','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980624/gato_hidraulico_carrito.jpg',1,5,1,65000.00),(9,'Cámara de Aire Neumático',5,'Horng Chern','175/70 R13','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980624/camara_aire_para_neumaticos.jpg',1,30,8,9500.00),(10,'Aerosol Sellador Inflador',3,'Bardahl','450 ml','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980623/aerosol_sellador_e_inflador_neumaticos.jpg',1,37,10,8200.00),(11,'Contrapesas Adhesivas',3,'Vulcan','Tira 60g (5g/10g)','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980623/contrapesas_adhesivas_para_balanceo_ruedas.jpg',1,10,50,800.00),(12,'Pasta para Montaje de Neumáticos',3,'Slime','4 kg',NULL,1,15,3,22000.00),(15,'Llanta',2,'EB Wheels','15 pulgadas','',1,12,4,85000.00),(16,'Kit Reparación',3,'Slime','Universal','',1,25,5,12500.00),(17,'Manómetro',4,'Bremen','0-150 PSI','',1,15,3,18000.00),(18,'Compresor',4,'Lüsqtoff','12V / 150 PSI','',1,8,2,35000.00),(19,'Llave',4,'Bremen','17-19-21-23 mm','',1,10,2,14500.00),(20,'Picos Rueda',3,'Generic','TR414','',1,100,20,1500.00),(21,'Gato',4,'Bremen','2 Toneladas','',1,5,1,65000.00),(22,'Cámara',5,'Horng Chern','175/70 R13','',1,30,8,9500.00),(23,'Aerosol',3,'Bardahl','450 ml','',1,40,10,8200.00),(24,'Contrapesas',3,'Vulcan','Tira 60g (5g/10g)','',1,200,50,800.00),(28,'Moño',6,'','20','https://res.cloudinary.com/jmzlqhiv/image/upload/v1792009840/gomeria/nwqrnuhc1fwxrzesc21u.jpg',1,10,20,1500000.00),(29,'NS',7,'','','https://res.cloudinary.com/jmzlqhiv/image/upload/v1792009840/gomeria/nwqrnuhc1fwxrzesc21u.jpg',1,20,100,15.00);
+INSERT INTO `producto` VALUES (1,'Neumático Michelin 205/55 R16',1,'Michelin','205/55 R16','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980629/Neumatico_Michelin.jpg',1,25,5,145000.00),(2,'Llanta Aleación',2,'EB Wheels','15 pulgadas','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980629/llanta_aleacion.jpg',1,8,4,85000.00),(3,'Kit Reparación Neumáticos',3,'Slime','Universal','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980628/kit_reparacion_neumaticos.jpg',1,22,5,12500.00),(4,'Manómetro Digital',4,'Bremen','0-150 PSI','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980627/manometro.jpg',1,15,3,18000.00),(5,'Compresor Aire Portátil 12V',4,'Lüsqtoff','12V / 150 PSI','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980626/compresor_aire_portatil_12v.jpg',1,8,2,35000.00),(6,'Llave de Cruz para Ruedas',4,'Bremen','17-19-21-23 mm','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980626/llave_cruz_ruedas.jpg',1,8,2,14500.00),(7,'Picos Rueda Sin Cámara',3,'Generic','TR414','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980626/picos_para_ruedas_sin_camaras.jpg',1,100,20,1500.00),(8,'Gato Hidráulico Carrito',4,'Bremen','2 Toneladas','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980624/gato_hidraulico_carrito.jpg',1,5,1,65000.00),(9,'Cámara de Aire Neumático',5,'Horng Chern','175/70 R13','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980624/camara_aire_para_neumaticos.jpg',1,30,8,9500.00),(10,'Aerosol Sellador Inflador',3,'Bardahl','450 ml','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980623/aerosol_sellador_e_inflador_neumaticos.jpg',1,37,10,8200.00),(11,'Contrapesas Adhesivas',3,'Vulcan','Tira 60g (5g/10g)','https://res.cloudinary.com/jmzlqhiv/image/upload/v1788980623/contrapesas_adhesivas_para_balanceo_ruedas.jpg',1,10,50,800.00),(12,'Pasta para Montaje de Neumáticos',3,'Slime','4 kg',NULL,1,14,3,22000.00),(15,'Llanta',2,'EB Wheels','15 pulgadas','',1,12,4,85000.00),(16,'Kit Reparación',3,'Slime','Universal','',1,25,5,12500.00),(17,'Manómetro',4,'Bremen','0-150 PSI','',1,15,3,18000.00),(18,'Compresor',4,'Lüsqtoff','12V / 150 PSI','',1,8,2,35000.00),(19,'Llave',4,'Bremen','17-19-21-23 mm','',1,10,2,14500.00),(20,'Picos Rueda',3,'Generic','TR414','',1,100,20,1500.00),(21,'Gato',4,'Bremen','2 Toneladas','',1,6,1,65000.00),(22,'Cámara',5,'Horng Chern','175/70 R13','',1,30,8,9500.00),(23,'Aerosol',3,'Bardahl','450 ml','',1,40,10,8200.00),(24,'Contrapesas',3,'Vulcan','Tira 60g (5g/10g)','',1,200,50,800.00),(28,'Moño',6,'','20','https://res.cloudinary.com/jmzlqhiv/image/upload/v1792009840/gomeria/nwqrnuhc1fwxrzesc21u.jpg',1,10,20,1500000.00),(29,'NS',7,'','','https://res.cloudinary.com/jmzlqhiv/image/upload/v1792009840/gomeria/nwqrnuhc1fwxrzesc21u.jpg',1,20,100,15.00);
 /*!40000 ALTER TABLE `producto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -395,7 +398,7 @@ CREATE TABLE `venta` (
   KEY `idx_cliente` (`idcliente`),
   CONSTRAINT `fk_ventas_clientes1` FOREIGN KEY (`idcliente`) REFERENCES `cliente` (`idcliente`),
   CONSTRAINT `fk_ventas_empleados1` FOREIGN KEY (`idempleado`) REFERENCES `empleado` (`idempleado`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -404,7 +407,7 @@ CREATE TABLE `venta` (
 
 LOCK TABLES `venta` WRITE;
 /*!40000 ALTER TABLE `venta` DISABLE KEYS */;
-INSERT INTO `venta` VALUES (1,1,'2026-09-01 21:59:02',0.00,21,1,145000.00,NULL,1,1,1),(2,1,'2026-09-06 19:05:07',0.00,21,1,145000.00,NULL,1,1,1),(3,1,'2026-09-06 19:13:17',0.00,21,5,725000.00,NULL,1,1,1),(4,1,'2026-09-06 22:05:33',50002.00,21,2,239998.00,NULL,1,1,1),(5,1,'2026-09-06 23:38:08',0.00,21,2,290000.00,1,1,1,1),(6,1,'2026-09-07 18:16:14',0.00,21,2,290000.00,1,1,1,1),(7,1,'2026-09-07 21:21:26',0.00,21,1,145000.00,1,1,1,1),(8,1,'2026-09-08 18:53:44',0.00,21,1,145000.00,1,1,1,1),(9,1,'2026-09-08 20:02:56',0.00,21,1,145000.00,1,1,1,1),(10,1,'2026-09-09 19:17:13',0.00,21,10,120000.00,2,2,1,1),(11,1,'2026-09-09 19:19:16',0.00,21,3,120800.00,1,2,1,1),(12,1,'2026-09-09 19:36:54',0.00,21,2,1600.00,2,1,1,1),(13,1,'2026-09-09 19:40:34',0.00,21,10,8000.00,1,1,1,1),(14,1,'2026-09-17 22:18:54',0.00,21,5,53600.00,1,1,1,1),(15,1,'2026-09-29 20:35:27',0.00,21,2,97500.00,2,1,1,1),(16,1,'2026-10-15 19:58:06',0.00,21,3,315000.00,1,7,0,1);
+INSERT INTO `venta` VALUES (1,1,'2026-09-01 21:59:02',0.00,21,1,145000.00,NULL,1,1,1),(2,1,'2026-09-06 19:05:07',0.00,21,1,145000.00,NULL,1,1,1),(3,1,'2026-09-06 19:13:17',0.00,21,5,725000.00,NULL,1,1,1),(4,1,'2026-09-06 22:05:33',50002.00,21,2,239998.00,NULL,1,1,1),(5,1,'2026-09-06 23:38:08',0.00,21,2,290000.00,1,1,1,1),(6,1,'2026-09-07 18:16:14',0.00,21,2,290000.00,1,1,1,1),(7,1,'2026-09-07 21:21:26',0.00,21,1,145000.00,1,1,1,1),(8,1,'2026-09-08 18:53:44',0.00,21,1,145000.00,1,1,1,1),(9,1,'2026-09-08 20:02:56',0.00,21,1,145000.00,1,1,1,1),(10,1,'2026-09-09 19:17:13',0.00,21,10,120000.00,2,2,1,1),(11,1,'2026-09-09 19:19:16',0.00,21,3,120800.00,1,2,1,1),(12,1,'2026-09-09 19:36:54',0.00,21,2,1600.00,2,1,1,1),(13,1,'2026-09-09 19:40:34',0.00,21,10,8000.00,1,1,1,1),(14,1,'2026-09-17 22:18:54',0.00,21,5,53600.00,1,1,1,1),(15,1,'2026-09-29 20:35:27',0.00,21,2,97500.00,2,1,1,1),(16,1,'2026-10-15 19:58:06',0.00,21,3,315000.00,1,7,0,1),(17,1,'2026-10-19 19:23:55',200000.00,21,5,17000.00,10,1,1,1);
 /*!40000 ALTER TABLE `venta` ENABLE KEYS */;
 UNLOCK TABLES;
 SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
@@ -418,4 +421,4 @@ SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-16 19:32:46
+-- Dump completed on 2026-11-27 17:41:57

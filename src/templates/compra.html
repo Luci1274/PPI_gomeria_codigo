@@ -64,12 +64,13 @@
 
 {% block cabecera_tabla %}
 <tr>
-    <th>N° Orden</th>
-    <th>Fecha</th>
-    <th>Proveedor</th>
+    <th class="texto-derecha">N° Orden</th>
+    <th class="texto-izquierda">Fecha</th>
+    <th class="texto-izquierda">Proveedor</th>
     <th>Tipos Producto</th>
-    <th>Total Productos</th>
+    <th class="texto-derecha">Total Productos</th>
     <th>Estado</th>
+    <th>Entrega</th>
     <th>Acciones</th>
 </tr>
 {% endblock %}
@@ -114,8 +115,8 @@
                         <tr>
                             <th>Producto</th>
                             <th>Tipo</th>
-                            <th>Cantidad Pedida</th>
-                            <th>Cantidad Recibida</th>
+                            <th class="texto-derecha">Cantidad Pedida</th>
+                            <th class="texto-derecha">Cantidad Recibida</th>
                         </tr>
                     </thead>
                     <tbody id="modal-tabla-body"></tbody>

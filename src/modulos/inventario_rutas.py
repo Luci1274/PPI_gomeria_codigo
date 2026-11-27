@@ -279,3 +279,21 @@ def desactivar_producto(id):
         "exito": False,
         "mensaje": "No se pudo desactivar el producto indicado."
             }), 400
+
+
+@inventario_bp.route("/api/inventario/<int:id>/activar", methods=["POST"])
+def activar_producto(id):
+    tipo_item = request.args.get("tipo_item", "producto")
+    if tipo_item not in {"producto", "servicio"}:
+        return jsonify({"exito": False, "mensaje": "Tipo de artículo inválido."}), 400
+
+    exito = Producto.activar_producto(id, tipo_item)
+    if exito:
+        return jsonify({
+            "exito": True,
+            "mensaje": f"El {tipo_item} #{id} fue reactivado."
+        }), 200
+    return jsonify({
+        "exito": False,
+        "mensaje": f"No se pudo reactivar el {tipo_item} indicado."
+    }), 400

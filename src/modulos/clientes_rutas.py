@@ -137,3 +137,19 @@ def desactivar_cliente(id):
         "exito": False,
         "mensaje": "No se pudo desactivar al cliente indicado."
     }), 400
+
+
+@clientes_bp.route("/api/clientes/<int:id>/activar", methods=["POST"])
+def activar_cliente(id):
+    exito = Cliente.activar_cliente(id)
+
+    if exito:
+        return jsonify({
+            "exito": True,
+            "mensaje": f"El cliente #{id} fue reactivado."
+        }), 200
+
+    return jsonify({
+        "exito": False,
+        "mensaje": "No se pudo reactivar al cliente indicado."
+    }), 400

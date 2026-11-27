@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Error al cargar productos:', error);
-            tablaBody.innerHTML = `<tr><td colspan="8" class="texto-centro">Error de conexión al cargar datos.</td></tr>`;
+            tablaBody.innerHTML = `<tr><td colspan="9" class="texto-centro">Error de conexión al cargar datos.</td></tr>`;
         }
     }
 
@@ -184,19 +184,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!productos || productos.length === 0) {
             tablaBody.innerHTML = `
                 <tr>
-                    <td colspan="8" class="texto-centro">No se encontraron productos en el inventario.</td>
+                    <td colspan="9" class="texto-centro">No se encontraron productos en el inventario.</td>
                 </tr>`;
             return;
         }
 
         productos.forEach(prod => {
             const tr = document.createElement('tr');
-            if (prod.activo === 0 || prod.activo === '0' || prod.activo === false) {
+            const esActivo = Number(prod.activo) === 1;
+            if (!esActivo) {
                 tr.classList.add('desactivado');
             }
             
-            const esActivo = prod.activo === undefined
-                || ![0, '0', false].includes(prod.activo);
             const precioFormateado = prod.precio !== undefined && prod.precio !== null 
                 ? `$${parseFloat(prod.precio).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
                 : '-';
@@ -209,20 +208,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 td.textContent = contenido;
                 return td;
             };
-            tr.appendChild(crearCelda(prod.idproducto_servicio));
+            tr.appendChild(crearCelda(prod.idproducto_servicio, 'texto-derecha'));
 
             const celdaNombre = document.createElement('td');
+            celdaNombre.classList.add('texto-izquierda');
             const nombre = document.createElement('strong');
             nombre.textContent = prod.nombre || '-';
             celdaNombre.appendChild(nombre);
-            if (prod.medidas) {
-                celdaNombre.appendChild(document.createElement('br'));
-                const medidas = document.createElement('small');
-                medidas.style.color = '#666';
-                medidas.textContent = prod.medidas;
-                celdaNombre.appendChild(medidas);
-            }
+
+            const celdaMedidas = document.createElement('td');
+            celdaMedidas.textContent = prod.medidas || '-';
             tr.appendChild(celdaNombre);
+            tr.appendChild(celdaMedidas);
 
             const celdaTipo = document.createElement('td');
             celdaTipo.append(document.createTextNode(prod.tipo || '-'), ' ');
@@ -234,8 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.appendChild(crearCelda(precioFormateado, 'texto-derecha'));
             const stock = document.createElement('strong');
             stock.textContent = esServicio ? 'No aplica' : `${prod.cantidad_actual ?? 0} u.`;
-            const celdaStock = crearCelda('');
-            celdaStock.classList.add('texto-centro');
+            const celdaStock = crearCelda('', 'texto-derecha');
             celdaStock.appendChild(stock);
             tr.appendChild(celdaStock);
 
@@ -249,19 +245,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const acciones = document.createElement('div');
             acciones.className = 'botones-accion';
-            const btnEditar = document.createElement('button');
-            btnEditar.className = 'btn-accion btn-editar';
-            btnEditar.dataset.id = prod.idproducto_servicio;
-            btnEditar.dataset.tipoItem = tipoItem;
-            btnEditar.title = 'Editar';
-            btnEditar.textContent = 'Modificar';
-            const btnEliminar = document.createElement('button');
-            btnEliminar.className = 'btn-accion borrar btn-eliminar';
-            btnEliminar.dataset.id = prod.idproducto_servicio;
-            btnEliminar.dataset.tipoItem = tipoItem;
-            btnEliminar.title = 'Eliminar';
-            btnEliminar.textContent = 'Eliminar';
-            acciones.append(btnEditar, btnEliminar);
+            if (esActivo) {
+                const btnEditar = document.createElement('button');
+                btnEditar.className = 'btn-accion btn-editar';
+                btnEditar.dataset.id = prod.idproducto_servicio;
+                btnEditar.dataset.tipoItem = tipoItem;
+                btnEditar.title = 'Editar';
+                btnEditar.textContent = 'Modificar';
+                acciones.appendChild(btnEditar);
+            }
+            const btnEstado = document.createElement('button');
+            btnEstado.className = esActivo
+                ? 'btn-accion borrar btn-eliminar'
+                : 'btn-accion btn-activar';
+            btnEstado.dataset.id = prod.idproducto_servicio;
+            btnEstado.dataset.tipoItem = tipoItem;
+            btnEstado.title = esActivo ? 'Eliminar' : 'Reactivar';
+            btnEstado.textContent = esActivo ? 'Eliminar' : 'Reactivar';
+            acciones.appendChild(btnEstado);
             const celdaAcciones = crearCelda('');
             celdaAcciones.classList.add('texto-centro');
             celdaAcciones.appendChild(acciones);
@@ -289,10 +290,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function activarProducto(id, tipoItem) {
+        try {
+            const params = new URLSearchParams({ tipo_item: tipoItem });
+            const respuesta = await fetch(`/api/inventario/${id}/activar?${params}`, {
+                method: 'POST'
+            });
+            const data = await respuesta.json();
+
+            if (respuesta.ok && data.exito) {
+                mostrarNotificacion('Artículo reactivado', data.mensaje || 'El artículo fue reactivado correctamente.');
+                cargarProductos();
+            } else {
+                mostrarNotificacion('Error', data.mensaje || 'Error al reactivar el artículo.');
+            }
+        } catch (error) {
+            console.error('Error al reactivar artículo:', error);
+            mostrarNotificacion('Error de conexión', 'Ocurrió un error al intentar reactivar el artículo.');
+        }
+    }
+
     // Delegación de eventos en la tabla
     tablaBody.addEventListener('click', async (e) => {
         const btnEliminar = e.target.closest('.btn-eliminar');
         const btnEditar = e.target.closest('.btn-editar');
+        const btnActivar = e.target.closest('.btn-activar');
 
         if (btnEliminar) {
             const id = btnEliminar.dataset.id;
@@ -315,6 +337,10 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 abrirModalEditarProducto(id);
             }
+        }
+
+        if (btnActivar) {
+            activarProducto(btnActivar.dataset.id, btnActivar.dataset.tipoItem);
         }
     });
 

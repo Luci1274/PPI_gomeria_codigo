@@ -245,16 +245,37 @@ class Usuario:
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
-                sql = "UPDATE empleado SET activo = 0 WHERE idempleado = %s"
+                sql = "UPDATE empleado SET activo = 0 WHERE idempleado = %s AND activo = 1"
                 cursor.execute(sql, (id_empleado,))
+                actualizado = cursor.rowcount > 0
                 conexion.commit()
-                return True
+                return actualizado
 
         except pymysql.MySQLError as e:
             conexion.rollback()
             print(f"Error al desactivar empleado: {e}")
             return False
 
+        finally:
+            conexion.close()
+
+    @staticmethod
+    def activar_empleado(id_empleado):
+        """Reactiva un empleado que fue dado de baja lógicamente."""
+        conexion = Config.conectar_db()
+        try:
+            with conexion.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE empleado SET activo = 1 WHERE idempleado = %s AND activo = 0",
+                    (id_empleado,),
+                )
+                actualizado = cursor.rowcount > 0
+                conexion.commit()
+                return actualizado
+        except pymysql.MySQLError as e:
+            conexion.rollback()
+            print(f"Error al reactivar empleado: {e}")
+            return False
         finally:
             conexion.close()
             

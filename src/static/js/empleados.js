@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tablaBody = document.getElementById('tabla-empleados-body');
     const valorMetrica = document.getElementById('valor_metrica');
     const inputBusqueda = document.getElementById('input-busqueda');
+    const filtroEstado = document.getElementById('filtro-estado');
 
     // Paginación
     const btnAnterior = document.getElementById('btn-pag-anterior');
@@ -94,7 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const params = new URLSearchParams({
                 pagina: paginaActual,
-                buscar: inputBusqueda.value.trim()
+                buscar: inputBusqueda.value.trim(),
+                activo: filtroEstado.value === 'todos' ? '' : filtroEstado.value
             });
 
             const respuesta = await fetch(`/api/empleados?${params.toString()}`);
@@ -113,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Error al cargar empleados:', error);
-            tablaBody.innerHTML = `<tr><td colspan="5" class="texto-centro">Error de conexión al cargar datos.</td></tr>`;
+            tablaBody.innerHTML = `<tr><td colspan="6" class="texto-centro">Error de conexión al cargar datos.</td></tr>`;
         }
     }
 
@@ -129,27 +131,31 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!empleados || empleados.length === 0) {
             tablaBody.innerHTML = `
                 <tr>
-                    <td colspan="5" class="texto-centro">No se encontraron empleados.</td>
+                    <td colspan="6" class="texto-centro">No se encontraron empleados.</td>
                 </tr>`;
             return;
         }
 
         empleados.forEach(emp => {
             const tr = document.createElement('tr');
-            if (emp.activo === 0 || emp.activo === '0' || emp.activo === false) {
+            const esActivo = Number(emp.activo) === 1;
+            if (!esActivo) {
                 tr.classList.add('desactivado');
             }
             const idEmp = emp.idempleado || emp.id;
 
             tr.innerHTML = `
-                <td><strong>${emp.nombre || '-'}</strong></td>
+                <td class="texto-izquierda"><strong>${emp.nombre || '-'}</strong></td>
                 <td><a href="mailto:${emp.email || '-'}" target="_blank">${emp.email || '-'}</a></td>
-                <td><a href="https://wa.me/${emp.telefono || '-'}" target="_blank">${emp.telefono || '-'}</a></td>
+                <td class="texto-derecha"><a href="https://wa.me/${emp.telefono || '-'}" target="_blank">${emp.telefono || '-'}</a></td>
                 <td>${emp.rol || '-'}</td>
+                <td><span class="estado-badge ${esActivo ? 'activo' : 'inactivo'}">${esActivo ? 'Activo' : 'No Activo'}</span></td>
                 <td>
                     <div class="btn-acciones">
-                        <button class="btn-accion btn-editar" data-id="${idEmp}">Modificar</button>
-                        <button class="btn-accion borrar btn-eliminar" data-id="${idEmp}">Eliminar</button>
+                        ${esActivo
+                            ? `<button class="btn-accion btn-editar" data-id="${idEmp}">Modificar</button>
+                               <button class="btn-accion borrar btn-eliminar" data-id="${idEmp}">Eliminar</button>`
+                            : `<button class="btn-accion btn-activar" data-id="${idEmp}">Reactivar</button>`}
                     </div>
                 </td>
             `;
@@ -163,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tablaBody.addEventListener('click', async (e) => {
         const btnEliminar = e.target.closest('.btn-eliminar');
         const btnEditar = e.target.closest('.btn-editar');
+        const btnActivar = e.target.closest('.btn-activar');
 
         if (btnEliminar) {
             const id = btnEliminar.dataset.id;
@@ -180,6 +187,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const id = btnEditar.dataset.id;
             abrirModalEditar(id);
         }
+
+        if (btnActivar) {
+            activarEmpleado(btnActivar.dataset.id);
+        }
     });
 
     async function desactivarEmpleado(id) {
@@ -196,6 +207,23 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error al desactivar empleado:', error);
             mostrarNotificacion('Error de red', 'Ocurrió un error al intentar desactivar el empleado.');
+        }
+    }
+
+    async function activarEmpleado(id) {
+        try {
+            const respuesta = await fetch(`/api/empleados/${id}/activar`, { method: 'POST' });
+            const data = await respuesta.json();
+
+            if (respuesta.ok && data.exito) {
+                mostrarNotificacion('Empleado reactivado', data.mensaje || 'El empleado fue reactivado correctamente.');
+                cargarEmpleados();
+            } else {
+                mostrarNotificacion('Error', data.mensaje || 'Error al reactivar empleado.');
+            }
+        } catch (error) {
+            console.error('Error al reactivar empleado:', error);
+            mostrarNotificacion('Error de red', 'Ocurrió un error al intentar reactivar al empleado.');
         }
     }
 
@@ -284,6 +312,11 @@ document.addEventListener('DOMContentLoaded', () => {
             paginaActual = 1;
             cargarEmpleados();
         }, 300);
+    });
+
+    filtroEstado.addEventListener('change', () => {
+        paginaActual = 1;
+        cargarEmpleados();
     });
 
     if (btnAnterior) {

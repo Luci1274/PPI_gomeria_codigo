@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tablaBody = document.getElementById('tabla-ventas-body');
     const inputBusqueda = document.getElementById('input-busqueda');
     const selectFiltroFecha = document.getElementById('select-filtro-fecha');
+    const selectFiltroEstado = document.getElementById('select-filtro-estado');
     const metricaTotalVentas = document.getElementById('metrica-total-ventas');
     const metricaTotalProductos = document.getElementById('metrica-total-productos');
     const contenedorPaginacion = document.getElementById('contenedor-paginacion');
@@ -116,12 +117,18 @@ document.addEventListener('DOMContentLoaded', () => {
     async function cargarVentas() {
         const busqueda = inputBusqueda?.value.trim() || '';
         const filtroFecha = selectFiltroFecha?.value || 'todos';
+        const estado = selectFiltroEstado?.value || '1';
         const solicitud = ++solicitudActual;
 
-        const url = `/api/ventas?busqueda=${encodeURIComponent(busqueda)}&filtro_fecha=${filtroFecha}&pagina=${paginaActual}`;
+        const parametros = new URLSearchParams({
+            busqueda,
+            filtro_fecha: filtroFecha,
+            estado,
+            pagina: paginaActual
+        });
 
         try {
-            const response = await fetch(url);
+            const response = await fetch(`/api/ventas?${parametros.toString()}`);
             const data = await response.json();
 
             if (solicitud !== solicitudActual) return;
@@ -152,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Error al cargar ventas:", error);
             if (contenedorPaginacion) contenedorPaginacion.replaceChildren();
             if (tablaBody) {
-                tablaBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Error al cargar los datos</td></tr>`;
+                tablaBody.innerHTML = `<tr><td colspan="7" style="text-align:center;">Error al cargar los datos</td></tr>`;
             }
             mostrarNotificacion("Error", "No se pudieron obtener las ventas del servidor.", 4000);
         }
@@ -164,22 +171,25 @@ document.addEventListener('DOMContentLoaded', () => {
         tablaBody.innerHTML = '';
 
         if (ventas.length === 0) {
-            tablaBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No se encontraron registros</td></tr>`;
+            tablaBody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No se encontraron registros</td></tr>`;
             return;
         }
 
         ventas.forEach(v => {
             const tr = document.createElement('tr');
+            const estaActiva = Number(v.activa) === 1;
+            if (!estaActiva) tr.classList.add('desactivado');
             tr.innerHTML = `
-                <td>#${v.idventa}</td>
-                <td>${v.fecha}</td>
-                <td>${v.cliente}</td>
-                <td>${v.cantidad_total_productos} productos</td>
-                <td>$${Number(v.precio_total).toLocaleString()}</td>
+                <td class="texto-derecha">#${v.idventa}</td>
+                <td class="texto-izquierda">${v.fecha}</td>
+                <td class="texto-izquierda">${v.cliente}</td>
+                <td class="texto-derecha">${v.cantidad_total_productos} productos</td>
+                <td class="texto-derecha">$${Number(v.precio_total).toLocaleString()}</td>
+                <td><span class="badge ${estaActiva ? 'activo' : 'inactivo'}">${estaActiva ? 'Activa' : 'Anulada'}</span></td>
                 <td>
                     <div class="btn-acciones">
                         <button class="btn-accion resumen" data-id="${v.idventa}">Ver resumen</button>
-                        <button class="btn-accion eliminar" data-id="${v.idventa}">Eliminar</button>
+                        ${estaActiva ? `<button class="btn-accion eliminar" data-id="${v.idventa}">Anular</button>` : ''}
                     </div>
                 </td>
             `;
@@ -312,14 +322,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             : '-';
 
                         tr.innerHTML = `
-                            <td>
+                            <td class="texto-izquierda">
                                 <div class="producto-resumen">
                                     <img class="producto-resumen-imagen" src="${item.imagen_producto}" alt="${item.producto_nombre}">
                                     <span class="producto-resumen-nombre">${item.producto_nombre}</span>
                                 </div>
                             </td>
-                            <td>${item.cantidad}</td>
-                            <td>${precioUnitario}</td>
+                            <td class="texto-derecha">${item.cantidad}</td>
+                            <td class="texto-derecha">${precioUnitario}</td>
                         `;
                         modalTablaBody.appendChild(tr);
                     });
@@ -517,6 +527,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     selectFiltroFecha?.addEventListener('change', () => {
+        paginaActual = 1;
+        cargarVentas();
+    });
+
+    selectFiltroEstado?.addEventListener('change', () => {
         paginaActual = 1;
         cargarVentas();
     });

@@ -91,10 +91,10 @@ El método `Usuario.existe_usuario` comprueba el nombre sin filtrar por estado, 
 
 - el total de empleados que coinciden con la consulta;
 - búsqueda por nombre de usuario, correo o teléfono;
-- una tabla con nombre, correo, teléfono, rol y acciones;
+- búsqueda, filtro por estado y una tabla con nombre, correo, teléfono, rol, estado y acciones;
 - paginación de diez registros;
 - un modal para modificar los datos;
-- confirmación y notificación al desactivar un empleado.
+- confirmación y notificación al desactivar un empleado; las filas inactivas se resaltan en rojo, ocultan la opción de eliminar y ofrecen reactivación.
 
 La búsqueda espera 300 ms desde la última modificación del texto antes de consultar la API. No hay un formulario de alta en esta pantalla: el alta disponible se realiza desde el formulario de registro de la pantalla de acceso.
 
@@ -105,10 +105,11 @@ El modal de edición también se cierra al hacer clic sobre el fondo exterior; e
 | Método y ruta | Función | Resultado |
 |---|---|---|
 | `GET /empleados` | `gestion_empleados` | Renderiza la pantalla de gestión. |
-| `GET /api/empleados` | `api_obtener_empleados` | Devuelve empleados activos, con búsqueda y paginación. |
+| `GET /api/empleados` | `api_obtener_empleados` | Devuelve empleados filtrados por estado, con búsqueda y paginación. |
 | `GET /api/empleados/<id>/editar` | `api_obtener_empleado` | Devuelve los datos de un empleado para el modal. |
 | `POST /api/empleados/<id>/editar` | `api_modificar_empleado` | Actualiza nombre, correo, teléfono y rol. |
 | `POST /api/empleados/<id>/desactivar` | `api_desactivar_empleado` | Marca el empleado como inactivo. |
+| `POST /api/empleados/<id>/activar` | `api_activar_empleado` | Reactiva un empleado inactivo. |
 
 ### `GET /api/empleados`
 
@@ -118,8 +119,9 @@ Parámetros de consulta:
 |---|---|---|
 | `pagina` | Entero, `1` | Página solicitada. |
 | `buscar` | Texto opcional | Busca coincidencias en nombre de usuario, correo o teléfono. |
+| `activo` | `1` por defecto | `1` activos, `0` inactivos o vacío para todos. |
 
-La ruta solicita diez registros por página y filtra por activos al usar el valor predeterminado de `Usuario.leer_empleados`. Una respuesta exitosa (`200`) tiene esta estructura:
+La pantalla de gestión solicita diez registros por página y muestra todos los estados inicialmente. Una respuesta exitosa (`200`) tiene esta estructura:
 
 ```json
 {
@@ -133,7 +135,7 @@ La ruta solicita diez registros por página y filtra por activos al usar el valo
 
 Cuando no hay coincidencias, `total_paginas` vale `1`. Si falla la conexión o la consulta, la ruta devuelve `500` y `exito: false`.
 
-La capa de acceso a datos también admite filtros por `rol` y `activo`, pero la ruta no los recibe ni los transmite. Tampoco incluye en su respuesta la lista de roles que obtiene el método `leer_empleados`.
+La capa de acceso a datos también admite un filtro por `rol`, que la ruta no expone. Tampoco incluye en su respuesta la lista de roles que obtiene el método `leer_empleados`.
 
 ### Consulta y modificación
 
@@ -147,7 +149,7 @@ Una modificación exitosa devuelve `200`; un error de persistencia devuelve `500
 
 La desactivación se realiza mediante `UPDATE empleado SET activo = 0`; el registro no se elimina físicamente. La ruta devuelve `200` si la operación termina sin error y `400` si falla.
 
-El listado filtra por activos de manera predeterminada, por lo que los empleados desactivados dejan de aparecer en la pantalla. No se implementa aquí una operación para reactivarlos.
+`POST /api/empleados/<id>/activar` cambia `activo` de `0` a `1`. Devuelve `200` cuando se reactiva una fila y `400` si el empleado no está inactivo o si falla la operación. El endpoint de listado conserva `activo=1` como predeterminado para clientes que no envían el filtro.
 
 ## Acceso y permisos
 
@@ -167,6 +169,7 @@ Los usuarios cuyo tipo normalizado sea `AD` o `DEV` pueden acceder a todas las r
 | `leer_empleado(id)` | Obtiene un empleado por identificador, incluyendo su estado; no excluye los inactivos. Devuelve `(empleado, True)` aunque no encuentre filas, o `(None, False)` ante un error de MySQL. |
 | `modificar_empleado(id, ...)` | Actualiza nombre, correo, teléfono y tipo; admite cambiar también la contraseña si se invoca directamente con ese argumento. |
 | `eliminar_empleado(id)` | Realiza la baja lógica actualizando `activo` a `0`. |
+| `activar_empleado(id)` | Reactiva un empleado inactivo actualizando `activo` a `1`. |
 
 Las consultas parametrizan los valores con marcadores `%s`. Los errores de las operaciones de base de datos se imprimen en la salida del servidor; las operaciones de escritura confirman la transacción si terminan correctamente y hacen rollback cuando capturan un error.
 

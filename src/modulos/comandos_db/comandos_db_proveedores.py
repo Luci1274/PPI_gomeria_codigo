@@ -138,14 +138,35 @@ class Proveedor:
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
-                sql = "UPDATE proveedor SET activo = 0 WHERE idproveedor = %s"
+                sql = "UPDATE proveedor SET activo = 0 WHERE idproveedor = %s AND activo = 1"
                 cursor.execute(sql, (id,))
+                actualizado = cursor.rowcount > 0
                 conexion.commit()
-                return True
+                return actualizado
         except pymysql.MySQLError as e:
                 conexion.rollback()
                 print(f"Error al crear proveedor: {e}")
                 return None
             
+        finally:
+            conexion.close()
+
+    @staticmethod
+    def activar_proveedor(id):
+        """Reactiva un proveedor que fue dado de baja lógicamente."""
+        conexion = Config.conectar_db()
+        try:
+            with conexion.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE proveedor SET activo = 1 WHERE idproveedor = %s AND activo = 0",
+                    (id,),
+                )
+                actualizado = cursor.rowcount > 0
+                conexion.commit()
+                return actualizado
+        except pymysql.MySQLError as e:
+            conexion.rollback()
+            print(f"Error al reactivar proveedor: {e}")
+            return False
         finally:
             conexion.close()

@@ -19,7 +19,7 @@ Las rutas pertenecen a `ventas_bp`.
 | Método y ruta | Función | Descripción |
 |---|---|---|
 | `GET /ventas` | `vista_gestion_ventas` | Renderiza la gestión de ventas. |
-| `GET /api/ventas` | `api_ventas` | Devuelve las ventas activas paginadas y las métricas del filtro. |
+| `GET /api/ventas` | `api_ventas` | Devuelve ventas paginadas y métricas, filtradas por estado cuando se solicita. |
 | `GET /venta/<id>/detalle` | `vista_detalle_venta` | Devuelve la cabecera y los ítems de una venta. |
 | `POST /api/ventas/anular/<id_venta>` | `api_anular_venta` | Anula una venta y repone el stock de sus productos. |
 | `GET /ventas/realizar` | `vista_realizar_venta` | Carga el catálogo, tipos activos, clientes y métodos de pago. |
@@ -29,7 +29,7 @@ El acceso a las rutas se controla mediante la protección de sesión y roles con
 
 ## Gestión de ventas
 
-La pantalla principal muestra el total de ventas, el total de unidades y una tabla con fecha, cliente, cantidad, precio final y acciones. Permite buscar por cliente, filtrar por fecha y paginar los resultados.
+La pantalla principal muestra el total de ventas, el total de unidades y una tabla con fecha, cliente, cantidad, precio final, estado y acciones. Permite buscar por cliente, filtrar por fecha y estado, y paginar los resultados. Las ventas anuladas se muestran en rojo y no ofrecen la opción de anular de nuevo; no existe un flujo para reactivarlas.
 
 `GET /api/ventas` acepta:
 
@@ -38,6 +38,7 @@ La pantalla principal muestra el total de ventas, el total de unidades y una tab
 | `busqueda` | Busca por nombre o apellido del cliente. |
 | `filtro_fecha` | `hoy` (predeterminado), `semana`, `mes`, `anio` o `todos`. |
 | `fecha_inicio`, `fecha_fin` | Si ambos están presentes, filtran un intervalo manual de fechas. |
+| `estado` | `1` por defecto; `1` activas, `0` anuladas o `todos` para ambos estados. |
 | `pagina` | Página solicitada; comienza en `1`. |
 | `limite` | Cantidad por página; el acceso a datos usa `20` por defecto. |
 
@@ -89,7 +90,7 @@ La clase `Venta`, en `comandos_db_venta.py`, realiza las operaciones principales
 - Cada ítem se guarda en `item_venta` con `idproducto` o `idservicio`, dejando el otro identificador nulo.
 - Solo se descuenta stock de la tabla `producto`.
 - El importe final se guarda como monto en `historial_pago_cliente`, junto al método de pago y la venta.
-- `obtener_ventas_paginadas(...)` lista ventas activas, agrega métricas y aplica los filtros solicitados.
+- `obtener_ventas_paginadas(...)` lista las ventas que coinciden con los filtros de estado y fecha, y agrega métricas.
 - `obtener_por_id(id_venta)` carga cabecera e ítems; incluye el descuento para mostrarlo en el detalle.
 - `anular(id_venta)` marca la venta inactiva y repone el stock únicamente de los productos asociados.
 

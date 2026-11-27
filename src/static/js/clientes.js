@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error al cargar clientes:', error);
             if (tablaBody) {
-                tablaBody.innerHTML = `<tr><td colspan="7" class="texto-centro">Error de conexión al cargar datos.</td></tr>`;
+                tablaBody.innerHTML = `<tr><td colspan="8" class="texto-centro">Error de conexión al cargar datos.</td></tr>`;
             }
         }
     }
@@ -179,35 +179,37 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!clientes || clientes.length === 0) {
             tablaBody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="texto-centro">No se encontraron clientes.</td>
+                    <td colspan="8" class="texto-centro">No se encontraron clientes.</td>
                 </tr>`;
             return;
         }
 
         clientes.forEach(cli => {
             const tr = document.createElement('tr');
-            if (cli.activo === 0 || cli.activo === '0' || cli.activo === false) {
+            const esActivo = Number(cli.activo) === 1;
+            if (!esActivo) {
                 tr.classList.add('desactivado');
             }
             const idCliente = cli.idcliente || cli.id_cliente || cli.id;
-            const esActivo = cli.activo === 1 || cli.activo === true || cli.activo === '1';
             const estadoHTML = `<span class="estado-badge ${esActivo ? 'activo' : 'inactivo'}">${esActivo ? 'Activo' : 'No Activo'}</span>`;
 
             // Formatear nombre completo
             const nombreCompleto = cli.apellido ? `${cli.nombre || ''} ${cli.apellido}`.trim() : (cli.nombre || '-');
 
             tr.innerHTML = `
-                <td><strong>${nombreCompleto}</strong></td>
-                <td>${cli.cuit || cli.dni || '-'}</td>
+                <td class="texto-izquierda"><strong>${nombreCompleto}</strong></td>
+                <td class="texto-derecha">${cli.cuit || cli.dni || '-'}</td>
                 <td class="texto-derecha"> <a href="https://wa.me/${cli.numero_tel || '-'}" target="_blank">${cli.numero_tel || '-'}</a> - <a href="mailto:${cli.mail || '-'}" target="_blank">${cli.mail || '-'}</a></td>
                 <td>${cli.ciudad || '-'}</td>
                 <td>${cli.direccion || '-'}</td>
-                <td>${cli.deuda || '-'}</td>
+                <td class="texto-derecha">${cli.deuda || '-'}</td>
                 <td>${estadoHTML}</td>
                 <td>
                     <div class="btn-acciones">
-                        <button class="btn-accion editar btn-editar" data-id="${idCliente}" title="Editar">Modificar</button>
-                        <button class="btn-accion eliminar btn-eliminar" data-id="${idCliente}" title="Eliminar">Eliminar</button>
+                        ${esActivo
+                            ? `<button class="btn-accion editar btn-editar" data-id="${idCliente}" title="Editar">Modificar</button>
+                               <button class="btn-accion eliminar btn-eliminar" data-id="${idCliente}" title="Eliminar">Eliminar</button>`
+                            : `<button class="btn-accion btn-activar" data-id="${idCliente}" title="Reactivar">Reactivar</button>`}
                     </div>
                 </td>
             `;
@@ -251,11 +253,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function activarCliente(id) {
+        try {
+            const respuesta = await fetch(`/api/clientes/${id}/activar`, { method: 'POST' });
+            const data = await respuesta.json();
+
+            if (respuesta.ok && data.exito) {
+                mostrarNotificacion('Cliente reactivado', data.mensaje || 'El cliente fue reactivado correctamente.');
+                cargarClientes();
+            } else {
+                mostrarNotificacion('Error', data.mensaje || 'Error al reactivar el cliente.');
+            }
+        } catch (error) {
+            console.error('Error al reactivar cliente:', error);
+            mostrarNotificacion('Error de conexión', 'Ocurrió un error al intentar reactivar el cliente.');
+        }
+    }
+
     // Delegación de eventos en la tabla (Editar / Eliminar)
     if (tablaBody) {
         tablaBody.addEventListener('click', async (e) => {
             const btnEliminar = e.target.closest('.btn-eliminar');
             const btnEditar = e.target.closest('.btn-editar');
+            const btnActivar = e.target.closest('.btn-activar');
 
             if (btnEliminar) {
                 const id = btnEliminar.dataset.id;
@@ -272,6 +292,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (btnEditar) {
                 const id = btnEditar.dataset.id;
                 abrirModalEditarCliente(id);
+            }
+
+            if (btnActivar) {
+                activarCliente(btnActivar.dataset.id);
             }
         });
     }

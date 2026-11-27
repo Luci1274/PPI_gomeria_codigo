@@ -20,15 +20,23 @@
     <div class="contenedor-busqueda">
         <input type="text" id="input-busqueda" placeholder="Buscar por Nombre...">
     </div>
+    <div class="acciones-filtros">
+        <select class="filtro-seleccion" id="filtro-estado">
+            <option value="1">Activos</option>
+            <option value="0">Inactivos</option>
+            <option value="todos" selected>Todos los estados</option>
+        </select>
+    </div>
 </section>
 {% endblock %}
 
 {% block cabecera_tabla %}
 <tr>
-    <th>Nombre</th>
+    <th class="texto-izquierda">Nombre</th>
     <th>Email</th>
-    <th>Teléfono</th>
+    <th class="texto-derecha">Teléfono</th>
     <th>Rol</th>
+    <th>Estado</th>
     <th>Acciones</th>
 </tr>
 {% endblock %}

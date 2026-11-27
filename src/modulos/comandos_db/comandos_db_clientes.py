@@ -194,14 +194,34 @@ class Cliente:
         conexion = Config.conectar_db()
         try:
             with conexion.cursor() as cursor:
-                sql = "UPDATE cliente SET activo = 0 WHERE idcliente = %s"
+                sql = "UPDATE cliente SET activo = 0 WHERE idcliente = %s AND activo = 1"
                 cursor.execute(sql, (id,))
+                actualizado = cursor.rowcount > 0
                 conexion.commit()
-                print("Cliente eliminado correctamente")
-                return True
+                return actualizado
         except pymysql.MySQLError as e:
             conexion.rollback()
             print(f"Error al eliminar cliente: {e}")
+            return False
+        finally:
+            conexion.close()
+
+    @staticmethod
+    def activar_cliente(id):
+        """Reactiva un cliente que fue dado de baja lógicamente."""
+        conexion = Config.conectar_db()
+        try:
+            with conexion.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE cliente SET activo = 1 WHERE idcliente = %s AND activo = 0",
+                    (id,),
+                )
+                actualizado = cursor.rowcount > 0
+                conexion.commit()
+                return actualizado
+        except pymysql.MySQLError as e:
+            conexion.rollback()
+            print(f"Error al activar cliente: {e}")
             return False
         finally:
             conexion.close()

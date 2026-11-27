@@ -358,6 +358,30 @@ class Producto:
             conexion.close()
 
     @staticmethod
+    def activar_producto(id, tipo_item="producto"):
+        tabla, columna_id = (
+            ("servicio", "idservicio")
+            if tipo_item == "servicio"
+            else ("producto", "idproducto")
+        )
+        conexion = Config.conectar_db()
+        try:
+            with conexion.cursor() as cursor:
+                cursor.execute(
+                    f"UPDATE {tabla} SET activo = 1 WHERE {columna_id} = %s AND activo = 0",
+                    (id,),
+                )
+                actualizado = cursor.rowcount > 0
+            conexion.commit()
+            return actualizado
+        except pymysql.MySQLError as error:
+            conexion.rollback()
+            print(f"Error al reactivar {tipo_item} #{id}: {error}")
+            return False
+        finally:
+            conexion.close()
+
+    @staticmethod
     def alertar_stock_bajo():
         conexion = Config.conectar_db()
         try:

@@ -19,7 +19,7 @@ Los tipos se crean al registrar un producto o servicio si todavía no existen. E
 
 La tabla combina los registros de `producto` y `servicio`; cada fila incluye `tipo_item` (`producto` o `servicio`) para distinguirlos, ya que los identificadores de ambas tablas pueden coincidir. Se pueden filtrar por nombre, tipo, marca y estado. Los servicios muestran que el stock no aplica.
 
-Los productos se desactivan lógicamente en `producto`; los servicios, en `servicio`. La operación se selecciona usando `tipo_item`, evitando modificar un registro homónimo de la otra tabla.
+Los productos se desactivan lógicamente en `producto`; los servicios, en `servicio`. La operación se selecciona usando `tipo_item`, evitando modificar un registro homónimo de la otra tabla. Los elementos inactivos se muestran en rojo, ocultan la opción de eliminar y pueden reactivarse desde la tabla.
 
 ## Rutas
 
@@ -34,8 +34,9 @@ Todas las rutas pertenecen a `inventario_bp`.
 | `GET /inventario/<id>/modificar` | `api_obtener_producto` | Devuelve los datos del producto o servicio indicado por `tipo_item`. |
 | `POST /api/inventario/<id>/modificar` | `api_modificar_producto` | Actualiza el elemento seleccionado por `tipo_item`. |
 | `GET /api/inventario/<id>/desactivar` | `desactivar_producto` | Desactiva lógicamente el elemento indicado por `tipo_item`. |
+| `POST /api/inventario/<id>/activar` | `activar_producto` | Reactiva un producto o servicio inactivo según `tipo_item`. |
 
-En los endpoints de edición y desactivación, `tipo_item` admite `producto` o `servicio` y por defecto vale `producto`. La ruta de listado usa POST aunque sus filtros se envían como parámetros de consulta.
+En los endpoints de edición, desactivación y reactivación, `tipo_item` admite `producto` o `servicio` y por defecto vale `producto`. La ruta de listado usa POST aunque sus filtros se envían como parámetros de consulta.
 
 ## Ventas y navegación al inventario
 
