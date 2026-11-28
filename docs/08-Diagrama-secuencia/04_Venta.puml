@@ -1,0 +1,50 @@
+@startuml registrar_venta
+title Diagrama de secuencia: registrar venta
+actor Usuario
+participant "realizar_venta.js" as IU
+participant "ventas_rutas.py" as API
+participant "Venta" as V
+database "MySQL" as DB
+
+Usuario -> IU: cargar carrito, cliente y metodoPago
+activate IU
+IU -> API: POST /api/ventas/realizar\n{cliente, metodo, descuento, carrito}
+activate API
+API -> API: validar JSON y datos basicos
+alt datos invalidos
+  API --> IU: 400 Bad Request
+  deactivate API
+  IU --> Usuario: mostrar errores de validacion
+  deactivate IU
+else datos validos
+  API -> V: registrar(datos)
+  activate V
+  V -> DB: iniciar transaccion
+  activate DB
+  V -> DB: bloquear y verificar productos
+  V -> DB: recargar precios vigentes
+  alt precio o stock cambió
+    DB --> V: datos no vigentes
+    deactivate DB
+    V --> API: conflicto
+    deactivate V
+    API --> IU: 409 Conflict
+    deactivate API
+    IU --> Usuario: informar conflicto y conservar orden
+    deactivate IU
+  else datos vigentes
+    V -> DB: insertar venta
+    V -> DB: insertar item_venta
+    V -> DB: descontar stock
+    V -> DB: insertar pago
+    DB --> V: idVenta
+    deactivate DB
+    V --> API: idVenta, true
+    deactivate V
+    API --> IU: 201 Created
+    deactivate API
+    IU --> Usuario: limpiar carrito y redirigir
+    deactivate IU
+  end
+end
+@enduml

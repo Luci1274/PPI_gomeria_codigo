@@ -1,0 +1,70 @@
+@startuml gestionar_clientes
+title Diagrama de secuencia: gestionar clientes
+actor Administrador
+participant "clientes.js" as IU
+participant "clientes_rutas.py" as API
+participant "Cliente" as C
+database "MySQL" as DB
+
+Administrador -> IU: buscar/filtar/listar
+activate IU
+IU -> API: GET /api/clientes?pagina&buscar&ciudad&activo
+activate API
+API -> C: leerClientes(filtros)
+activate C
+C -> DB: consultar clientes, ciudades y deuda
+activate DB
+DB --> C: resultados
+deactivate DB
+C --> API: clientes, ciudades, paginacion
+deactivate C
+API --> IU: 200 JSON
+deactivate API
+IU --> Administrador: mostrar tabla, filtros y paginacion
+deactivate IU
+
+Administrador -> IU: crear o modificar cliente
+activate IU
+IU -> API: POST /api/clientes/crear\no POST /editar
+activate API
+API -> C: crearCliente/modificarCliente(datos)
+activate C
+C -> DB: insertar o actualizar
+activate DB
+alt operacion exitosa
+  DB --> C: resultado
+  deactivate DB
+  C --> API: exito
+  deactivate C
+  API --> IU: 200/201
+  deactivate API
+  IU --> Administrador: mostrar confirmacion
+  deactivate IU
+else error
+  DB --> C: error de persistencia
+  deactivate DB
+  C --> API: error
+  deactivate C
+  API --> IU: 500
+  deactivate API
+  IU --> Administrador: informar error
+  deactivate IU
+end
+
+Administrador -> IU: desactivar/reactivar
+activate IU
+IU -> API: GET o POST de cambio de estado
+activate API
+API -> C: eliminarCliente/activarCliente(id)
+activate C
+C -> DB: actualizar activo
+activate DB
+DB --> C: resultado de actualizacion
+deactivate DB
+C --> API: resultado
+deactivate C
+API --> IU: 200 o 400
+deactivate API
+IU --> Administrador: actualizar listado
+deactivate IU
+@enduml

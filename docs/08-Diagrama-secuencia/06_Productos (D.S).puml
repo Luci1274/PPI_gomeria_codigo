@@ -1,0 +1,71 @@
+@startuml gestionar_inventario
+title Diagrama de secuencia: gestionar productos y servicios
+actor Administrador
+participant "inventario.js" as IU
+participant "inventario_rutas.py" as API
+participant "Producto / Servicio" as C
+participant "Cloudinary" as Cloud
+database "MySQL" as DB
+
+Administrador -> IU: crearProducto(datos, imagen)
+activate IU
+IU -> API: POST /api/inventario/crear
+activate API
+API -> C: validar datos
+activate C
+alt datos invalidos
+  C --> API: datos invalidos
+  deactivate C
+  API --> IU: 400
+  deactivate API
+  IU --> Administrador: informar errores
+  deactivate IU
+else datos validos
+  opt incluye imagen
+    API -> Cloud: subir y transformar
+    activate Cloud
+    Cloud --> API: secure_url
+    deactivate Cloud
+  end
+  C -> DB: reutilizar/crear tipo
+  activate DB
+  C -> DB: verificar duplicado
+  alt duplicado
+    DB --> C: producto existente
+    deactivate DB
+    C --> API: conflicto
+    deactivate C
+    API --> IU: 409
+    deactivate API
+    IU --> Administrador: informar duplicado
+    deactivate IU
+  else nuevo
+    C -> DB: insertar producto activo
+    DB --> C: id
+    deactivate DB
+    C --> API: exito
+    deactivate C
+    API --> IU: 201
+    deactivate API
+    IU --> Administrador: confirmar registro
+    deactivate IU
+  end
+end
+
+Administrador -> IU: listar articulos
+activate IU
+IU -> API: POST /api/inventario?filtros
+activate API
+API -> C: obtenerInventario(filtros)
+activate C
+C -> DB: consultar productos y servicios
+activate DB
+DB --> C: resultados
+deactivate DB
+C --> API: paginacion y catalogos
+deactivate C
+API --> IU: 200
+deactivate API
+IU --> Administrador: mostrar inventario
+deactivate IU
+@enduml

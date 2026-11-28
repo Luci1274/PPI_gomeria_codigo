@@ -1,0 +1,36 @@
+@startuml listado_compras
+title Diagrama de secuencia: listar compras
+actor Administrador
+participant "Navegador / compras.js" as IU
+participant "compras_rutas.py" as API
+participant "Compra" as C
+database "MySQL" as DB
+
+Administrador -> IU: abrirCompras(filtros, pagina)
+activate IU
+IU -> API: GET /api/compras?filtros
+activate API
+API -> C: obtenerComprasPaginadas(filtros)
+activate C
+C -> DB: consultar compras e items
+activate DB
+DB --> C: compras, proveedores, tipos, totales
+deactivate DB
+C --> API: compras, paginacion, resumen
+deactivate C
+
+alt sin coincidencias
+  API --> IU: 200 lista vacia
+  deactivate API
+  IU --> Administrador: mostrar estado vacío
+else error de consulta
+  API --> IU: 500 exito=false
+  deactivate API
+  IU --> Administrador: informar error
+else con resultados
+  API --> IU: 200 JSON
+  deactivate API
+  IU --> Administrador: mostrar tabla y metricas
+end
+deactivate IU
+@enduml

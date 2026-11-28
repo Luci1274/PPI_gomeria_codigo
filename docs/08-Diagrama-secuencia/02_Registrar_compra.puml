@@ -1,0 +1,35 @@
+@startuml registrar_compra
+title Diagrama de secuencia: registrar compra
+actor Administrador
+participant "orden_compra.html / JS" as IU
+participant "compras_rutas.py" as API
+participant "Compra" as C
+database "MySQL" as DB
+
+Administrador -> IU: seleccionar productos y proveedor
+activate IU
+IU -> API: POST /api/compras/realizar\n{idProveedor, carrito}
+activate API
+API -> API: validar proveedor, ids y cantidades
+alt datos inválidos
+  API --> IU: 400 Bad Request
+  deactivate API
+  IU --> Administrador: mostrar error
+  deactivate IU
+else datos válidos
+  API -> C: registrar(proveedor, items)
+  activate C
+  C -> DB: iniciar transaccion
+  activate DB
+  C -> DB: insertar compra incompleta
+  C -> DB: insertar item_compra
+  DB --> C: idCompra
+  deactivate DB
+  C --> API: idCompra, true
+  deactivate C
+  API --> IU: 200 exito=true
+  deactivate API
+  IU --> Administrador: confirmar y redirigir
+  deactivate IU
+end
+@enduml

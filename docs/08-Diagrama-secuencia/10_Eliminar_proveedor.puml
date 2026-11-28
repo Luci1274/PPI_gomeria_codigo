@@ -1,0 +1,53 @@
+@startuml eliminar_proveedor
+title Diagrama de secuencia: dar de baja y reactivar proveedor
+actor Administrador
+participant "proveedores.js" as IU
+participant "proveedores_rutas.py" as API
+participant "Proveedor" as C
+database "MySQL" as DB
+
+Administrador -> IU: solicitar desactivacion(id)
+activate IU
+IU -> IU: solicitar confirmacion
+Administrador -> IU: confirmar
+IU -> API: POST /proveedores/{id}/desactivar
+activate API
+API -> C: desactivar(id)
+activate C
+C -> DB: activo=0 si estaba activo
+activate DB
+DB --> C: filas afectadas
+deactivate DB
+alt operación exitosa
+  C --> API: true
+  deactivate C
+  API --> IU: 200
+  deactivate API
+  IU --> Administrador: mostrar confirmacion
+  deactivate IU
+else estado ya inactivo o error
+  C --> API: false
+  deactivate C
+  API --> IU: 404 o 500
+  deactivate API
+  IU --> Administrador: informar resultado
+  deactivate IU
+end
+
+Administrador -> IU: solicitar reactivacion(id)
+activate IU
+IU -> API: POST /api/proveedores/{id}/activar
+activate API
+API -> C: activar(id)
+activate C
+C -> DB: activo=1 si estaba inactivo
+activate DB
+DB --> C: filas afectadas
+deactivate DB
+C --> API: resultado
+deactivate C
+API --> IU: 200 o 404
+deactivate API
+IU --> Administrador: actualizar listado
+deactivate IU
+@enduml

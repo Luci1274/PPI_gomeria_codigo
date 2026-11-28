@@ -1,0 +1,61 @@
+@startuml dar_baja_compra
+title Diagrama de secuencia: completar o anular compra
+actor Administrador
+participant "compras.js" as IU
+participant "compras_rutas.py" as API
+participant "Compra" as C
+database "MySQL" as DB
+
+Administrador -> IU: completarCompra(idCompra, cantidades)
+activate IU
+IU -> API: POST /compras/completar
+activate API
+API -> C: completarCompra(idCompra, cantidades)
+activate C
+C -> DB: bloquear compra e items
+activate DB
+alt compra activa e incompleta
+  C -> DB: guardar cantidades recibidas
+  C -> DB: sumar stock recibido
+  C -> DB: marcar completo=1
+  DB --> C: confirmacion
+  deactivate DB
+  C --> API: true
+  deactivate C
+  API --> IU: 200
+  deactivate API
+  IU --> Administrador: mostrar confirmacion
+  deactivate IU
+else estado o cantidades invalidas
+  C --> API: false
+  deactivate C
+  deactivate DB
+  API --> IU: 400
+  deactivate API
+  IU --> Administrador: informar error
+  deactivate IU
+end
+
+Administrador -> IU: anularCompra(idCompra)
+activate IU
+IU -> API: POST /api/compras/anular/{idCompra}
+activate API
+API -> C: anular(idCompra)
+activate C
+C -> DB: bloquear compra
+activate DB
+alt compra completa
+  C -> DB: descontar cantidades entregadas
+else compra incompleta
+  C -> DB: no modificar stock
+end
+C -> DB: activo=0
+DB --> C: confirmacion
+deactivate DB
+C --> API: true
+deactivate C
+API --> IU: 200
+deactivate API
+IU --> Administrador: mostrar confirmacion
+deactivate IU
+@enduml

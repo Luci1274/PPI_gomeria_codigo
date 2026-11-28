@@ -1,0 +1,159 @@
+@startuml Gomeria_Modelo_Dominio
+
+title Modelo de datos de gomería
+
+class Empleado {
+  +idempleado: int
+  +nombre_usuario: varchar
+  +mail: varchar
+  +contrasena: varchar
+  +tipo: varchar
+  +activo: tinyint
+  +telefono: varchar
+  +token_recuperacion: varchar
+  +token_expiracion: datetime
+  +verificarCredenciales()
+  +registrar()
+  +modificar()
+  +desactivar()
+  +activar()
+}
+
+class Cliente {
+  +idcliente: int
+  +nombre: varchar
+  +apellido: varchar
+  +cuit: varchar
+  +telefono: varchar
+  +mail: varchar
+  +ciudad: varchar
+  +direccion: varchar
+  +activo: tinyint
+  +calcularDeuda()
+}
+
+class Proveedor {
+  +idproveedor: int
+  +nombre: varchar
+  +cuit: varchar
+  +direccion: varchar
+  +telefono: varchar
+  +mail: varchar
+  +ciudad: varchar
+  +rubro: varchar
+  +activo: tinyint
+  +modificar()
+  +desactivar()
+  +activar()
+}
+
+class Tipo {
+  +idtipo: int
+  +nombre: varchar
+  +activo: tinyint
+}
+
+class Producto {
+  +idproducto: int
+  +nombre: varchar
+  +idtipo: int
+  +marca: varchar
+  +medidas: varchar
+  +unidad_medida: varchar
+  +imagen_url: text
+  +precio: decimal
+  +cantidad_actual: int
+  +cantidad_minima: int
+  +activo: tinyint
+}
+
+class Servicio {
+  +idservicio: int
+  +nombre: varchar
+  +idtipo: int
+  +precio: decimal
+  +activo: tinyint
+}
+
+class Compra {
+  +idcompra: int
+  +fecha: date
+  +horas: time
+  +cantidad_total: int
+  +idproveedor: int
+  +activo: tinyint
+  +completo: tinyint
+  +registrar()
+  +completar()
+  +anular()
+}
+
+class ItemCompra {
+  +iditem_compra: int
+  +idcompra: int
+  +idproducto: int
+  +cantidad_pedida: int
+  +cantidad_entregada: int
+}
+
+class Venta {
+  +idventa: int
+  +fecha: datetime
+  +descuento: decimal
+  +iva: decimal
+  +cantidad_total_productos: int
+  +precio_total: decimal
+  +idcliente: int
+  +idempleado: int
+  +activa: tinyint
+  +estado: tinyint
+  +registrar()
+  +anular()
+  +calcularTotal()
+}
+
+class ItemVenta {
+  +iditem_venta: int
+  +idventa: int
+  +idproducto: int
+  +idservicio: int
+  +cantidad: int
+  +precio_unitario: decimal
+  +calcularSubtotal()
+}
+
+class MetodoPago {
+  +idmetodos_pago: int
+  +nombre: varchar
+  +activo: tinyint
+}
+
+class HistorialPagoCliente {
+  +idhistorial_pago_cliente: int
+  +idventa: int
+  +idmetodos_pago: int
+  +fecha: date
+  +hora: time
+  +monto: decimal
+  +comprobante: varchar
+  +fecha_vencimiento: date
+  +plazo_dias: int
+}
+
+Tipo "1" -- "0..*" Producto : clasifica
+Tipo "1" -- "0..*" Servicio : clasifica
+
+Proveedor "1" -- "0..*" Compra : abastece
+Compra "1" *-- "1..*" ItemCompra : contiene
+Producto "1" -- "0..*" ItemCompra : aparece en
+
+Cliente "0..1" -- "0..*" Venta : realiza
+Empleado "1" -- "0..*" Venta : registra
+Venta "1" *-- "1..*" ItemVenta : contiene
+Producto "0..1" -- "0..*" ItemVenta : se vende
+Servicio "0..1" -- "0..*" ItemVenta : se presta
+
+Venta "1" -- "0..*" HistorialPagoCliente : tiene
+MetodoPago "1" -- "0..*" HistorialPagoCliente : se usa en
+
+@enduml

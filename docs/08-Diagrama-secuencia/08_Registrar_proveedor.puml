@@ -1,0 +1,44 @@
+@startuml registrar_proveedor
+title Diagrama de secuencia: registrar proveedor
+actor Administrador
+participant "proveedor.html / JS" as IU
+participant "proveedores_rutas.py" as API
+participant "Proveedor" as C
+database "MySQL" as DB
+
+Administrador -> IU: ingresar datos
+activate IU
+IU -> API: POST /api/proveedores/crear
+activate API
+API -> API: validar campos y normalizar
+alt datos invalidos
+  API --> IU: 400
+  deactivate API
+  IU --> Administrador: mostrar errores
+  deactivate IU
+else datos validos
+  C -> DB: verificar CUIT unico
+  activate C
+  activate DB
+  alt CUIT duplicado
+    DB --> C: CUIT existente
+    deactivate DB
+    C --> API: conflicto
+    deactivate C
+    API --> IU: 409
+    deactivate API
+    IU --> Administrador: informar duplicado
+    deactivate IU
+  else disponible
+    C -> DB: insertar proveedor activo
+    DB --> C: idProveedor
+    deactivate DB
+    C --> API: exito
+    deactivate C
+    API --> IU: 201
+    deactivate API
+    IU --> Administrador: confirmar registro
+    deactivate IU
+  end
+end
+@enduml

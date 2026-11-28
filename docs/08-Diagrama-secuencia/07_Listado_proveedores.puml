@@ -1,0 +1,37 @@
+@startuml listado_proveedores
+title Diagrama de secuencia: listar proveedores
+actor Administrador
+participant "proveedores.js" as IU
+participant "proveedores_rutas.py" as API
+participant "Proveedor" as C
+database "MySQL" as DB
+
+Administrador -> IU: ingresar filtros y pagina
+activate IU
+IU -> API: GET /api/proveedores?buscar&rubro&ciudad&activo
+activate API
+API -> C: leerProveedores(filtros)
+activate C
+C -> DB: consultar proveedores
+activate DB
+C -> DB: consultar rubros y ciudades
+DB --> C: resultados y catalogos
+deactivate DB
+C --> API: proveedores, paginacion, filtros
+deactivate C
+
+alt sin resultados
+  API --> IU: 200 lista vacia
+  deactivate API
+  IU --> Administrador: mostrar estado vacío
+else error
+  API --> IU: 500
+  deactivate API
+  IU --> Administrador: informar error
+else con resultados
+  API --> IU: 200 JSON
+  deactivate API
+  IU --> Administrador: mostrar tabla
+end
+deactivate IU
+@enduml

@@ -1,0 +1,60 @@
+@startuml modificar_proveedor
+title Diagrama de secuencia: modificar proveedor
+actor Administrador
+participant "proveedores.js" as IU
+participant "proveedores_rutas.py" as API
+participant "Proveedor" as C
+database "MySQL" as DB
+
+Administrador -> IU: seleccionarProveedor(id)
+activate IU
+IU -> API: GET /proveedores/{id}/editar
+activate API
+API -> C: obtenerPorId(id)
+activate C
+C -> DB: consultar proveedor
+activate DB
+DB --> C: proveedor
+deactivate DB
+C --> API: datos
+deactivate C
+API --> IU: 200
+deactivate API
+IU --> Administrador: mostrar formulario
+deactivate IU
+
+Administrador -> IU: ingresar cambios
+activate IU
+IU -> API: POST /api/proveedores/{id}/editar
+activate API
+API -> API: validar datos
+alt datos inválidos
+  API --> IU: 400
+  deactivate API
+  IU --> Administrador: mostrar errores
+  deactivate IU
+else datos válidos
+  C -> DB: verificar CUIT único
+  activate C
+  activate DB
+  alt CUIT duplicado
+    DB --> C: CUIT pertenece a otro proveedor
+    deactivate DB
+    deactivate C
+    API --> IU: 409
+    deactivate API
+    IU --> Administrador: informar duplicado
+    deactivate IU
+  else disponible
+    C -> DB: actualizar proveedor
+    DB --> C: confirmacion
+    deactivate DB
+    C --> API: exito
+    deactivate C
+    API --> IU: 200
+    deactivate API
+    IU --> Administrador: confirmar modificacion
+    deactivate IU
+  end
+end
+@enduml

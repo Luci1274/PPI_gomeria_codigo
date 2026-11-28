@@ -1,0 +1,166 @@
+@startchen ventas_compras
+
+' === ENTIDADES ===
+entity "Venta" as VENTA {
+  venta_id : <<key>>
+  forma_de_pago : STRING
+  descuento : FLOAT
+  iva : FLOAT
+  cantidad_total_productos : INTEGER
+  factura_tipo : STRING
+  factura_numero : STRING
+  factura_fecha_emision : DATE
+}
+
+entity "Item Venta" as ITEM_VENTA {
+  item_venta_id : INTEGER <<key>>
+  codigo_producto : STRING
+  precio_unitario : FLOAT
+  cantidad : INTEGER
+}
+
+entity "Compra" as COMPRA {
+  compra_id : INTEGER <<key>>
+  fecha : DATE
+  hora : TIME
+  forma_de_pago : STRING
+  iva : FLOAT
+  cantidad_total_comprada : INTEGER
+}
+
+entity "Item Compra" as ITEM_COMPRA {
+  item_compra_id : INTEGER <<key>>
+  codigo_producto : STRING
+  precio_unitario : FLOAT
+  cantidad : INTEGER
+}
+
+entity "Producto" as PRODUCTO {
+  codigo_producto : STRING <<key>>
+  nombre : STRING
+  tipo : STRING
+  marca : STRING
+  medida : STRING
+}
+
+entity "Stock actual" as STOCK {
+  codigo_producto : STRING <<key>>
+  cantidad : INTEGER
+  porcentaje_venta : FLOAT
+}
+
+entity "Historial Precio" as HIST_PRECIO {
+  hist_precio_id : INTEGER <<key>>
+  codigo_producto : STRING
+  precio_unitario : FLOAT
+  fecha_inicio_vigencia : DATE
+  fecha_fin_vigencia : DATE
+}
+
+entity "Historial Movimiento" as HIST_MOV {
+  movimiento_id : INTEGER <<key>>
+  codigo_producto : STRING
+  tipo_movimiento : STRING   
+  referencia_tipo : STRING
+  referencia_id : INTEGER
+  fecha : DATE
+  cantidad : INTEGER
+}
+
+entity "Cliente" as CLIENTE {
+  CUIT : INTEGER <<key>>
+  nombre : STRING
+  apellido : STRING
+  plazo_de_pago : INTEGER
+  deuda : FLOAT
+  forma_de_contacto : STRING
+}
+
+entity "Historial pago" as PAGO {
+  codigo_pago : STRING <<key>>
+  comprobante_num : INT 
+  fecha : DATE
+  hora : TIME
+  monto : FLOAT
+  forma_de_pago : STRING
+}
+
+entity "Proveedor" as PROVEEDOR {
+  CUIT : INTEGER <<key>>
+  direccion : STRING
+  forma_de_contacto : STRING
+}
+
+' === RELACIONES (diamantes) ===
+relationship "Contiene" as CONTIENE_VENTA {
+}
+
+relationship "Contiene" as CONTIENE_COMPRA {
+}
+
+relationship "Tiene " as TIENE_STOCK { 
+}
+
+relationship "Tiene" as TIENE_HISTPRECIO {
+}
+
+relationship "Tiene" as TIENE_MOV {
+}
+
+relationship "Realiza" as REALIZA {
+}
+
+relationship "Posee" as POSEE_HISTORIAL {
+}
+
+relationship "Provee" as PROVEE { 
+}
+
+relationship "Corresponde a" as CONTIENE_PRODUCTO {
+}
+
+relationship "Corresponde a" as POSEE_PRODUCTO {
+}
+
+' === ENLACES / CARDINALIDADES (uso ALIASES en enlaces) ===
+
+' Venta 1..N ItemVenta  (una Venta contiene 1..N Item Venta)
+VENTA -1- CONTIENE_VENTA
+CONTIENE_VENTA -N- ITEM_VENTA
+
+' Compra 1..N ItemCompra
+COMPRA -1- CONTIENE_COMPRA
+CONTIENE_COMPRA -N- ITEM_COMPRA
+
+' Producto - Stock  (asumí 1 producto tiene 1 registro de stock actual)
+PRODUCTO -1- TIENE_STOCK
+TIENE_STOCK -1- STOCK
+
+' Producto - Historial Precio (1 producto tiene N históricos)
+PRODUCTO -1- TIENE_HISTPRECIO
+TIENE_HISTPRECIO -N- HIST_PRECIO
+
+' Producto - Historial Movimiento (1 producto tiene N movimientos)
+PRODUCTO -1- TIENE_MOV
+TIENE_MOV -N- HIST_MOV
+
+' Cliente - Compra (historial de compras: 1 Cliente realiza N Compras)
+CLIENTE -1- REALIZA
+REALIZA -N- VENTA
+
+' Cliente - Pago (historial de pagos: 1 Cliente efectúa N Pagos)
+CLIENTE -1- POSEE_HISTORIAL
+POSEE_HISTORIAL -N- PAGO
+
+' Proveedor - Compra (1 Proveedor suministra N Compras)
+PROVEEDOR -1- PROVEE
+PROVEE -N- COMPRA
+
+' Opcional: relacionar Item Venta/Compra con Producto (referencia al producto vendido/comprado)
+ITEM_VENTA -N- CONTIENE_PRODUCTO
+CONTIENE_PRODUCTO -1- PRODUCTO
+
+ITEM_COMPRA -N- POSEE_PRODUCTO
+POSEE_PRODUCTO -1- PRODUCTO
+
+@endchen
