@@ -1,49 +1,53 @@
-# Tecnologias a utilizar
+# Tecnologías utilizadas y justificación
 
+Este documento describe las tecnologías que aparecen en el código o en el flujo de desarrollo y por qué se usan. El resumen para iniciar con el proyecto está en el [README](../README.md); las dependencias Python instalables se mantienen en [`requirements.txt`](../requirements.txt).
 
-## Frontend
-| Tecnologias | Uso | Definicion |
-|-------------|-----|------------|
-| HTML5 | El uso que le daríamos sería la estructura de la aplicación web | Es un lenguaje de marcado para estructurar el contenido de una página web |
-| CSS3 | Diseño y presentación de la aplicación | Lenguaje de estilo para dar formato a las páginas web |
-| JavaScript | Interactividad y lógica del lado del cliente | Lenguaje de programación para crear páginas web dinámicas e interactivas |
+## Aplicación y persistencia
 
-## Backend
-| Tecnologias | Uso | Definicion |
-|-------------|-----|------------|
-| Python | Lógica del lado del servidor y manejo de datos | Lenguaje de programación fácil de leer y usar, muy popular para desarrollo web, automatización, ciencia de datos e inteligencia artificial |
-| Flask | Framework para crear aplicaciones web de forma simple y rápida | Framework (herramienta) de Python para crear aplicaciones web de forma simple y rápida. Es liviano y flexible. |
+| Tecnología | Uso en el proyecto | Justificación |
+|---|---|---|
+| **Python 3** | Implementa las rutas, validaciones, reglas de negocio y acceso a datos del servidor. | Permite organizar la lógica del sistema en módulos y aprovechar el ecosistema Flask y sus bibliotecas. |
+| **Flask** | Crea la aplicación web, registra rutas y blueprints, renderiza plantillas y administra las sesiones. | Es el framework que utiliza actualmente el proyecto y ofrece una estructura ligera para integrar sus módulos. |
+| **Jinja** | Genera HTML desde las plantillas y presenta datos de sesión, páginas y permisos. | Permite reutilizar estructuras de interfaz y renderizar contenido del servidor sin construir las páginas manualmente. Viene integrado con Flask. |
+| **MySQL** | Guarda clientes, empleados, proveedores, productos, compras, ventas y sus detalles relacionados. | El modelo es relacional: necesita claves, restricciones e integridad transaccional para asociar las operaciones comerciales. El esquema está orientado a MySQL 8. |
+| **PyMySQL** | Driver que conecta Python con MySQL; las capas `comandos_db` ejecutan consultas SQL parametrizadas. | Permite acceder a la base de datos desde Python sin incorporar un ORM al flujo actual. |
+| **DBUtils (`PooledDB`)** | Mantiene y entrega conexiones reutilizables a través de `Config.conectar_db()`. | Evita crear una conexión independiente para cada solicitud y limita la cantidad de conexiones simultáneas. |
+| **python-dotenv** | Carga variables desde `src/.env` al iniciar la configuración. | Mantiene credenciales y opciones locales fuera del código fuente; el archivo real no debe compartirse ni versionarse. |
+| **Werkzeug Security** | Genera y verifica hashes de contraseñas de empleados. | Permite almacenar hashes en lugar de contraseñas en texto plano y comprobarlas con las funciones de seguridad de Werkzeug. |
 
-## Diferencia entre FastAPI y Flask
+El acceso a datos se implementa con SQL directo y PyMySQL; el proyecto no usa SQLAlchemy actualmente. Las consultas y restricciones principales se describen en la [documentación del modelo de datos](documentacion/sistema_y_base_de_datos.md).
 
-| Característica | FastAPI | Flask |
-|----------------|---------|-------|
-| Rendimiento | Alto rendimiento gracias a su uso de ASGI y Pydantic. | Rendimiento adecuado para aplicaciones pequeñas y medianas. |
-| Facilidad de uso | Fácil de usar con una sintaxis clara y concisa. | Fácil de usar, pero puede requerir más configuración para aplicaciones complejas. |
-| Validación de datos | Utiliza Pydantic para la validación de datos, lo que facilita la gestión de datos y errores. | No tiene una solución integrada para la validación de datos, lo que puede requerir bibliotecas adicionales. |
-| Documentación automática | Genera documentación automática de la API utilizando OpenAPI y Swagger. | No tiene soporte integrado para la documentación automática, aunque se pueden usar extensiones como Flask-RESTful. |
-| Comunidad y ecosistema | Comunidad en crecimiento con una amplia gama de extensiones y herramientas. | Comunidad establecida con una gran cantidad de extensiones y recursos disponibles. |
-|Rendimiento en aplicaciones| Excelente para aplicaciones de alto rendimiento y en tiempo real. | Adecuado para aplicaciones pequeñas y medianas, pero puede no ser ideal para aplicaciones de alto rendimiento. |
+## Interfaz web
 
-## Base de datos
-| Tecnologias | Uso | Definicion |
-|-------------|-----|------------|
-| MYSQL | Almacenamiento y gestión de datos | Sistema de gestión de bases de datos relacional que permite almacenar, organizar y consultar información de manera eficiente. |
-| MYSQL Workbench | Diseño y administración de la base de datos | Herramienta gráfica para trabajar con bases de datos MySQL, que permite diseñar, modelar y administrar la base de datos de manera visual y eficiente. |
+| Tecnología | Uso en el proyecto | Justificación |
+|---|---|---|
+| **HTML5** | Estructura las páginas de inicio de sesión, dashboard y módulos de gestión. | Proporciona los formularios, tablas, controles y regiones de la interfaz. |
+| **CSS3** | Define estilos, distribución y comportamiento adaptable de las pantallas. | Separa la presentación visual de la estructura y permite adaptar la interfaz a distintos tamaños. |
+| **JavaScript** | Realiza solicitudes `fetch`, administra formularios, filtros, paginación, modales y actualizaciones del dashboard. | Permite actualizar las pantallas con respuestas JSON sin recargar cada página completa. |
+| **Font Awesome** | Proporciona iconos cargados desde CDN en las plantillas. | Mantiene una iconografía consistente sin incluir archivos de iconos propios. |
+| **intl-tel-input** | Mejora la entrada del teléfono durante el registro y genera números con prefijo internacional. | Facilita capturar teléfonos en formato internacional para la recuperación de contraseña. |
+| **html2canvas y jsPDF** | Se cargan desde CDN en las páginas de ventas y compras para preparar y descargar resúmenes en PDF. | Permiten exportar la vista de una orden o venta desde el navegador. |
 
-## Control de versiones
-| Tecnologias | Uso | Definicion |
-|-------------|-----|------------|
-| Git | Control de versiones y colaboración en el desarrollo del proyecto | Sistema de control de versiones que permite guardar cambios en el código, volver a versiones anteriores y trabajar en equipo sin perder información. |
-| GitHub | Alojamiento del repositorio del proyecto y colaboración entre los miembros del equipo | Plataforma online basada en Git donde podés subir tus proyectos, compartirlos, colaborar con otros y gestionar versiones de forma remota. |
+Las bibliotecas de interfaz mencionadas se incluyen mediante CDN en las plantillas; no son paquetes Python ni forman parte de `requirements.txt`.
 
+## Servicios externos
 
-## Herramientas de desarrollo
-| Tecnologias | Uso | Definicion |
-|-------------|-----|------------|
-| Visual Studio Code | Edición de código y desarrollo de la aplicación | Editor de código fuente desarrollado por Microsoft. Es liviano, gratuito y muy popular para programar en distintos lenguajes como Python, JavaScript y HTML. Permite usar extensiones, depurar código y trabajar con herramientas como Git. |
+| Tecnología | Uso en el proyecto | Justificación |
+|---|---|---|
+| **Cloudinary** | Recibe imágenes de productos desde [`api_claudinary.py`](../src/modulos/api_claudinary.py) y devuelve su URL segura. La carga solicita una imagen de hasta 600 × 600, recorte `fill`, calidad y formato automáticos, y eliminación de metadatos de perfil. | Centraliza el almacenamiento y la transformación de imágenes fuera del servidor Flask. |
+| **Twilio** | [`notificaciones.py`](../src/modulos/servicios/notificaciones.py) envía por SMS el código temporal de recuperación cuando el usuario aporta un teléfono. | Utiliza un proveedor de mensajería externo para entregar códigos de un solo uso. |
+| **Gmail SMTP** | [`notificaciones.py`](../src/modulos/servicios/notificaciones.py) envía por correo el código de recuperación cuando el usuario aporta una dirección de email; la conexión SMTP inicia TLS. | Aprovecha el correo como canal alternativo de recuperación de cuentas. |
 
-## Librerias 
-| Tecnologias | Uso | Definicion |
-|-------------|-----|------------|
-| Request | Utilizacion para las peticiones http post y get a las Apis. | Es una librería de Python que se utiliza para realizar solicitudes HTTP a servidores, permitiendo enviar y recibir datos desde APIs o páginas web de forma sencilla.|
+Cloudinary, Twilio y Gmail requieren las variables de entorno indicadas en [`sistema_y_base_de_datos.md`](documentacion/sistema_y_base_de_datos.md). La disponibilidad de estos servicios externos depende de las credenciales y de la conexión de red.
+
+## Ejecución y herramientas de desarrollo
+
+| Tecnología | Uso en el proyecto | Justificación |
+|---|---|---|
+| **pip y `requirements.txt`** | Instalan las dependencias Python declaradas para la aplicación. | Permiten preparar el entorno de desarrollo y repetir la instalación en otros equipos. |
+| **Gunicorn** | Servidor WSGI opcional para ejecutar Flask en despliegues compatibles; el requisito se omite en Windows. | Está destinado a ejecutar la aplicación fuera del servidor de desarrollo integrado de Flask. |
+| **Git y GitHub** | Control de versiones y alojamiento del repositorio. | Permiten registrar cambios y colaborar sobre el proyecto. |
+| **Visual Studio Code** | Editor y entorno de desarrollo utilizado para trabajar con el código. | Reúne edición, terminal, depuración y navegación del proyecto. |
+| **MySQL Workbench** | Herramienta gráfica opcional para explorar el esquema y administrar una instancia MySQL. | Facilita revisar tablas y relaciones; no es necesaria para ejecutar Flask. |
+
+El inicio local usa `python src\app.py` y el servidor integrado de Flask en modo debug. Ese modo es para desarrollo; Gunicorn se instala solo fuera de Windows mediante el marcador de plataforma del archivo de dependencias.

@@ -136,7 +136,14 @@ document.addEventListener('DOMContentLoaded', () => {
             poblarSelectsFiltro(data.rubros, data.ciudades);
 
             // 👈 CALCULAR Y ACTUALIZAR PAGINACIÓN
-            totalPaginas = data.total_paginas || Math.ceil((data.total_items || 0) / (data.limite || 10)) || 1;
+            totalPaginas = Math.max(
+                1,
+                data.total_paginas || Math.ceil((data.total_items || 0) / 10) || 1
+            );
+            if (paginaActual > totalPaginas) {
+                paginaActual = totalPaginas;
+                return cargarProveedores();
+            }
             actualizarPaginacionUI();
 
         } catch (error) {
@@ -175,25 +182,87 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!esActivo) {
                 tr.classList.add('desactivado');
             }
-            const estadoHTML = `<span class="badge ${esActivo ? 'activo' : 'inactivo'}">${esActivo ? 'Activo' : 'Inactivo'}</span>`;
+            const agregarCelda = (texto, clase) => {
+                const td = document.createElement('td');
+                td.className = clase;
+                td.textContent = texto;
+                tr.appendChild(td);
+                return td;
+            };
+            const crearBoton = (texto, clase, titulo) => {
+                const boton = document.createElement('button');
+                boton.type = 'button';
+                boton.className = clase;
+                boton.dataset.id = String(prov.idproveedor);
+                boton.title = titulo;
+                boton.textContent = texto;
+                return boton;
+            };
 
-            tr.innerHTML = `
-                <td class="texto-derecha">${prov.idproveedor}</td>
-                <td class="texto-izquierda"><strong>${prov.nombre || '-'} - ${prov.rubro || '-'}</strong></td>
-                <td class="texto-derecha">${prov.cuit || '-'}</td>
-                <td class="texto-izquierda"> ${prov.ciudad || '-'} - ${prov.direccion || '-'}</td>
-                <td class="texto-derecha"> <a href="https://wa.me/${prov.telefono || '-'}" target="_blank">${prov.telefono || '-'}</a></td>
-                <td class="texto-centro"> <a href="mailto:${prov.mail || '-'}" target="_blank">${prov.mail || '-'}</a></td>
-                <td class="texto-centro">${estadoHTML}</td>
-                <td class="texto-centro">
-                    <div class="botones-accion">
-                        ${esActivo
-                            ? `<button class="btn-accion btn-editar" data-id="${prov.idproveedor}" title="Editar">Modificar</button>
-                               <button class="btn-accion borrar btn-eliminar" data-id="${prov.idproveedor}" title="Eliminar">Eliminar</button>`
-                            : `<button class="btn-accion btn-activar" data-id="${prov.idproveedor}" title="Reactivar">Reactivar</button>`}
-                    </div>
-                </td>
-            `;
+            agregarCelda(String(prov.idproveedor), 'texto-derecha');
+            const celdaNombre = agregarCelda('', 'texto-izquierda');
+            const nombre = document.createElement('strong');
+            nombre.textContent = `${prov.nombre || '-'} - ${prov.rubro || '-'}`;
+            celdaNombre.appendChild(nombre);
+            agregarCelda(prov.cuit || '-', 'texto-derecha');
+            agregarCelda(
+                `${prov.ciudad || '-'} - ${prov.direccion || '-'}`,
+                'texto-izquierda'
+            );
+
+            const celdaTelefono = document.createElement('td');
+            celdaTelefono.className = 'texto-derecha';
+            const telefono = String(prov.telefono || '-');
+            const telefonoWhatsApp = telefono.replace(/\D/g, '');
+            if (telefonoWhatsApp) {
+                const enlaceTelefono = document.createElement('a');
+                enlaceTelefono.href = `https://wa.me/${telefonoWhatsApp}`;
+                enlaceTelefono.target = '_blank';
+                enlaceTelefono.rel = 'noopener noreferrer';
+                enlaceTelefono.textContent = telefono;
+                celdaTelefono.appendChild(enlaceTelefono);
+            } else {
+                celdaTelefono.textContent = telefono;
+            }
+            tr.appendChild(celdaTelefono);
+
+            const celdaEmail = document.createElement('td');
+            celdaEmail.className = 'texto-centro';
+            const email = String(prov.mail || '');
+            if (email) {
+                const enlaceEmail = document.createElement('a');
+                enlaceEmail.href = `mailto:${email}`;
+                enlaceEmail.textContent = email;
+                celdaEmail.appendChild(enlaceEmail);
+            } else {
+                celdaEmail.textContent = '-';
+            }
+            tr.appendChild(celdaEmail);
+
+            const celdaEstado = agregarCelda('', 'texto-centro');
+            const badgeEstado = document.createElement('span');
+            badgeEstado.className = `badge ${esActivo ? 'activo' : 'inactivo'}`;
+            badgeEstado.textContent = esActivo ? 'Activo' : 'Inactivo';
+            celdaEstado.appendChild(badgeEstado);
+
+            const celdaAcciones = document.createElement('td');
+            celdaAcciones.className = 'texto-centro';
+            const botonesAccion = document.createElement('div');
+            botonesAccion.className = 'botones-accion';
+            if (esActivo) {
+                botonesAccion.appendChild(crearBoton(
+                    'Modificar', 'btn-accion btn-editar', 'Editar'
+                ));
+                botonesAccion.appendChild(crearBoton(
+                    'Eliminar', 'btn-accion borrar btn-eliminar', 'Desactivar'
+                ));
+            } else {
+                botonesAccion.appendChild(crearBoton(
+                    'Reactivar', 'btn-accion btn-activar', 'Reactivar'
+                ));
+            }
+            celdaAcciones.appendChild(botonesAccion);
+            tr.appendChild(celdaAcciones);
 
             tablaBody.appendChild(tr);
         });
@@ -201,7 +270,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function desactivarProveedor(id) {
         try {
-            const respuesta = await fetch(`/proveedores/${id}/desactivar`);
+            const respuesta = await fetch(`/proveedores/${id}/desactivar`, {
+                method: 'POST'
+            });
             const data = await respuesta.json();
 
             if (respuesta.ok && data.exito) {
@@ -263,30 +334,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function poblarSelectsFiltro(rubros, ciudades) {
-        if (rubros && filtroRubro.children.length <= 1) {
-            rubros.forEach(item => {
-                if (item.rubro) {
-                    const option = document.createElement('option');
-                    option.value = item.rubro;
-                    option.textContent = item.rubro;
-                    filtroRubro.appendChild(option);
-                }
-            });
-        }
+        const actualizarOpciones = (select, filas, campo) => {
+            const valorSeleccionado = select.value;
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
 
-        if (ciudades && filtroCiudad.children.length <= 4) {
-            ciudades.forEach(item => {
-                if (item.ciudad) {
-                    const yaExiste = Array.from(filtroCiudad.options).some(opt => opt.value.toLowerCase() === item.ciudad.toLowerCase());
-                    if (!yaExiste) {
-                        const option = document.createElement('option');
-                        option.value = item.ciudad;
-                        option.textContent = item.ciudad;
-                        filtroCiudad.appendChild(option);
-                    }
-                }
+            const valoresIncluidos = new Set();
+            (filas || []).forEach(fila => {
+                const valor = String(fila[campo] || '').trim();
+                const clave = valor.toLocaleLowerCase();
+                if (!valor || valoresIncluidos.has(clave)) return;
+
+                valoresIncluidos.add(clave);
+                const option = document.createElement('option');
+                option.value = valor;
+                option.textContent = valor;
+                select.appendChild(option);
             });
-        }
+
+            const existeSeleccion = Array.from(select.options)
+                .some(option => option.value === valorSeleccionado);
+            select.value = existeSeleccion ? valorSeleccionado : 'todos';
+        };
+
+        actualizarOpciones(filtroRubro, rubros, 'rubro');
+        actualizarOpciones(filtroCiudad, ciudades, 'ciudad');
     }
 
     // --- EVENTOS DE PAGINACIÓN 👈 AGREGADO ---
@@ -371,7 +444,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 cerrarModal();
                 cargarProveedores();
             } else {
-                mostrarNotificacion('Error al guardar', 'No se pudieron guardar los datos del proveedor. Intente nuevamente.');
+                mostrarNotificacion(
+                    'Error al guardar',
+                    data.mensaje || 'No se pudieron guardar los datos del proveedor.'
+                );
             }
         } catch (error) {
             console.error('Error al guardar proveedor:', error);
@@ -411,6 +487,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const respuesta = await fetch(`/proveedores/${id}/editar`);
             const data = await respuesta.json();
+
+            if (!respuesta.ok || !data.exito) {
+                ocultarNotificacion();
+                mostrarNotificacion(
+                    'Error al cargar datos',
+                    data.mensaje || 'No se pudieron obtener los datos del proveedor.'
+                );
+                return;
+            }
 
             const prov = data.proveedor || data;
             const setValor = (idInput, valor) => {

@@ -30,6 +30,12 @@ def api_iniciar_sesion():
 
     datos_devueltos = Usuario.verificar_credenciales(nombre_usuario, contrasena)
 
+    if datos_devueltos is False:
+        return jsonify({
+            "exito": False,
+            "mensaje": "Error al validar las credenciales."
+        }), 500
+
     if datos_devueltos:
         session["id_usuario"] = datos_devueltos[0]
         session["nombre_usuario"] = datos_devueltos[2]
@@ -69,6 +75,21 @@ def api_registrarse():
     telefono = datos.get("tel_input")
     contrasena = datos.get("password_registro")
 
+    if (
+        not isinstance(nombre, str)
+        or not nombre.strip()
+        or not isinstance(contrasena, str)
+        or not contrasena
+    ):
+        return (
+            jsonify({
+                "exito": False,
+                "mensaje": "El nombre de usuario y la contraseña son obligatorios.",
+            }),
+            400,
+        )
+
+    nombre = nombre.strip()
     existe_usuario = Usuario.existe_usuario(nombre)
     if existe_usuario is None:
         return jsonify({
@@ -126,11 +147,16 @@ def api_obtener_empleados():
 
     pagina = request.args.get("pagina", 1, type=int)
     buscar = request.args.get("buscar", None, type=str)
+    rol = request.args.get("rol", None, type=str)
     activo = request.args.get("activo", 1)
     por_pagina = 10
 
     total_items, empleados, roles, ok = Usuario.leer_empleados(
-        pagina=pagina, por_pagina=por_pagina, buscar=buscar, activo=activo
+        pagina=pagina,
+        por_pagina=por_pagina,
+        buscar=buscar,
+        rol=rol,
+        activo=activo,
     )
 
     if not ok:
@@ -153,6 +179,7 @@ def api_obtener_empleados():
                 "total_paginas": total_paginas,
                 "limite": por_pagina,
                 "empleados": empleados,
+                "roles": roles,
             }
         ),
         200,
@@ -171,13 +198,19 @@ def api_obtener_empleado(id):
 
     empleado, ok = Usuario.leer_empleado(id)
 
-    if ok and empleado:
-        return jsonify({"exito": True, "empleado": empleado}), 200
+    if not ok:
+        return (
+            jsonify({"exito": False, "mensaje": "Error al obtener el empleado."}),
+            500,
+        )
 
-    return (
-        jsonify({"exito": False, "mensaje": "Empleado no encontrado."}),
-        404,
-    )
+    if not empleado:
+        return (
+            jsonify({"exito": False, "mensaje": "Empleado no encontrado."}),
+            404,
+        )
+
+    return jsonify({"exito": True, "empleado": empleado}), 200
 
 
 # ------------------------------------------
@@ -337,6 +370,15 @@ def api_restablecer_contrasena():
     id_usuario = datos.get("id_usuario")
     token = datos.get("token")
     nueva_contrasena = datos.get("nueva_contrasena")
+
+    if not isinstance(nueva_contrasena, str) or not nueva_contrasena:
+        return (
+            jsonify({
+                "exito": False,
+                "mensaje": "La nueva contraseña es obligatoria.",
+            }),
+            400,
+        )
 
     if not Usuario.verificar_token_recuperacion(id_usuario, token):
         return jsonify({"exito": False, "mensaje": "Token inválido o expirado."}), 400

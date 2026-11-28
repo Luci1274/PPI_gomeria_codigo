@@ -68,7 +68,7 @@
     {% set tipo_usuario = session.get("tipo", "")|trim|upper %}
     {% if tipo_usuario in ["AD", "DEV"] %}
     <button type="button" class="btn btn-clientes" id="btn-clientes">Clientes</button>
-    <button type="button" class="btn btn-clientes" id="btn-inventario">Productos</button>
+    <button type="button" class="btn btn-clientes" id="btn-inventario">Inventario</button>
     {% endif %}
 {% endblock %}
 
@@ -92,7 +92,7 @@
 
 {% block cabecera_modal_tabla %}
     <tr>
-        <th>Producto</th>
+        <th>Artículo o servicio</th>
         <th>Cantidad</th>
         <th>Precio</th>
     </tr>

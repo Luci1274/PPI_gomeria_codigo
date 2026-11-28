@@ -1,127 +1,122 @@
 # Documentación técnica del módulo de empleados
 
-## Descripción general
+## Alcance y archivos
 
-El módulo de empleados concentra tres funciones relacionadas:
+El módulo reúne el inicio de sesión, registro público, recuperación de contraseña y gestión de empleados. Sus componentes principales son:
 
-- inicio y cierre de sesión;
-- registro de usuarios, que crea registros en la tabla `empleado`;
-- consulta, edición y desactivación lógica de empleados.
+- Rutas: `src/modulos/empleados_rutas.py`.
+- Persistencia y contraseñas: `src/modulos/comandos_db/comandos_db_empleado.py`, clase `Usuario`.
+- Gestión: `src/templates/empleados.html` y `src/static/js/empleados.js`.
+- Acceso y recuperación: `src/templates/iniciar_sesion.html` y `src/static/js/login.js`.
+- Control global de sesión y roles: `src/app.py`; lista de rutas públicas predeterminada: `src/config.py`.
+- Esquema de referencia: `docs/estructura_y_datos_DB_27_11_2026.sql`.
 
-La implementación se distribuye entre:
+La vista de gestión extiende `src/templates/plantailla_gestion.html` y carga `src/static/css/gestion.css` y `src/static/css/navbar.css`. La pantalla de acceso usa `src/static/css/iniciar_sesion.css`.
 
-- `src/modulos/empleados_rutas.py`: rutas Flask y respuestas de la API;
-- `src/modulos/comandos_db/comandos_db_empleado.py`: clase `Usuario` y operaciones sobre MySQL;
-- `src/modulos/comandos_db/comando_db_genericos.py`: utilidades compartidas para búsquedas, filtros, normalización y comprobación de duplicados;
-- `src/templates/iniciar_sesion.html` y `src/static/js/login.js`: interfaz de inicio de sesión y registro;
-- `src/templates/componentes/cartel_emergente.html`: aviso reutilizable compartido por el acceso, la gestión y las órdenes;
-- `src/templates/empleados.html` y `src/static/js/empleados.js`: pantalla de gestión;
-- `docs/comandos_creacion_db.sql`: definición estructural de la tabla `empleado`.
-
-La plantilla de gestión extiende `src/templates/plantailla_gestion.html`. Sus estilos se complementan con `src/static/css/empleado.css` y `src/static/css/gestion.css`.
+La visión general de la aplicación, la autorización global, la configuración y las relaciones de la base de datos están en la [documentación general del sistema](./sistema_y_base_de_datos.md). Este documento detalla los flujos de acceso y gestión de empleados.
 
 ## Modelo de datos
 
-La tabla `empleado` tiene las siguientes columnas:
+La tabla `empleado` del esquema de referencia contiene:
 
-| Columna | Tipo | Restricciones / valor predeterminado | Uso |
-|---|---|---|---|
-| `idempleado` | `int` | Clave primaria, autoincremental | Identificador del empleado. |
-| `nombre_usuario` | `varchar(45)` | No admite `NULL` | Nombre utilizado como usuario de acceso y mostrado en la gestión. |
-| `mail` | `varchar(45)` | Admite `NULL` | Correo electrónico. |
-| `contrasena` | `varchar(255)` | No admite `NULL` | Hash de la contraseña. |
-| `tipo` | `varchar(45)` | No admite `NULL` | Rol o tipo del usuario. |
-| `activo` | `tinyint` | No admite `NULL`; predeterminado `1` | Estado lógico del registro. |
-| `telefono` | `varchar(45)` | Admite `NULL` | Teléfono de contacto. |
+| Columna | Tipo | Restricciones / uso |
+|---|---|---|
+| `idempleado` | `int` | Clave primaria autoincremental. |
+| `nombre_usuario` | `varchar(45)` | Obligatorio y único; se usa para iniciar sesión. |
+| `mail` | `varchar(45)` | Opcional. |
+| `contrasena` | `varchar(255)` | Obligatorio; almacena el hash, no la contraseña en texto plano. |
+| `tipo` | `varchar(45)` | Obligatorio; representa el rol. |
+| `activo` | `tinyint` | Obligatorio; predeterminado `1`. |
+| `telefono` | `varchar(45)` | Opcional. |
+| `token_recuperacion` | `varchar(10)` | Código temporal para restablecer la contraseña. |
+| `token_expiracion` | `datetime` | Vencimiento del código. |
 
-El esquema está definido en `docs/comandos_creacion_db.sql`. Al registrarse desde la pantalla de inicio de sesión, el usuario se inserta intencionalmente con el tipo `"Empleado"` y el estado activo predeterminado de la tabla.
+El esquema define una restricción `UNIQUE` para `nombre_usuario`. La comprobación previa en `Usuario.existe_usuario` mejora el mensaje de duplicado, y la restricción de la base de datos también evita duplicados concurrentes.
 
-## Inicio y cierre de sesión
+## Rutas
+
+| Método y ruta | Función | Descripción |
+|---|---|---|
+| `GET /iniciar_sesion` | `iniciar_sesion` | Muestra la pantalla de acceso y registro. |
+| `GET /registrarse` | `iniciar_sesion` | Alias de la pantalla anterior. |
+| `POST /api/iniciar_sesion` | `api_iniciar_sesion` | Valida credenciales y crea la sesión. |
+| `POST /api/registrarse` | `api_registrarse` | Registra un usuario con tipo `Empleado`. |
+| `POST /api/recuperar/solicitar` | `api_solicitar_recuperacion` | Busca la cuenta y genera un código temporal. |
+| `POST /api/recuperar/validar_token` | `api_validar_token` | Verifica el código de recuperación. |
+| `POST /api/recuperar/restablecer` | `api_restablecer_contrasena` | Cambia la contraseña y limpia el código. |
+| `GET /cerrar_sesion` | `cerrar_sesion` | Vacía la sesión y redirige al acceso. |
+| `GET /empleados` | `gestion_empleados` | Renderiza la pantalla de gestión. |
+| `GET /api/empleados` | `api_obtener_empleados` | Devuelve resultados paginados y filtrados. |
+| `GET /api/empleados/<id>/editar` | `api_obtener_empleado` | Devuelve los datos de un empleado. |
+| `POST /api/empleados/<id>/editar` | `api_modificar_empleado` | Actualiza los datos del empleado. |
+| `POST /api/empleados/<id>/desactivar` | `api_desactivar_empleado` | Realiza una baja lógica. |
+| `POST /api/empleados/<id>/activar` | `api_activar_empleado` | Reactiva un empleado inactivo. |
+
+## Inicio de sesión, registro y recuperación
 
 ### Inicio de sesión
 
-La vista de acceso se sirve desde `GET /iniciar_sesion`. También se muestra en `GET /registrarse`; ambas rutas renderizan `iniciar_sesion.html`, que permite alternar entre los formularios de inicio y registro.
+`POST /api/iniciar_sesion` recibe `txt_input_nombre`, `password_input` y `checkbox_recordar` como JSON o formulario. `Usuario.verificar_credenciales` busca una cuenta activa y valida el hash con Werkzeug. Si coincide, la ruta guarda en la sesión `id_usuario`, `nombre_usuario` y `tipo`, y responde `200` con redirección a `/`. Una credencial no válida responde `401`; si falla la comprobación inicial de conexión o la consulta de credenciales, responde `500`.
 
-`POST /api/iniciar_sesion` recibe `txt_input_nombre`, `password_input` y `checkbox_recordar`. La clase `Usuario` busca un usuario activo por `nombre_usuario`, valida la contraseña con Werkzeug y, si las credenciales son correctas, Flask guarda en la sesión:
-
-- `id_usuario`: identificador del empleado;
-- `nombre_usuario`: nombre de usuario;
-- `tipo`: tipo o rol almacenado en la base de datos.
-
-La respuesta exitosa es `200`:
-
-```json
-{
-  "exito": true,
-  "mensaje": "Inicio de sesión exitoso",
-  "redireccion": "/"
-}
-```
-
-Si la conexión con la base de datos no está disponible, la ruta devuelve `500`. Si las credenciales no son válidas, devuelve `401` con `exito: false`.
-
-El navegador envía el estado real del checkbox (`true` o `false`). El servidor interpreta como verdadero los valores `true`, `1`, `on` o `yes`; de ese modo la sesión solo se hace permanente cuando se marcó «Recordar». La duración de esa sesión depende de la configuración Flask, que no se define en este módulo.
-
-Los errores de acceso, conexión y validación se muestran en el cartel emergente compartido. El HTML del componente se define una sola vez en `src/templates/componentes/cartel_emergente.html` y se incluye desde la plantilla de inicio de sesión.
+El navegador envía el estado del checkbox «Recordar». El servidor lo interpreta como verdadero para `true`, `1`, `on` o `yes` y asigna `session.permanent`. La duración concreta depende de la configuración de Flask.
 
 ### Registro
 
 `POST /api/registrarse` recibe:
 
-| Campo JSON | Dato almacenado |
+| Campo JSON | Columna |
 |---|---|
-| `input_nombre` | `empleado.nombre_usuario` |
-| `txt_registro_email` | `empleado.mail` |
-| `tel_input` | `empleado.telefono` |
-| `password_registro` | Hash guardado en `empleado.contrasena` |
+| `input_nombre` | `nombre_usuario` |
+| `txt_registro_email` | `mail` |
+| `tel_input` | `telefono` |
+| `password_registro` | Contraseña, guardada como hash en `contrasena`. |
 
-El navegador compara la contraseña con su confirmación antes de enviar la solicitud. El servidor comprueba si ya existe el nombre de usuario y, si no existe, crea el registro con tipo `"Empleado"` y activo. Este formulario de registro es público y se encuentra en la pantalla de inicio de sesión; no hay un alta desde la pantalla de gestión. Si el alta finaliza correctamente, la ruta devuelve `200` y la redirección a `/iniciar_sesion`. Un nombre de usuario existente produce `400`; los errores de conexión o de inserción producen `500`.
+En el navegador se comparan la contraseña y su confirmación; el servidor también exige nombre de usuario y contraseña no vacíos. Si se usa `intl-tel-input`, se envía el teléfono con código internacional. El servidor comprueba el nombre de usuario y crea la cuenta con tipo `Empleado` y estado activo; no hay un alta de empleado desde la pantalla de gestión.
 
-El método `Usuario.existe_usuario` comprueba el nombre sin filtrar por estado, de modo que un empleado desactivado también impide registrar de nuevo ese mismo nombre. Si no se puede ejecutar la comprobación por un error de base de datos, el endpoint responde `500` y no continúa con el alta.
+La ruta responde `200` al registrar, `400` si faltan el nombre o la contraseña, si el nombre ya existe o si la base rechaza el duplicado; devuelve `500` si no puede comprobar el nombre o insertar el usuario por otra falla. La base de datos también impone unicidad sobre `nombre_usuario`.
 
-### Cierre de sesión
+### Recuperar contraseña
 
-`GET /cerrar_sesion` vacía la sesión mediante `session.clear()` y redirige a `/iniciar_sesion`.
+La pantalla de acceso presenta un modal de tres pasos:
+
+1. Solicita el nombre de usuario y el correo o teléfono asociado.
+2. Permite ingresar el código de seis dígitos.
+3. Solicita la nueva contraseña y su confirmación.
+
+El navegador compara las dos contraseñas antes de solicitar el cambio. El servidor busca una cuenta activa cuyo nombre coincida y cuyo correo o teléfono coincida exactamente con el contacto. El código se guarda con vencimiento a los 15 minutos. Si el contacto contiene `@`, se intenta enviar por correo; en otro caso, por SMS.
+
+`POST /api/recuperar/solicitar` responde `400` si faltan datos, `404` si no encuentra una coincidencia, `500` si no puede conectarse o guardar el código y `200` si lo genera. Actualmente el servicio de envío captura sus propios errores, imprime el código en la consola del servidor y no los propaga a la ruta; por eso la respuesta puede indicar éxito aunque el envío externo haya fallado.
+
+`POST /api/recuperar/validar_token` responde `200` si el código aún es válido y `400` si es incorrecto o expiró. `POST /api/recuperar/restablecer` exige una nueva contraseña no vacía y vuelve a verificar el código antes de guardar el nuevo hash; al actualizarlo, limpia `token_recuperacion` y `token_expiracion`. Responde `400` si falta la contraseña o el código es inválido/expiró, `200` si se actualiza y `500` si falla la escritura.
+
+La búsqueda de cuenta y la verificación del token convierten algunos errores de consulta en el mismo resultado que «cuenta no encontrada» o «código inválido»; por eso esas fallas pueden responder `404` o `400` en lugar de `500`.
 
 ## Gestión de empleados
 
-### Pantalla
+`GET /empleados` carga la estructura HTML; JavaScript consulta la API para poblar la tabla. La pantalla permite:
 
-`GET /empleados` renderiza `empleados.html`. La tabla se carga y actualiza mediante JavaScript, sin recargar la página. La pantalla muestra:
+- buscar por nombre de usuario, correo o teléfono, con una espera de 300 ms;
+- filtrar por rol y por estado, combinando ambos filtros con la búsqueda;
+- navegar los resultados de diez en diez;
+- editar nombre, correo, teléfono y rol desde un modal;
+- desactivar empleados activos con confirmación y reactivar los inactivos.
 
-- el total de empleados que coinciden con la consulta;
-- búsqueda por nombre de usuario, correo o teléfono;
-- búsqueda, filtro por estado y una tabla con nombre, correo, teléfono, rol, estado y acciones;
-- paginación de diez registros;
-- un modal para modificar los datos;
-- confirmación y notificación al desactivar un empleado; las filas inactivas se resaltan en rojo, ocultan la opción de eliminar y ofrecen reactivación.
-
-La búsqueda espera 300 ms desde la última modificación del texto antes de consultar la API. No hay un formulario de alta en esta pantalla: el alta disponible se realiza desde el formulario de registro de la pantalla de acceso.
-
-El modal de edición también se cierra al hacer clic sobre el fondo exterior; el manejador global solo consulta el modal que existe en esta pantalla.
-
-### Rutas de gestión
-
-| Método y ruta | Función | Resultado |
-|---|---|---|
-| `GET /empleados` | `gestion_empleados` | Renderiza la pantalla de gestión. |
-| `GET /api/empleados` | `api_obtener_empleados` | Devuelve empleados filtrados por estado, con búsqueda y paginación. |
-| `GET /api/empleados/<id>/editar` | `api_obtener_empleado` | Devuelve los datos de un empleado para el modal. |
-| `POST /api/empleados/<id>/editar` | `api_modificar_empleado` | Actualiza nombre, correo, teléfono y rol. |
-| `POST /api/empleados/<id>/desactivar` | `api_desactivar_empleado` | Marca el empleado como inactivo. |
-| `POST /api/empleados/<id>/activar` | `api_activar_empleado` | Reactiva un empleado inactivo. |
+La métrica muestra la cantidad total de filas que coinciden con los filtros actuales. Las bajas son lógicas (`activo = 0`); las filas inactivas se resaltan y ofrecen reactivación en lugar de edición o desactivación. El formulario no permite cambiar la contraseña.
 
 ### `GET /api/empleados`
 
-Parámetros de consulta:
+Parámetros:
 
-| Parámetro | Tipo / valor predeterminado | Uso |
+| Parámetro | Predeterminado | Uso |
 |---|---|---|
-| `pagina` | Entero, `1` | Página solicitada. |
-| `buscar` | Texto opcional | Busca coincidencias en nombre de usuario, correo o teléfono. |
-| `activo` | `1` por defecto | `1` activos, `0` inactivos o vacío para todos. |
+| `pagina` | `1` | Página solicitada. |
+| `buscar` | Vacío | Coincidencia parcial en nombre de usuario, correo o teléfono. |
+| `rol` | Sin filtro | Coincidencia exacta con el tipo/rol. |
+| `activo` | `1` | `1` activos, `0` inactivos o vacío para todos. |
 
-La pantalla de gestión solicita diez registros por página y muestra todos los estados inicialmente. Una respuesta exitosa (`200`) tiene esta estructura:
+La interfaz solicita diez filas por página y envía vacío para `rol` o `activo` cuando se selecciona «Todos». Si no hay coincidencias, `total_paginas` es `1`.
+
+Respuesta exitosa (`200`):
 
 ```json
 {
@@ -129,64 +124,55 @@ La pantalla de gestión solicita diez registros por página y muestra todos los 
   "total_items": 0,
   "total_paginas": 1,
   "limite": 10,
-  "empleados": []
+  "empleados": [],
+  "roles": []
 }
 ```
 
-Cuando no hay coincidencias, `total_paginas` vale `1`. Si falla la conexión o la consulta, la ruta devuelve `500` y `exito: false`.
+`roles` contiene los valores distintos no vacíos de `empleado.tipo`, incluidos los que solo pertenecen a empleados inactivos. Si falla la comprobación de conexión o la consulta, la ruta responde `500`.
 
-La capa de acceso a datos también admite un filtro por `rol`, que la ruta no expone. Tampoco incluye en su respuesta la lista de roles que obtiene el método `leer_empleados`.
+### Consulta, edición y estado
 
-### Consulta y modificación
+`GET /api/empleados/<id>/editar` devuelve `200` con `exito: true` y `empleado` (`idempleado`, `nombre`, `email`, `telefono`, `rol`, `activo`). Si no existe el ID responde `404`; si falla la consulta, `500`.
 
-La consulta de un empleado devuelve `200` con `exito: true` y un objeto `empleado` que contiene `idempleado`, `nombre`, `email`, `telefono`, `rol` y `activo`. Si no encuentra el identificador, devuelve `404`.
+`POST /api/empleados/<id>/editar` recibe `nombre`, `email`, `telefono` y `rol`. Si se omite `rol`, la ruta usa `Empleado`. La capa de datos recorta espacios, normaliza el nombre y el rol a formato título, convierte el correo a minúsculas y quita espacios exteriores del teléfono. La ruta no recibe una contraseña. Responde `200` si se ejecuta la actualización o `500` ante un error; la capa de datos no verifica si el ID afectó una fila.
 
-La modificación recibe un JSON con `nombre`, `email`, `telefono` y `rol`. Si no se envía el rol, la ruta usa `"Empleado"`. La clase `Usuario` normaliza el nombre y el rol a formato título, convierte el correo a minúsculas y quita espacios exteriores de teléfono. La contraseña no forma parte del formulario ni se cambia desde esta ruta.
+`POST /api/empleados/<id>/desactivar` actualiza solo empleados activos. Responde `200` si se modificó una fila, `400` si no se modificó ninguna fila o falla la operación de actualización y `500` si falla la comprobación inicial de conexión.
 
-Una modificación exitosa devuelve `200`; un error de persistencia devuelve `500`.
+`POST /api/empleados/<id>/activar` cambia solo empleados inactivos a activos. Responde `200` si se modificó una fila, `400` si no estaba inactivo o falla la operación de actualización y `500` si falla la comprobación inicial de conexión.
 
-### Baja lógica
+## Sesión y permisos
 
-La desactivación se realiza mediante `UPDATE empleado SET activo = 0`; el registro no se elimina físicamente. La ruta devuelve `200` si la operación termina sin error y `400` si falla.
+`proteger_rutas`, en `src/app.py`, aplica la autorización global antes de cada solicitud:
 
-`POST /api/empleados/<id>/activar` cambia `activo` de `0` a `1`. Devuelve `200` cuando se reactiva una fila y `400` si el empleado no está inactivo o si falla la operación. El endpoint de listado conserva `activo=1` como predeterminado para clientes que no envían el filtro.
+- Las rutas estáticas se omiten.
+- Sin `id_usuario` en sesión, una página redirige a `/iniciar_sesion`; una solicitud API recibe `401` JSON.
+- Los tipos de usuario `AD` y `DEV` pueden acceder a todas las rutas protegidas.
+- Los tipos `EM` y `EMPLEADO` solo pueden acceder a los endpoints enumerados en `ENDPOINTS_EMPLEADO` (`inicio`, ventas permitidas y cierre de sesión). La gestión de empleados no está incluida, por lo que queda restringida a `AD` y `DEV`.
+- Con sesión pero sin permiso, las API reciben `403` JSON y las páginas redirigen a `/`.
 
-## Acceso y permisos
+Por defecto, `src/config.py` marca como públicas las vistas de acceso/registro y las API de inicio de sesión, registro y recuperación. Si se configura `RUTAS_PUBLICAS` en el entorno, esa lista reemplaza los valores predeterminados.
 
-Las rutas de inicio de sesión y registro están incluidas entre las rutas públicas predeterminadas de `src/config.py`. El resto de las solicitudes pasa por la guardia global `proteger_rutas` de `src/app.py`, que exige una sesión.
+`Config.SECRET_KEY` se obtiene de `CLAVE_SECRETA`, pero actualmente usa `clave_por_defecto_dev` si la variable no está definida. En un despliegue debe configurarse una clave secreta propia mediante el entorno.
 
-Los usuarios cuyo tipo normalizado sea `AD` o `DEV` pueden acceder a todas las rutas protegidas. Los tipos `EM` o `EMPLEADO` solo pueden acceder a los endpoints incluidos expresamente en `ENDPOINTS_EMPLEADO`; las rutas de gestión de empleados no están en esa lista. Por lo tanto, la gestión queda reservada a los tipos `AD` y `DEV`.
-
-## Clase `Usuario` (acceso a datos)
+## Clase `Usuario` y utilidades de datos
 
 | Método | Comportamiento |
 |---|---|
-| `hash_contraseña(contraseña)` | Genera un hash con `werkzeug.security.generate_password_hash`. |
-| `verificar_credenciales(nombre, contraseña)` | Busca por nombre de usuario activo, valida el hash y devuelve identificador, tipo y nombre; si no coinciden devuelve `None`. |
-| `crear_usuario()` | Genera el hash e inserta nombre, correo, teléfono, contraseña y tipo; devuelve el identificador generado o `None` ante un error de MySQL. |
-| `existe_usuario(nombre)` | Comprueba si existe el nombre de usuario, sin filtrar por estado; devuelve `None` si la consulta falla para impedir que el alta continúe sin verificar duplicados. |
-| `leer_empleados(...)` | Aplica búsqueda, filtros disponibles en la capa de datos y paginación; devuelve `(total_items, empleados, roles, exito)`. |
-| `leer_empleado(id)` | Obtiene un empleado por identificador, incluyendo su estado; no excluye los inactivos. Devuelve `(empleado, True)` aunque no encuentre filas, o `(None, False)` ante un error de MySQL. |
-| `modificar_empleado(id, ...)` | Actualiza nombre, correo, teléfono y tipo; admite cambiar también la contraseña si se invoca directamente con ese argumento. |
-| `eliminar_empleado(id)` | Realiza la baja lógica actualizando `activo` a `0`. |
-| `activar_empleado(id)` | Reactiva un empleado inactivo actualizando `activo` a `1`. |
+| `hash_contraseña` / `verificar_credenciales` | Genera y valida hashes de contraseña con Werkzeug. El login solo encuentra cuentas activas. |
+| `crear_usuario` | Inserta el empleado y devuelve su ID o `None` si falla MySQL. |
+| `existe_usuario` | Busca por nombre, sin filtrar por estado; los usuarios inactivos también reservan su nombre. Devuelve `None` si no se puede comprobar. |
+| `leer_empleados(...)` | Busca, filtra por rol/estado y pagina; devuelve `(total_items, empleados, roles, exito)`. |
+| `leer_empleado(id)` | Consulta por ID sin filtrar por estado; devuelve `(empleado, True)` incluso sin fila y `(None, False)` ante error de MySQL. |
+| `modificar_empleado(...)` | Normaliza y actualiza datos; permite contraseña opcional al invocarse directamente, pero la ruta de gestión no la envía. |
+| `eliminar_empleado(id)` / `activar_empleado(id)` | Cambia `activo` y devuelve si se modificó una fila. |
+| Métodos de recuperación | Buscan cuenta activa por nombre/contacto, guardan y verifican el token temporal, y actualizan la contraseña limpiando el token. |
 
-Las consultas parametrizan los valores con marcadores `%s`. Los errores de las operaciones de base de datos se imprimen en la salida del servidor; las operaciones de escritura confirman la transacción si terminan correctamente y hacen rollback cuando capturan un error.
+`GenericosDB`, en `src/modulos/comandos_db/comando_db_genericos.py`, aporta la búsqueda `LIKE`, construcción de `WHERE`, normalización y comprobación de duplicados. Las operaciones de acceso a datos parametrizan los valores SQL.
 
-## Utilidades compartidas de base de datos
+## Consideraciones
 
-La clase `GenericosDB`, en `src/modulos/comandos_db/comando_db_genericos.py`, reúne lógica que se utiliza desde varias clases de acceso a datos:
-
-- `normalizar_texto` recorta espacios y permite normalizar texto a formato título o minúsculas;
-- `agregar_filtro_busqueda` agrega condiciones `LIKE` parametrizadas para una o varias columnas;
-- `construir_where` arma la cláusula `WHERE` a partir de condiciones y devuelve una cadena vacía cuando no hay filtros;
-- `existe_registro` comprueba duplicados con criterios parametrizados y normalización opcional para comparar textos sin distinguir mayúsculas ni espacios exteriores.
-
-La comprobación de duplicados se usa para nombres de usuario y para la combinación de nombre, tipo, marca y medidas del producto. Es una verificación a nivel de aplicación: el esquema adjunto no define una restricción `UNIQUE` para estos casos, así que dos altas simultáneas aún podrían superar la comprobación antes de insertar.
-
-## Puntos a revisar
-
-- **Validación de datos en servidor:** las rutas de registro y edición no validan de forma explícita los campos obligatorios, formato de correo ni longitudes antes de llamar a la capa de datos. Conviene definir estas reglas en el servidor, además de las restricciones del formulario.
-- **Baja sin confirmación de estado en la base:** `eliminar_empleado` devuelve éxito si la consulta no genera excepción, aunque el identificador no exista o ya estuviera inactivo; no comprueba el número de filas afectadas.
-- **Edición de empleados inactivos:** la consulta por ID y la actualización no filtran por `activo`, aunque el listado normal solo muestra activos. Un cliente que conozca el ID puede pedir los datos y modificar un registro inactivo.
-- **Los filtros de rol y estado no están disponibles en la pantalla:** existen parámetros en la capa de datos, pero no se exponen en la ruta ni en la interfaz.
+- El servidor exige nombre y contraseña en el registro, y contraseña no vacía al restablecerla, pero no aplica una política de longitud/fuerza ni valida el formato del correo. La edición tampoco valida de forma completa los campos obligatorios ni sus longitudes; las validaciones HTML/JavaScript no sustituyen las del servidor.
+- La edición por ID no filtra por estado y `modificar_empleado` no comprueba el número de filas afectadas. La pantalla solo ofrece editar para empleados activos, pero el endpoint protegido puede recibir un ID inactivo.
+- El filtro por estado ya estaba disponible; el filtro por rol ahora se expone en la API y en la interfaz, reutilizando la lista `roles` que ya obtenía la capa de datos.
+- La comprobación de nombre duplicado se complementa con la restricción única de la base. Si una carrera entre altas alcanza el `INSERT`, la restricción detiene la segunda inserción y la API devuelve `500`.

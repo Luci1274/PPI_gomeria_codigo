@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="texto-derecha">#${c.idcompra || c.id_orden}</td>
                 <td class="texto-izquierda">${c.fecha}</td>
                 <td class="texto-izquierda">${c.proveedor || 'Proveedor General'}</td>
-                <td>${c.tipos_producto || 0} tipos</td>
+                <td>${c.tipo || '-'}</td>
                 <td class="texto-derecha">${c.total_productos || 0} unidades</td>
                 <td><span class="badge ${estaActiva ? 'activo' : 'inactivo'}">${estaActiva ? 'Activa' : 'Anulada'}</span></td>
                 <td>${Number(c.completo) === 1 ? 'Completa' : 'Incompleta'}</td>

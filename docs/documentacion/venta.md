@@ -2,15 +2,15 @@
 
 ## Descripción general
 
-El módulo permite crear órdenes de venta de productos y servicios, consultar las ventas registradas, ver el detalle y anular una operación. La venta se persiste en una transacción que incluye la cabecera, los ítems, el ajuste de stock de productos y el historial del pago.
+El módulo permite crear ventas de productos y servicios, consultar el listado y el detalle, imprimir o descargar un comprobante y anular una operación. La cabecera, los ítems, el descuento de stock y el registro de pago se guardan en una transacción.
 
 Archivos principales:
 
-- `src/modulos/ventas_rutas.py`: vistas, API y cálculo del total.
-- `src/modulos/comandos_db/comandos_db_venta.py`: acceso a datos y transacciones de venta.
-- `src/templates/ventas.html` y `src/static/js/ventas.js`: gestión, filtros, detalle y anulación.
-- `src/templates/orden_venta.html` y `src/static/js/realizar_venta.js`: catálogo, carrito y confirmación de la venta.
-- `src/templates/plantilla_orden.html`: estructura compartida de la pantalla de orden.
+- `src/modulos/ventas_rutas.py`: vistas, API y validación de solicitudes.
+- `src/modulos/comandos_db/comandos_db_venta.py`: consultas y transacciones de ventas.
+- `src/templates/ventas.html` y `src/static/js/ventas.js`: listado, filtros, detalle, anulación e impresión/PDF.
+- `src/templates/orden_venta.html`, `src/templates/plantilla_orden.html` y `src/static/js/realizar_venta.js`: catálogo, carrito y confirmación.
+- `docs/estructura_y_datos_DB_27_11_2026.sql`: esquema de referencia.
 
 ## Rutas
 
@@ -18,47 +18,41 @@ Las rutas pertenecen a `ventas_bp`.
 
 | Método y ruta | Función | Descripción |
 |---|---|---|
-| `GET /ventas` | `vista_gestion_ventas` | Renderiza la gestión de ventas. |
-| `GET /api/ventas` | `api_ventas` | Devuelve ventas paginadas y métricas, filtradas por estado cuando se solicita. |
-| `GET /venta/<id>/detalle` | `vista_detalle_venta` | Devuelve la cabecera y los ítems de una venta. |
-| `POST /api/ventas/anular/<id_venta>` | `api_anular_venta` | Anula una venta y repone el stock de sus productos. |
-| `GET /ventas/realizar` | `vista_realizar_venta` | Carga el catálogo, tipos activos, clientes y métodos de pago. |
-| `POST /api/ventas/realizar` | `api_procesar_venta` | Valida y registra el carrito como una venta. |
+| `GET /ventas` | `vista_gestion_ventas` | Renderiza el listado de ventas. |
+| `GET /api/ventas` | `api_ventas` | Devuelve resultados paginados y métricas según los filtros. |
+| `GET /venta/<id>/detalle` | `vista_detalle_venta` | Devuelve en JSON la cabecera y los ítems. |
+| `POST /api/ventas/anular/<id_venta>` | `api_anular_venta` | Anula la venta y repone el stock de sus productos. |
+| `GET /ventas/realizar` | `vista_realizar_venta` | Carga productos y servicios activos, tipos, clientes y métodos de pago activos. |
+| `POST /api/ventas/realizar` | `api_procesar_venta` | Valida y registra el carrito. |
 
-El acceso a las rutas se controla mediante la protección de sesión y roles configurada en `src/app.py`.
+## Gestión y consulta
 
-## Gestión de ventas
-
-La pantalla principal muestra el total de ventas, el total de unidades y una tabla con fecha, cliente, cantidad, precio final, estado y acciones. Permite buscar por cliente, filtrar por fecha y estado, y paginar los resultados. Las ventas anuladas se muestran en rojo y no ofrecen la opción de anular de nuevo; no existe un flujo para reactivarlas.
+El listado permite buscar por nombre o apellido del cliente, filtrar por estado y fecha, definir un rango manual y navegar páginas. El filtro visual inicia con todas las ventas y la fecha de hoy. Para el rango manual se deben completar ambas fechas; si se completa, reemplaza el período predefinido. Las métricas se calculan sobre todos los registros que coinciden con los filtros, no solo sobre la página actual. “Unidades vendidas” incluye las cantidades de productos y servicios.
 
 `GET /api/ventas` acepta:
 
 | Parámetro | Uso |
 |---|---|
-| `busqueda` | Busca por nombre o apellido del cliente. |
+| `busqueda` | Busca por los términos ingresados en nombre y apellido del cliente. |
 | `filtro_fecha` | `hoy` (predeterminado), `semana`, `mes`, `anio` o `todos`. |
-| `fecha_inicio`, `fecha_fin` | Si ambos están presentes, filtran un intervalo manual de fechas. |
-| `estado` | `1` por defecto; `1` activas, `0` anuladas o `todos` para ambos estados. |
-| `pagina` | Página solicitada; comienza en `1`. |
-| `limite` | Cantidad por página; el acceso a datos usa `20` por defecto. |
+| `fecha_inicio`, `fecha_fin` | Intervalo opcional en formato `AAAA-MM-DD`; se requieren ambos. Si se indican, prevalecen sobre el filtro predefinido. |
+| `estado` | `1`, `0` o `todos`. La API usa `1` por defecto; la interfaz inicia en `todos`. |
+| `pagina` | Página solicitada; predeterminado `1`. |
+| `limite` | Resultados por página; predeterminado `20`. |
 
-La respuesta contiene `ventas`, `paginacion`, `resumen` y `Exito`. Los errores de acceso a datos se devuelven con `Exito: false`; la ruta responde `500`.
+Los períodos son de calendario: `hoy` cubre el día actual, `semana` los últimos siete días calendario incluyendo hoy, `mes` el mes actual y `anio` el año actual. Los valores de estado, fecha, página, límite e intervalo se validan; los inválidos responden `400`.
 
-El detalle se carga desde el botón de resumen. Incluye cliente, fecha, ítems, subtotal, descuento y total pagado. Al anular, la interfaz solicita confirmación y envía POST; si la operación tiene éxito vuelve a cargar el listado.
+La respuesta exitosa contiene `ventas`, `paginacion`, `resumen` y `Exito: true`. `resumen` agrega ventas, unidades y monto para el conjunto filtrado. Una falla de consulta responde `500` con `exito: false`.
+
+El detalle se obtiene al abrir “Ver resumen”. Incluye cliente, fecha, artículos, cantidades, precios unitarios, subtotal, descuento y total. El modal permite imprimir o generar un PDF del comprobante; se utilizan html2canvas y jsPDF cargados desde CDN. Una venta inexistente responde `404` y una falla de consulta, `500`.
 
 ## Crear una venta
 
-La orden reúne productos y servicios activos en un mismo catálogo. Cada ítem conserva `tipo_item` (`producto` o `servicio`) además del ID porque sus tablas pueden tener identificadores coincidentes. Los productos descuentan stock; los servicios no tienen stock.
+La pantalla reúne productos y servicios activos en un catálogo común, que se puede buscar por nombre y filtrar por tipo. Cada selección agrega una unidad al carrito; se pueden quitar ítems y revisar el resumen, incluso desde el panel móvil.
 
-El usuario elige cliente y método de pago, agrega ítems al carrito y puede ingresar un **descuento como importe fijo en dinero**, no como porcentaje. El resumen muestra:
+Cada ítem se identifica con `tipo_item` (`producto` o `servicio`) e `idproducto_servicio`, ya que las tablas pueden tener IDs coincidentes. Los productos descuentan stock; los servicios no tienen stock. El cliente predeterminado es el registro de consumidor final (`idcliente = 1`) y la interfaz requiere elegir un método de pago.
 
-- subtotal de los ítems;
-- descuento aplicado;
-- total a pagar (`subtotal - descuento`).
-
-El descuento no puede ser negativo ni superar el subtotal. La interfaz limita el valor al subtotal vigente y el endpoint vuelve a validar estos límites. La orden confirma los mismos importes antes de enviarla. Al navegar a Inventario para agregar un servicio, se conservan el carrito y el descuento en `localStorage`.
-
-El endpoint `POST /api/ventas/realizar` recibe JSON con:
+El descuento es un importe fijo de dinero, no un porcentaje. La interfaz limita el valor al subtotal mostrado y enseña subtotal, descuento y total. Para confirmar, `POST /api/ventas/realizar` recibe JSON:
 
 ```json
 {
@@ -76,30 +70,25 @@ El endpoint `POST /api/ventas/realizar` recibe JSON con:
 }
 ```
 
-`descuento` es una cantidad monetaria y usa `0` cuando no se aplica. El servidor valida que sea numérico, finito, no negativo y menor o igual al subtotal del carrito; los valores inválidos responden `400`. El endpoint también exige un carrito y una sesión válida.
+El precio que envía el navegador es una referencia para mostrar la orden, no la fuente del importe guardado. Dentro de la transacción, el servidor vuelve a cargar y bloquear los registros activos, compara sus precios vigentes con los mostrados, verifica el stock y calcula subtotal y total usando los precios de la base de datos. Si cambió un precio o el stock dejó de alcanzar, responde `409` y no registra la venta; hay que actualizar la orden. El descuento se valida contra el subtotal vigente y debe ser finito, no negativo ni superior a este.
 
-Si la venta se registra, responde `201` con `exito`, `mensaje`, `id_venta` y `redireccion`. Los errores de registro responden `500`. Tras el éxito, el navegador elimina el carrito y el descuento guardados y redirige a `/ventas`.
+El cliente y el método de pago deben seguir activos; también se validan el tipo e identificador de cada artículo, la cantidad y el precio. Datos inválidos, método ausente o carrito vacío responden `400`; precio o stock que cambió, `409`; un error de persistencia, `500`. Si se registra, responde `201` con `exito`, `mensaje`, `id_venta` y `redireccion`. El navegador elimina el carrito y el descuento guardados y vuelve a `/ventas`.
 
-## Acceso a datos y persistencia
+Al navegar a Clientes o al Inventario desde la orden, se guardan en `localStorage` los IDs, tipos, cantidades y descuento. Al regresar se reconstruye el carrito con el catálogo actual y sus precios vigentes; artículos que ya no están disponibles no se restauran. Al volver desde Inventario se usa `/inventario?volver=venta`.
 
-La clase `Venta`, en `comandos_db_venta.py`, realiza las operaciones principales:
+## Persistencia y reglas de negocio
 
-- `obtener_datos_inicio_venta()` carga productos, servicios, tipos, clientes activos y métodos de pago activos.
-- `registrar(...)` valida la estructura del carrito, comprueba que los productos y servicios sigan activos, bloquea y verifica el stock de productos, y abre una transacción.
-- La cabecera se guarda en `venta`, incluidos `descuento`, `cantidad_total_productos` y `precio_total`.
-- Cada ítem se guarda en `item_venta` con `idproducto` o `idservicio`, dejando el otro identificador nulo.
-- Solo se descuenta stock de la tabla `producto`.
-- El importe final se guarda como monto en `historial_pago_cliente`, junto al método de pago y la venta.
-- `obtener_ventas_paginadas(...)` lista las ventas que coinciden con los filtros de estado y fecha, y agrega métricas.
-- `obtener_por_id(id_venta)` carga cabecera e ítems; incluye el descuento para mostrarlo en el detalle.
-- `anular(id_venta)` marca la venta inactiva y repone el stock únicamente de los productos asociados.
+La clase `Venta` coordina las operaciones:
 
-Los datos corresponden a las tablas `venta`, `item_venta`, `producto`, `servicio`, `cliente`, `empleado`, `metodos_pago` e `historial_pago_cliente`, según el esquema actual de `docs/comandos_creacion_db.sql`.
+- `obtener_datos_inicio_venta()` carga el catálogo activo, los tipos activos, los clientes activos y los métodos de pago activos.
+- `registrar(...)` valida cliente y método de pago activos, comprueba los artículos, bloquea productos para verificar existencias, y vuelve a comprobar los precios. Cabecera, ítems, descuento de stock y pago se confirman juntos o se revierten juntos.
+- `venta` guarda cliente, empleado, fecha, descuento, `precio_total`, `iva`, estado y cantidad total de unidades.
+- `item_venta` guarda cantidad y precio unitario vigente. Usa `idproducto` para productos o `idservicio` para servicios; el otro campo queda nulo.
+- `historial_pago_cliente` guarda un pago por el total de la venta, el método elegido y el plazo (`0`).
+- `anular(id_venta)` bloquea la cabecera de la venta para impedir anulaciones simultáneas, marca la venta inactiva y repone únicamente el stock de productos. No elimina los ítems ni el registro del pago.
 
-## Consideraciones para continuar
+La pantalla registra ventas completas (`estado = 1`). Aunque existe una columna `iva`, actualmente el valor guardado es `21` y no se suma al total. `numero_factura` se envía como el valor constante `1`; no se genera numeración correlativa. `cantidad_total_productos` suma unidades de productos y servicios, por eso la interfaz la presenta como unidades vendidas.
 
-- `precio_total` se calcula restando el descuento al subtotal recibido en el carrito. Aunque la tabla tiene un campo `iva`, el cálculo actual no agrega IVA al total.
-- Los precios unitarios se reciben desde el navegador y se utilizan para calcular y persistir la venta. Para evitar manipulación del importe desde una petición modificada, convendría obtener el precio vigente desde la base de datos al registrar y usar el precio enviado solo como referencia de interfaz.
-- `numero_factura` se envía actualmente con el valor constante `1`; no se genera un número correlativo.
-- `cantidad_total_productos` suma las unidades de todos los ítems del carrito, también los servicios, pese al nombre de la columna.
-- La anulación repone existencias de productos y marca la venta inactiva; no elimina físicamente la venta ni sus ítems.
+## Acceso
+
+La protección global de `src/app.py` permite las rutas de venta a `AD`, `DEV` y a `EM`/`EMPLEADO` mediante la lista de endpoints autorizados. Sin sesión, las páginas redirigen al inicio de sesión y las APIs responden `401`; sin permiso, las APIs responden `403` y las páginas redirigen a `/`.

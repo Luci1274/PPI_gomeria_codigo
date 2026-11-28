@@ -20,6 +20,13 @@ def api_inventario():
     tipo = request.args.get("tipo", None)
     marca = request.args.get("marca", None)
     estado = request.args.get("estado", None)
+    stock = request.args.get("stock", "todos")
+
+    if stock not in {"todos", "bajo"}:
+        return jsonify({
+            "exito": False,
+            "mensaje": "El filtro de stock indicado no es válido."
+        }), 400
     
     total_items, productos, tipos, marcas, exito = Producto.leer_productos(
         pagina=pagina,
@@ -27,7 +34,8 @@ def api_inventario():
         buscar=buscar,
         tipo=tipo,
         marca=marca,
-        estado=estado    
+        estado=estado,
+        stock=stock,
     )
     
     total_paginas = max(1, (total_items + 10 - 1) // 10)
@@ -165,12 +173,18 @@ def api_obtener_producto(id):
         return jsonify({"exito": False, "mensaje": "Tipo de artículo inválido."}), 400
     producto, exito = Producto.leer_producto(id, tipo_item)
     
-    if not exito or producto is None:
+    if not exito:
         return jsonify({
             "exito": False,
-            "mensaje": "Error: no se pudo obtener el producto de la base de datos.",
+            "mensaje": "Error: no se pudo consultar el artículo en la base de datos.",
             "redireccion": "/inventario"
         }), 500
+
+    if producto is None:
+        return jsonify({
+            "exito": False,
+            "mensaje": "No se encontró el artículo indicado.",
+        }), 404
     
     return jsonify({
         "exito": True,

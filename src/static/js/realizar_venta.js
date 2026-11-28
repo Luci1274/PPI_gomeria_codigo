@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             actualizarResumen();
-            mostrarNotificacion('¡Añadido!', 'Producto agregado al pedido.', 2000);
+            mostrarNotificacion('¡Añadido!', 'Artículo agregado al pedido.', 2000);
         });
     });
 

@@ -1,15 +1,55 @@
 from datetime import datetime, date
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 import math
 from typing import Optional
 
 import pymysql
 from config import Config
 
+
+class VentaValidacionError(ValueError):
+    """Los datos de la venta no cumplen las reglas del dominio."""
+
+
+class VentaConflictoError(VentaValidacionError):
+    """El stock o los precios cambiaron antes de confirmar la venta."""
+
+
 #------------------------------------------------------------------------
 # TABLA VENTA
 #------------------------------------------------------------------------
 
 class Venta:
+    CENTAVO = Decimal("0.01")
+
+    @staticmethod
+    def _entero_positivo(valor, campo):
+        if isinstance(valor, bool):
+            raise VentaValidacionError(f"El campo {campo} no es válido.")
+        try:
+            numero = Decimal(str(valor))
+        except (InvalidOperation, TypeError, ValueError):
+            raise VentaValidacionError(f"El campo {campo} no es válido.") from None
+        if (
+            not numero.is_finite()
+            or numero != numero.to_integral_value()
+            or numero < 1
+        ):
+            raise VentaValidacionError(f"El campo {campo} no es válido.")
+        return int(numero)
+
+    @staticmethod
+    def _importe_no_negativo(valor, campo):
+        try:
+            importe = Decimal(str(valor))
+        except (InvalidOperation, TypeError, ValueError):
+            raise VentaValidacionError(f"El importe de {campo} no es válido.") from None
+        if not importe.is_finite() or importe < 0:
+            raise VentaValidacionError(f"El importe de {campo} no es válido.")
+        try:
+            return importe.quantize(Venta.CENTAVO, rounding=ROUND_HALF_UP)
+        except InvalidOperation:
+            raise VentaValidacionError(f"El importe de {campo} no es válido.") from None
 
     @staticmethod
     def registrar(
@@ -20,32 +60,59 @@ class Venta:
         numero_factura=1,
         iva=21.0,
         descuento=0.0,
-        precio_total=0.0,
-        total_productos=0,
         estado=1, #Es el estado de la venta 1 = completo, 0= deuda
         plazo_pago=0 #la cantidad de dias que el 0 tiene para pagar
     ):
         """Registra la Venta, sus Ítems, descuenta Stock e inserta el registro en el historial de pagos."""
-        conexion = Config.conectar_db()
+        if not isinstance(lista_items, list) or not lista_items:
+            raise VentaValidacionError("El carrito no puede estar vacío.")
+
+        id_cliente = Venta._entero_positivo(id_cliente, "cliente")
+        id_metodo_pago = Venta._entero_positivo(id_metodo_pago, "método de pago")
+        id_empleado = Venta._entero_positivo(id_empleado, "empleado")
+        descuento = Venta._importe_no_negativo(descuento, "descuento")
+
+        items_sanitizados = []
+        for item in lista_items:
+            if not isinstance(item, dict):
+                raise VentaValidacionError("Un artículo del carrito no es válido.")
+            tipo_item = item.get("tipo_item", "producto")
+            if tipo_item not in {"producto", "servicio"}:
+                raise VentaValidacionError("El tipo de artículo no es válido.")
+            id_item = Venta._entero_positivo(
+                item.get("idproducto_servicio"), "artículo"
+            )
+            cantidad = Venta._entero_positivo(item.get("cantidad"), "cantidad")
+            precio_cliente = Venta._importe_no_negativo(
+                item.get("precio_unitario"), "precio del artículo"
+            )
+            items_sanitizados.append({
+                "idproducto_servicio": id_item,
+                "tipo_item": tipo_item,
+                "precio_cliente": precio_cliente,
+                "cantidad": cantidad,
+            })
+
+        conexion = None
         try:
+            conexion = Config.conectar_db()
             with conexion.cursor() as cursor:
-                # Sanitización explícita de ítems
-                items_sanitizados = []
-                for item in lista_items:
-                    tipo_item = item.get("tipo_item", "producto")
-                    id_item = int(item["idproducto_servicio"])
-                    precio = float(item["precio_unitario"])
-                    cantidad = int(item["cantidad"])
-                    if tipo_item not in {"producto", "servicio"} or id_item <= 0:
-                        raise ValueError("Un artículo del carrito no es válido.")
-                    if precio < 0 or cantidad <= 0:
-                        raise ValueError("El precio y la cantidad deben ser válidos.")
-                    items_sanitizados.append({
-                        "idproducto_servicio": id_item,
-                        "tipo_item": tipo_item,
-                        "precio_unitario": precio,
-                        "cantidad": cantidad
-                    })
+                cursor.execute(
+                    "SELECT idcliente FROM cliente WHERE idcliente = %s AND activo = 1 FOR UPDATE",
+                    (id_cliente,),
+                )
+                if not cursor.fetchone():
+                    raise VentaValidacionError("El cliente seleccionado no está disponible.")
+
+                cursor.execute(
+                    "SELECT idmetodos_pago FROM metodos_pago "
+                    "WHERE idmetodos_pago = %s AND activo = 1 FOR UPDATE",
+                    (id_metodo_pago,),
+                )
+                if not cursor.fetchone():
+                    raise VentaValidacionError(
+                        "El método de pago seleccionado no está disponible."
+                    )
 
                 # 1. Validar stock disponible
                 cantidades_productos = {}
@@ -55,17 +122,18 @@ class Venta:
                         cantidades_productos[id_producto] = (
                             cantidades_productos.get(id_producto, 0) + item["cantidad"]
                         )
-                ids_productos = list(cantidades_productos)
-                ids_servicios = [
+                ids_productos = sorted(cantidades_productos)
+                ids_servicios = sorted({
                     item["idproducto_servicio"]
                     for item in items_sanitizados
                     if item["tipo_item"] == "servicio"
-                ]
+                })
+                precios_actuales = {}
 
                 if ids_productos:
                     format_strings = ",".join(["%s"] * len(ids_productos))
                     sql_check = f"""
-                        SELECT idproducto, nombre, cantidad_actual
+                        SELECT idproducto, nombre, cantidad_actual, precio
                         FROM producto
                         WHERE activo = 1 AND idproducto IN ({format_strings})
                         FOR UPDATE;
@@ -77,24 +145,74 @@ class Venta:
 
                     for prod_id, cant_pedida in cantidades_productos.items():
                         if prod_id not in productos_db:
-                            raise ValueError("Uno de los productos ya no está disponible.")
+                            raise VentaConflictoError(
+                                "Uno de los productos ya no está disponible."
+                            )
                         prod = productos_db[prod_id]
                         if prod["cantidad_actual"] < cant_pedida:
-                            raise ValueError(
+                            raise VentaConflictoError(
                                 f"Stock insuficiente para '{prod['nombre']}'. Disponibles: {prod['cantidad_actual']}, Solicitados: {cant_pedida}"
                             )
+                        precios_actuales[("producto", prod_id)] = Decimal(
+                            str(prod["precio"])
+                        ).quantize(Venta.CENTAVO, rounding=ROUND_HALF_UP)
 
                 if ids_servicios:
                     marcadores = ",".join(["%s"] * len(ids_servicios))
                     cursor.execute(
-                        f"SELECT idservicio FROM servicio WHERE activo = 1 AND idservicio IN ({marcadores})",
+                        f"""
+                        SELECT idservicio, nombre, precio
+                        FROM servicio
+                        WHERE activo = 1 AND idservicio IN ({marcadores})
+                        FOR UPDATE
+                        """,
                         ids_servicios,
                     )
                     servicios_validos = {
-                        servicio["idservicio"] for servicio in cursor.fetchall()
+                        servicio["idservicio"]: servicio
+                        for servicio in cursor.fetchall()
                     }
-                    if not set(ids_servicios).issubset(servicios_validos):
-                        raise ValueError("Uno de los servicios ya no está disponible.")
+                    for id_servicio in ids_servicios:
+                        servicio = servicios_validos.get(id_servicio)
+                        if not servicio:
+                            raise VentaConflictoError(
+                                "Uno de los servicios ya no está disponible."
+                            )
+                        precios_actuales[("servicio", id_servicio)] = Decimal(
+                            str(servicio["precio"])
+                        ).quantize(Venta.CENTAVO, rounding=ROUND_HALF_UP)
+
+                subtotal = Decimal("0.00")
+                for item in items_sanitizados:
+                    clave = (item["tipo_item"], item["idproducto_servicio"])
+                    precio_actual = precios_actuales.get(clave)
+                    if precio_actual is None:
+                        raise VentaConflictoError(
+                            "Uno de los artículos ya no está disponible."
+                        )
+                    if item["precio_cliente"] != precio_actual:
+                        nombre = (
+                            productos_db[item["idproducto_servicio"]]["nombre"]
+                            if item["tipo_item"] == "producto"
+                            else servicios_validos[item["idproducto_servicio"]]["nombre"]
+                        )
+                        raise VentaConflictoError(
+                            f"El precio de '{nombre}' cambió. Actualiza la orden antes de confirmar."
+                        )
+                    item["precio_unitario"] = precio_actual
+                    subtotal += precio_actual * item["cantidad"]
+
+                if descuento > subtotal:
+                    raise VentaValidacionError(
+                        "El descuento no puede superar el subtotal vigente."
+                    )
+
+                precio_total = (subtotal - descuento).quantize(
+                    Venta.CENTAVO, rounding=ROUND_HALF_UP
+                )
+                total_productos = sum(
+                    item["cantidad"] for item in items_sanitizados
+                )
 
                 # 2. Insertar la cabecera de la venta
                 sql_venta = """
@@ -161,13 +279,19 @@ class Venta:
             print(f"Venta #{id_venta} y su pago fueron registrados exitosamente.")
             return id_venta
 
-        except Exception as e:
-            conexion.rollback()
+        except VentaValidacionError:
+            if conexion:
+                conexion.rollback()
+            raise
+        except pymysql.MySQLError as e:
+            if conexion:
+                conexion.rollback()
             print(f"Error en la transacción de la venta: {e}")
             return None
 
         finally:
-            conexion.close()
+            if conexion:
+                conexion.close()
 
     @staticmethod
     def obtener_ventas_paginadas(
@@ -183,8 +307,9 @@ class Venta:
 
         y devuelve métricas acordes a la búsqueda realizada.
         """
-        conexion = Config.conectar_db()
+        conexion = None
         try:
+            conexion = Config.conectar_db()
             with conexion.cursor() as cursor:
 
                 # 1. Construcción dinámica de la cláusula WHERE y parámetros
@@ -219,18 +344,25 @@ class Venta:
                         [f"{fecha_inicio} 00:00:00", f"{fecha_fin} 23:59:59"]
                     )
                 elif filtro_fecha == "hoy":
-                    condiciones.append("v.fecha_emision_factura >= CURDATE()")
+                    condiciones.append(
+                        "v.fecha_emision_factura >= CURDATE() "
+                        "AND v.fecha_emision_factura < DATE_ADD(CURDATE(), INTERVAL 1 DAY)"
+                    )
                 elif filtro_fecha == "semana":
                     condiciones.append(
-                        "v.fecha_emision_factura >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)"
+                        "v.fecha_emision_factura >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) "
+                        "AND v.fecha_emision_factura < DATE_ADD(CURDATE(), INTERVAL 1 DAY)"
                     )
                 elif filtro_fecha == "mes":
                     condiciones.append(
-                        "v.fecha_emision_factura >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)"
+                        "v.fecha_emision_factura >= DATE_FORMAT(CURDATE(), '%Y-%m-01') "
+                        "AND v.fecha_emision_factura < DATE_ADD("
+                        "DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 1 MONTH)"
                     )
                 elif filtro_fecha == "anio":
                     condiciones.append(
-                        "v.fecha_emision_factura >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
+                        "v.fecha_emision_factura >= MAKEDATE(YEAR(CURDATE()), 1) "
+                        "AND v.fecha_emision_factura < MAKEDATE(YEAR(CURDATE()) + 1, 1)"
                     )
 
                 where_clause = (
@@ -326,13 +458,15 @@ class Venta:
                 "Exito": False
             }
         finally:
-            conexion.close()
+            if conexion:
+                conexion.close()
 
     @staticmethod
     def obtener_por_id(id_venta):
         """Obtiene la cabecera de la venta y la lista de sus productos para la pantalla de detalle."""
-        conexion = Config.conectar_db()
+        conexion = None
         try:
+            conexion = Config.conectar_db()
             with conexion.cursor() as cursor:
                 sql_cabecera = """
                     SELECT 
@@ -353,7 +487,7 @@ class Venta:
                 venta = cursor.fetchone()
 
                 if not venta:
-                    return [], [], False
+                    return None, [], True
 
                 sql_items = """
                     SELECT 
@@ -373,29 +507,34 @@ class Venta:
 
                 return venta, items, True
 
-        except Exception as e:
+        except pymysql.MySQLError as e:
             print(f"Error al obtener el detalle de la venta #{id_venta}: {e}")
             return [], [], False
         finally:
-            conexion.close()
+            if conexion:
+                conexion.close()
         
     @staticmethod
     def anular(id_venta):
         """Anula una venta y restituye el stock de los artículos que no son servicios."""
-        conexion = Config.conectar_db()
+        conexion = None
         try:
+            conexion = Config.conectar_db()
             with conexion.cursor() as cursor:
                 cursor.execute(
-                    "SELECT activa FROM venta WHERE idventa = %s;", (id_venta,)
+                    "SELECT activa FROM venta WHERE idventa = %s FOR UPDATE;",
+                    (id_venta,),
                 )
                 venta = cursor.fetchone()
 
                 if not venta:
                     print(f"La venta ID {id_venta} no existe.")
+                    conexion.rollback()
                     return False
 
                 if venta["activa"] == 0:
                     print(f"La venta ID {id_venta} ya se encuentra anulada.")
+                    conexion.rollback()
                     return False
 
                 sql_obtener_items = """
@@ -426,17 +565,20 @@ class Venta:
             return True
 
         except pymysql.MySQLError as e:
-            conexion.rollback()
+            if conexion:
+                conexion.rollback()
             print(f"Error al anular la venta ID {id_venta}: {e}")
-            return False
+            return None
 
         finally:
-            conexion.close()
+            if conexion:
+                conexion.close()
             
     @staticmethod
     def obtener_datos_inicio_venta():
-        conexion = Config.conectar_db()
+        conexion = None
         try:
+            conexion = Config.conectar_db()
             with conexion.cursor() as cursor:
                 cursor.execute(
                     """
@@ -472,9 +614,11 @@ class Venta:
                 
                 return productos, tipos, cliente, metodos_pago, True
         except pymysql.MySQLError as e:
-                    conexion.rollback()
-                    print(f"Error al crear producto/servicio: {e}")
-                    return [], [], [], [], False
+            if conexion:
+                conexion.rollback()
+            print(f"Error al cargar los datos de inicio de venta: {e}")
+            return [], [], [], [], False
                 
         finally:
-            conexion.close()
+            if conexion:
+                conexion.close()

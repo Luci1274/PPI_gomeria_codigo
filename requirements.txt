@@ -1,9 +1,7 @@
 Flask
 PyMySQL
 python-dotenv
-gunicorn
 cloudinary
 DBUtils
 twilio
-SQLAlchemy
-flask-sqlalchemy
+gunicorn; sys_platform != "win32"

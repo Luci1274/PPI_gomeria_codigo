@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tablaBody = document.getElementById('tabla-empleados-body');
     const valorMetrica = document.getElementById('valor_metrica');
     const inputBusqueda = document.getElementById('input-busqueda');
+    const filtroRol = document.getElementById('filtro-rol');
     const filtroEstado = document.getElementById('filtro-estado');
 
     // Paginación
@@ -96,6 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams({
                 pagina: paginaActual,
                 buscar: inputBusqueda.value.trim(),
+                rol: filtroRol.value === 'todos' ? '' : filtroRol.value,
                 activo: filtroEstado.value === 'todos' ? '' : filtroEstado.value
             });
 
@@ -104,6 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!respuesta.ok || !data.exito) {
                 mostrarNotificacion('Error', data.mensaje || 'Error al obtener empleados.');
+                return;
+            }
+
+            if (!poblarFiltroRoles(data.roles)) {
+                paginaActual = 1;
+                cargarEmpleados();
                 return;
             }
 
@@ -117,6 +125,31 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error al cargar empleados:', error);
             tablaBody.innerHTML = `<tr><td colspan="6" class="texto-centro">Error de conexión al cargar datos.</td></tr>`;
         }
+    }
+
+    function poblarFiltroRoles(roles) {
+        if (!filtroRol || !Array.isArray(roles)) return true;
+
+        const rolSeleccionado = filtroRol.value;
+        filtroRol.replaceChildren();
+
+        const opcionTodos = document.createElement('option');
+        opcionTodos.value = 'todos';
+        opcionTodos.textContent = 'Todos los roles';
+        filtroRol.appendChild(opcionTodos);
+
+        roles.forEach(rol => {
+            if (typeof rol !== 'string' || !rol.trim()) return;
+            const opcion = document.createElement('option');
+            opcion.value = rol;
+            opcion.textContent = rol;
+            filtroRol.appendChild(opcion);
+        });
+
+        const rolDisponible = Array.from(filtroRol.options)
+            .some(opcion => opcion.value === rolSeleccionado)
+        filtroRol.value = rolDisponible ? rolSeleccionado : 'todos';
+        return rolDisponible;
     }
 
     function actualizarPaginacionUI() {
@@ -256,8 +289,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const respuesta = await fetch(`/api/empleados/${id}/editar`);
             const data = await respuesta.json();
 
-            const emp = data.empleado || data;
+            if (!respuesta.ok || !data.exito || !data.empleado) {
+                throw new Error(data.mensaje || 'No se pudieron recuperar los datos del empleado.');
+            }
 
+            const emp = data.empleado;
             document.getElementById('input-editar-nombre').value = emp.nombre || '';
             document.getElementById('input-editar-email').value = emp.email || '';
             document.getElementById('input-editar-telefono').value = emp.telefono || '';
@@ -267,7 +303,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Error al cargar empleado:', error);
-            mostrarNotificacion('Error', 'No se pudieron recuperar los datos del empleado.');
+            cerrarModalEditar();
+            mostrarNotificacion('Error', error.message || 'No se pudieron recuperar los datos del empleado.');
         }
     }
 
@@ -315,6 +352,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     filtroEstado.addEventListener('change', () => {
+        paginaActual = 1;
+        cargarEmpleados();
+    });
+
+    filtroRol.addEventListener('change', () => {
         paginaActual = 1;
         cargarEmpleados();
     });

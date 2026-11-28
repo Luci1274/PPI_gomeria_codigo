@@ -166,7 +166,15 @@ class Producto:
         """
 
     @staticmethod
-    def leer_productos(pagina=1, por_pagina=10, buscar=None, tipo=None, marca=None, estado=None):
+    def leer_productos(
+        pagina=1,
+        por_pagina=10,
+        buscar=None,
+        tipo=None,
+        marca=None,
+        estado=None,
+        stock="todos",
+    ):
         conexion = Config.conectar_db()
         condiciones = []
         parametros = []
@@ -183,6 +191,12 @@ class Producto:
         if estado is not None and estado != "":
             condiciones.append("inventario.activo = %s")
             parametros.append(estado)
+        if stock == "bajo":
+            condiciones.append(
+                "inventario.tipo_item = %s "
+                "AND inventario.cantidad_actual < inventario.cantidad_minima"
+            )
+            parametros.append("producto")
 
         where_sql = GenericosDB.construir_where(condiciones)
         consulta_inventario = Producto._consulta_inventario()

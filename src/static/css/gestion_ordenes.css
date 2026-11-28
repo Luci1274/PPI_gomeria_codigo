@@ -44,6 +44,37 @@
     box-shadow: var(--sombra-chica);
 }
 
+.accion-rango-fecha {
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.accion-rango-fecha label {
+    display: flex;
+    flex: 1 1 130px;
+    flex-direction: column;
+    gap: 4px;
+    color: var(--texto-principal);
+    font-size: 13px;
+}
+
+.accion-rango-fecha input {
+    min-height: 44px;
+    padding: 8px 10px;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-medio);
+    background-color: var(--fondo-tarjeta);
+    color: var(--texto-principal);
+    font: inherit;
+}
+
+.accion-rango-fecha small {
+    flex-basis: 100%;
+    color: var(--texto-principal);
+    font-size: 12px;
+    opacity: 0.75;
+}
+
 .modal-ordenes .modal-contenido {
     display: flex;
     flex-direction: column;

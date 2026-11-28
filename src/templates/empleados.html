@@ -18,9 +18,12 @@
 {% block filtros %}
 <section class="barra-filtros">
     <div class="contenedor-busqueda">
-        <input type="text" id="input-busqueda" placeholder="Buscar por Nombre...">
+        <input type="text" id="input-busqueda" placeholder="Buscar por nombre, correo o teléfono...">
     </div>
     <div class="acciones-filtros">
+        <select class="filtro-seleccion" id="filtro-rol">
+            <option value="todos" selected>Todos los roles</option>
+        </select>
         <select class="filtro-seleccion" id="filtro-estado">
             <option value="1">Activos</option>
             <option value="0">Inactivos</option>

@@ -24,7 +24,7 @@
     </div>
     <div class="tarjeta-metrica">
         <div class="datos-metrica">
-            <h3>Total Productos Vendidos</h3>
+            <h3>Unidades vendidas</h3>
             <p class="valor-metrica" id="metrica-total-productos">0</p>
         </div>
     </div>
@@ -52,6 +52,17 @@
             <option value="todos">Todas las fechas</option>
         </select>
     </div>
+    <div class="accion-filtro accion-rango-fecha">
+        <label for="input-fecha-inicio">
+            Desde
+            <input type="date" id="input-fecha-inicio" aria-label="Fecha inicial del rango">
+        </label>
+        <label for="input-fecha-fin">
+            Hasta
+            <input type="date" id="input-fecha-fin" aria-label="Fecha final del rango">
+        </label>
+        <small>Completa ambas fechas para aplicar un rango personalizado.</small>
+    </div>
 </section>
 {% endblock %}
 
@@ -60,7 +71,7 @@
     <th class="texto-derecha">N° Venta</th>
     <th class="texto-izquierda">Fecha</th>
     <th class="texto-izquierda">Cliente</th>
-    <th class="texto-derecha">Total Productos</th>
+    <th class="texto-derecha">Unidades</th>
     <th class="texto-derecha">Precio</th>
     <th>Estado</th>
     <th>Acciones</th>
@@ -103,7 +114,7 @@
             <table class="modal-table">
                 <thead>
                     <tr>
-                        <th class="texto-izquierda">Producto</th>
+                        <th class="texto-izquierda">Artículo o servicio</th>
                         <th class="texto-derecha">Cantidad</th>
                         <th class="texto-derecha">Precio Unitario</th>
                     </tr>

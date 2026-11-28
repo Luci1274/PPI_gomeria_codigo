@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Filtros
     const inputBusqueda = document.getElementById('input-busqueda');
     const filtroEstado = document.getElementById('filtro-estado');
-    const filtroCiudad = document.getElementById('select-ciudad-filtro'); // Opcional si agregas filtro por ciudad
+    const filtroCiudad = document.getElementById('select-ciudad-filtro');
 
     // Modal Nuevo Cliente
     const modalNuevoCliente = document.getElementById('modal-overlay');

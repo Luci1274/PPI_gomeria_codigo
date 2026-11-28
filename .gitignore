@@ -1,3 +1,5 @@
+/.venv/
+/src/.venv/
 src/.env
 src/env
 src\modulos\comandos_db\__pycache__

@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputBusqueda = document.getElementById('input-busqueda');
     const selectFiltroFecha = document.getElementById('select-filtro-fecha');
     const selectFiltroEstado = document.getElementById('select-filtro-estado');
+    const inputFechaInicio = document.getElementById('input-fecha-inicio');
+    const inputFechaFin = document.getElementById('input-fecha-fin');
     const metricaTotalVentas = document.getElementById('metrica-total-ventas');
     const metricaTotalProductos = document.getElementById('metrica-total-productos');
     const contenedorPaginacion = document.getElementById('contenedor-paginacion');
@@ -38,6 +40,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let debounceTimer;
     let paginaActual = 1;
     let solicitudActual = 0;
+
+    function escaparHTML(valor) {
+        return String(valor ?? '').replace(/[&<>"']/g, caracter => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[caracter]);
+    }
 
     // --- NOTIFICACIONES Y CONFIRMACIONES ---
 
@@ -115,10 +127,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 1. Cargar listado dinámico desde la API (con paginación)
     async function cargarVentas() {
+        const solicitud = ++solicitudActual;
+        const fechaInicio = inputFechaInicio?.value || '';
+        const fechaFin = inputFechaFin?.value || '';
+        if (Boolean(fechaInicio) !== Boolean(fechaFin)) {
+            mostrarNotificacion('Rango incompleto', 'Selecciona ambas fechas para filtrar por intervalo.');
+            return;
+        }
+        if (fechaInicio && fechaInicio > fechaFin) {
+            mostrarNotificacion('Rango inválido', 'La fecha inicial no puede ser posterior a la fecha final.');
+            return;
+        }
+
         const busqueda = inputBusqueda?.value.trim() || '';
         const filtroFecha = selectFiltroFecha?.value || 'todos';
         const estado = selectFiltroEstado?.value || '1';
-        const solicitud = ++solicitudActual;
 
         const parametros = new URLSearchParams({
             busqueda,
@@ -126,6 +149,10 @@ document.addEventListener('DOMContentLoaded', () => {
             estado,
             pagina: paginaActual
         });
+        if (fechaInicio && fechaFin) {
+            parametros.set('fecha_inicio', fechaInicio);
+            parametros.set('fecha_fin', fechaFin);
+        }
 
         try {
             const response = await fetch(`/api/ventas?${parametros.toString()}`);
@@ -180,16 +207,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const estaActiva = Number(v.activa) === 1;
             if (!estaActiva) tr.classList.add('desactivado');
             tr.innerHTML = `
-                <td class="texto-derecha">#${v.idventa}</td>
-                <td class="texto-izquierda">${v.fecha}</td>
-                <td class="texto-izquierda">${v.cliente}</td>
-                <td class="texto-derecha">${v.cantidad_total_productos} productos</td>
-                <td class="texto-derecha">$${Number(v.precio_total).toLocaleString()}</td>
+                <td class="texto-derecha">#${escaparHTML(v.idventa)}</td>
+                <td class="texto-izquierda">${escaparHTML(v.fecha)}</td>
+                <td class="texto-izquierda">${escaparHTML(v.cliente)}</td>
+                <td class="texto-derecha">${escaparHTML(v.cantidad_total_productos)} unidades</td>
+                <td class="texto-derecha">$${escaparHTML(Number(v.precio_total).toLocaleString())}</td>
                 <td><span class="badge ${estaActiva ? 'activo' : 'inactivo'}">${estaActiva ? 'Activa' : 'Anulada'}</span></td>
                 <td>
                     <div class="btn-acciones">
-                        <button class="btn-accion resumen" data-id="${v.idventa}">Ver resumen</button>
-                        ${estaActiva ? `<button class="btn-accion eliminar" data-id="${v.idventa}">Anular</button>` : ''}
+                        <button class="btn-accion resumen" data-id="${escaparHTML(v.idventa)}">Ver resumen</button>
+                        ${estaActiva ? `<button class="btn-accion eliminar" data-id="${escaparHTML(v.idventa)}">Anular</button>` : ''}
                     </div>
                 </td>
             `;
@@ -317,19 +344,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     itemsActuales.forEach(item => {
                         const tr = document.createElement('tr');
-                        const precioUnitario = item.precio_unitario
+                        const precioUnitario = item.precio_unitario !== undefined
+                            && item.precio_unitario !== null
                             ? `$${Number(item.precio_unitario).toLocaleString()}`
                             : '-';
 
                         tr.innerHTML = `
                             <td class="texto-izquierda">
                                 <div class="producto-resumen">
-                                    <img class="producto-resumen-imagen" src="${item.imagen_producto}" alt="${item.producto_nombre}">
-                                    <span class="producto-resumen-nombre">${item.producto_nombre}</span>
+                                    <img class="producto-resumen-imagen" src="${escaparHTML(item.imagen_producto || '')}" alt="${escaparHTML(item.producto_nombre)}">
+                                    <span class="producto-resumen-nombre">${escaparHTML(item.producto_nombre)}</span>
                                 </div>
                             </td>
-                            <td class="texto-derecha">${item.cantidad}</td>
-                            <td class="texto-derecha">${precioUnitario}</td>
+                            <td class="texto-derecha">${escaparHTML(item.cantidad)}</td>
+                            <td class="texto-derecha">${escaparHTML(precioUnitario)}</td>
                         `;
                         modalTablaBody.appendChild(tr);
                     });
@@ -358,12 +386,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const sub = cant * pUnit;
             return `
                 <tr>
-                    <td colspan="3" style="padding-top: 4px; font-weight: bold;">${item.producto_nombre}</td>
+                    <td colspan="3" style="padding-top: 4px; font-weight: bold;">${escaparHTML(item.producto_nombre)}</td>
                 </tr>
                 <tr>
-                    <td style="padding-bottom: 4px;">${cant} x $${pUnit.toLocaleString()}</td>
+                    <td style="padding-bottom: 4px;">${escaparHTML(cant)} x $${escaparHTML(pUnit.toLocaleString())}</td>
                     <td></td>
-                    <td style="text-align: right; padding-bottom: 4px;">$${sub.toLocaleString()}</td>
+                    <td style="text-align: right; padding-bottom: 4px;">$${escaparHTML(sub.toLocaleString())}</td>
                 </tr>
             `;
         }).join('');
@@ -372,12 +400,12 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="text-align: center;">
                 <h2 style="margin: 0; font-size: 16px;">SISTEMA GOMERÍA</h2>
                 <p style="margin: 3px 0; font-size: 11px;">Comprobante de Venta</p>
-                <p style="margin: 3px 0; font-weight: bold;">Ticket #${venta.idventa}</p>
+                <p style="margin: 3px 0; font-weight: bold;">Ticket #${escaparHTML(venta.idventa)}</p>
             </div>
             <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
             <div style="font-size: 11px;">
-                <p style="margin: 2px 0;"><strong>Fecha:</strong> ${fecha}</p>
-                <p style="margin: 2px 0;"><strong>Cliente:</strong> ${cliente}</p>
+                <p style="margin: 2px 0;"><strong>Fecha:</strong> ${escaparHTML(fecha)}</p>
+                <p style="margin: 2px 0;"><strong>Cliente:</strong> ${escaparHTML(cliente)}</p>
             </div>
             <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
             <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
@@ -425,7 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Ticket #${ventaActual.idventa}</title>
+                <title>Ticket #${escaparHTML(ventaActual.idventa)}</title>
                 <style>
                     @page { margin: 0; size: auto; }
                     body {
@@ -472,7 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const pdf = new jsPDF('p', 'mm', [pdfAncho, pdfAlto]);
             pdf.addImage(imgData, 'PNG', 0, 0, pdfAncho, pdfAlto);
 
-            const clienteNombre = (ventaActual.nombre_cliente || 'cliente').replace(/[^a-zA-Z0-0]/g, '_');
+            const clienteNombre = (ventaActual.nombre_cliente || 'cliente').replace(/[^a-zA-Z0-9]/g, '_');
             pdf.save(`ticket-venta-${ventaActual.idventa}-${clienteNombre}.pdf`);
 
             contenedorTicketPdf.innerHTML = '';
@@ -534,6 +562,13 @@ document.addEventListener('DOMContentLoaded', () => {
     selectFiltroEstado?.addEventListener('change', () => {
         paginaActual = 1;
         cargarVentas();
+    });
+
+    [inputFechaInicio, inputFechaFin].forEach(input => {
+        input?.addEventListener('change', () => {
+            paginaActual = 1;
+            cargarVentas();
+        });
     });
 
     // Carga inicial

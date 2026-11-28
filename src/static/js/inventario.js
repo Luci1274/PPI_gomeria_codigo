@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const filtroTipo = document.getElementById('filtro-tipo');
     const filtroMarca = document.getElementById('filtro-marca');
     const filtroEstado = document.getElementById('filtro-estado');
+    const filtroStock = document.getElementById('filtro-stock');
 
     // Modal Nuevo Producto
     const modalNuevoProducto = document.getElementById('modal-nuevo-producto');
@@ -136,7 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 buscar: inputBusqueda.value.trim(),
                 tipo: filtroTipo.value !== 'todos' ? filtroTipo.value : '',
                 marca: filtroMarca.value !== 'todos' ? filtroMarca.value : '',
-                estado: estadoValor
+                estado: estadoValor,
+                stock: filtroStock.value
             });
 
             const respuesta = await fetch(`/api/inventario?${params.toString()}`, {
@@ -370,15 +372,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 .forEach(select => poblarSelectTipos(select, tipos));
         }
 
-        if (marcas && filtroMarca.children.length <= 1) {
+        if (marcas) {
+            const marcaSeleccionada = filtroMarca.value;
+            filtroMarca.replaceChildren(new Option('Marca: Todas', 'todos'));
             marcas.forEach(item => {
                 if (item.marca) {
-                    const option = document.createElement('option');
-                    option.value = item.marca;
-                    option.textContent = item.marca;
-                    filtroMarca.appendChild(option);
+                    filtroMarca.add(new Option(item.marca, item.marca));
                 }
             });
+            if ([...filtroMarca.options].some(option => option.value === marcaSeleccionada)) {
+                filtroMarca.value = marcaSeleccionada;
+            }
         }
     }
 
@@ -415,6 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
     filtroTipo.addEventListener('change', () => { paginaActual = 1; cargarProductos(); });
     filtroMarca.addEventListener('change', () => { paginaActual = 1; cargarProductos(); });
     filtroEstado.addEventListener('change', () => { paginaActual = 1; cargarProductos(); });
+    filtroStock.addEventListener('change', () => { paginaActual = 1; cargarProductos(); });
 
     // --- MANEJO DEL MODAL NUEVO PRODUCTO ---
 

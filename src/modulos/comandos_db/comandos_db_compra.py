@@ -52,7 +52,7 @@ class Compra:
                 ]
                 cursor.executemany(sql_item_compra, valores_items)
                 conexion.commit()
-                print(f"Compra #{id_compra} registrada exitosamente y stock actualizado.")
+                print(f"Compra #{id_compra} registrada exitosamente; queda pendiente la recepción.")
                 return id_compra, True
 
         except pymysql.MySQLError as e:
@@ -116,11 +116,11 @@ class Compra:
                     )
                 elif filtro_fecha == "mes":
                     condiciones.append(
-                        "c.fecha >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)"
+                        "c.fecha >= DATE_FORMAT(CURDATE(), '%Y-%m-01')"
                     )
                 elif filtro_fecha == "anio":
                     condiciones.append(
-                        "c.fecha >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
+                        "c.fecha >= MAKEDATE(YEAR(CURDATE()), 1)"
                     )
 
                 where_clause = (
@@ -245,7 +245,7 @@ class Compra:
                 compra = cursor.fetchone()
 
                 if not compra:
-                    return [], [], False
+                    return None, [], True
 
                 if isinstance(compra.get("fecha"), (datetime, date)):
                     compra["fecha"] = compra["fecha"].strftime("%d/%m/%Y")
